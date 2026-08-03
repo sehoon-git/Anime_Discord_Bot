@@ -1,0 +1,19 @@
+{
+  "name": "@anime/discord-bot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "check": "tsc -b --pretty false",
+    "test": "tsx --test src/**/*.test.ts",
+    "dev": "tsx watch src/bot/index.ts",
+    "register:commands": "tsx src/bot/register-commands.ts"
+  },
+  "dependencies": {
+    "@anime/contracts": "*",
+    "@anime/voice-worker": "*",
+    "discord.js": "^14.25.1",
+    "zod": "^3.24.3"
+  }
+}

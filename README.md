@@ -189,7 +189,7 @@ evalSuiteId: luna-v1
 
 ## 목표 디렉터리 구조
 
-아래는 구현이 시작된 뒤의 목표 구조다. 아직 폴더를 미리 만들지 않는다.
+아래는 현재 프로젝트의 앱 분리 구조다.
 
 ```text
 apps/
@@ -257,6 +257,15 @@ docs/
 - `/memory forget`과 `/privacy delete`가 기억·요약·벡터 검색을 모두 차단한다.
 - Discord 음성 수신 장애가 있어도 텍스트 대화는 계속 동작한다.
 - 보이스 엔진 교체가 `TtsProvider` 구현 추가만으로 가능하다.
+
+## 정식 상업 출시 전 체크
+
+개발·개인 테스트 단계에서는 Discord 봇 생성, 토큰 발급, 최소 권한 초대만으로 진행한다. 공개 유료 서비스로 전환하기 전에는 아래 항목을 완료한다.
+
+- **약관·개인정보 처리방침:** 대화 기억과 결제 정보를 다루므로 서비스 이용약관과 개인정보 처리방침을 웹사이트에 공개하고, 해당 URL을 Discord Developer Portal에 등록한다.
+- **Discord 앱 인증:** 서버가 약 75개에 가까워지면 인증을 준비한다. 100개 이상 서버에서 운영하려면 인증이 필요하며, `Message Content Intent`를 쓰면 사용 목적과 처리 방식을 제출한다. [Discord Privileged Intents 안내](https://support-dev.discord.com/hc/en-us/articles/6207308062871-What-are-Privileged-Intents)
+- **결제·권한 연동:** 국내 서비스는 Discord 내장 구독 대신 자체 웹사이트의 국내 PG 결제와 DB 권한(`entitlement`) 연동을 기본으로 한다. 결제 성공·갱신·취소·환불 이벤트마다 Discord 사용자 ID 기준 권한을 갱신한다. Discord 내장 수익화는 지역 및 자격 조건을 별도로 확인한다. [Discord Monetization 자격 요건](https://support-dev.discord.com/hc/en-us/articles/10441588458391-Monetization-Requirements)
+- **최소 권한:** `Administrator` 권한을 요청하지 않는다. 채팅에는 View Channels, Send Messages, Read Message History를, 음성에는 Connect, Speak만 요청하고 필요한 권한은 기능 추가 때마다 재검토한다.
 
 ## 라이선스 및 안전 체크
 

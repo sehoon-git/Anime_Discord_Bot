@@ -1,0 +1,25 @@
+{
+  "name": "discord-anime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "npm run test --workspaces --if-present",
+    "check": "tsc -b --pretty false",
+    "dev:bot": "npm run dev --workspace=@anime/discord-bot",
+    "register:commands": "npm run register:commands --workspace=@anime/discord-bot"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
