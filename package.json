@@ -1,12 +1,25 @@
 {
-  "name": "discord-anime-ai-web",
+  "name": "discord-anime",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "dev:web": "next dev",
+    "dev:bot": "npm run dev --workspace=@anime/discord-bot",
+    "build": "npm run build --workspaces --if-present && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check": "tsc -b tsconfig.services.json --pretty false",
+    "test": "npm run test --workspaces --if-present",
+    "register:commands": "npm run register:commands --workspace=@anime/discord-bot"
   },
   "dependencies": {
     "next": "16.2.12",
@@ -16,12 +29,13 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^22.15.3",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
   }
 }
