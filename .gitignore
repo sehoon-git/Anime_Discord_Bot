@@ -26,6 +26,22 @@ node_modules/
 /coverage
 coverage/
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+coverage.xml
+htmlcov/
+
 # Next.js
 /.next/
 .next/
@@ -72,3 +88,6 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local FFmpeg binary used by the bot's voice service
+/bot/tools/ffmpeg/
