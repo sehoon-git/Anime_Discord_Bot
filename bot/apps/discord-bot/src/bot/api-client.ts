@@ -104,3 +104,61 @@ function createDevelopmentReply(input: TurnEnvelope): ConversationReply {
     voiceProfile
   };
 }
+
+/**
+ * 개발 중 Conversation API 없이 Gemini를 직접 호출할 때 쓰는 음성 대화 어댑터다.
+ * 동의는 프로세스 메모리에만 유지되며, 운영 환경에서는 BackendApiClient를 사용한다.
+ */
+export class DirectGeminiVoiceApi implements ConversationApi {
+  private readonly voiceConsents = new Set<string>();
+
+  constructor(
+    private readonly textApi: {
+      createTurn(input: TurnEnvelope): Promise<{ text: string }>;
+    }
+  ) {}
+
+  async createTurn(input: TurnEnvelope): Promise<ConversationReply> {
+    const reply = await this.textApi.createTurn(input);
+    return {
+      conversationId: input.conversationId,
+      text: reply.text,
+      voiceProfile: defaultVoiceProfile(input.canonicalText)
+    };
+  }
+
+  async updateVoiceConsent(input: VoiceConsentUpdate): Promise<void> {
+    const key = voiceConsentKey(input);
+    if (input.enabled) this.voiceConsents.add(key);
+    else this.voiceConsents.delete(key);
+  }
+
+  async canProcessVoice(input: VoiceConsentCheck): Promise<boolean> {
+    return this.voiceConsents.has(voiceConsentKey(input));
+  }
+}
+
+function defaultVoiceProfile(text: string): VoiceProfile {
+  const english = /^[\x00-\x7F\s\p{P}]+$/u.test(text);
+  return english
+    ? {
+        id: 'en-female-heart-v1',
+        version: 1,
+        provider: 'kokoro',
+        language: 'en-US',
+        settings: { voice: 'af_heart', speed: 0.95 },
+        status: 'published'
+      }
+    : {
+        id: 'default-ko-v1',
+        version: 1,
+        provider: 'melotts',
+        language: 'ko',
+        settings: {},
+        status: 'published'
+      };
+}
+
+function voiceConsentKey(input: VoiceConsentCheck): string {
+  return `${input.guildId}:${input.channelId}:${input.userId}`;
+}

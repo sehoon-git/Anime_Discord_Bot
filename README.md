@@ -1,5 +1,16 @@
 # Discord Anime AI
 
+## 독립 배포 구조
+
+이 저장소는 하나이지만 웹과 봇은 서로 다른 서버에 독립 배포한다.
+
+| 폴더 | 역할 | 실행 |
+| --- | --- | --- |
+| `web/` | Next.js 웹사이트, Discord/Google 로그인, 동의·계정 DB | `cd web; npm install; npm run build` |
+| `bot/` | Discord 봇, 음성 워커, Python 음성 서비스 | `cd bot; npm install; npm run build` |
+
+각 서버는 해당 폴더의 `.env.example`을 복사해 별도 환경 변수를 설정한다. 두 서비스가 같은 Discord 애플리케이션을 사용할 경우 `DISCORD_CLIENT_ID`만 같은 값으로 설정한다. 소스나 비밀값 파일은 공유하지 않는다.
+
 자체 웹사이트와 Discord 봇으로 제공하는 한국어 AI 캐릭터 대화 서비스입니다. 텍스트 채팅과 음성 채팅은 하나의 대화·기억 엔진을 공유하며, 캐릭터와 목소리는 데이터로 추가·교체할 수 있습니다.
 
 ## 제품 결정

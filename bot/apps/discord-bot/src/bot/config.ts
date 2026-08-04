@@ -12,10 +12,11 @@ const configSchema = z
     BOT_API_BASE_URL: z.string().url().default('http://localhost:3001'),
     VOICE_SERVICE_BASE_URL: z.string().url().default('http://localhost:8000'),
     BOT_DEV_ECHO_MODE: z.enum(['true', 'false']).default('false').transform((value) => value === 'true'),
+    BOT_AUTO_REPLY_CHANNEL_ID: z.string().trim().transform((value) => value || undefined).optional(),
     BOT_TEST_DIRECT_GEMINI: z.enum(['true', 'false']).default('false').transform((value) => value === 'true'),
     GEMINI_API_KEY: z.string().optional(),
-    GEMINI_MODEL: z.string().min(1).default('gemini-2.5-flash'),
-    GEMINI_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(1).max(2_048).default(512),
+    GEMINI_MODEL: z.string().min(1).default('gemini-3.6-flash'),
+    GEMINI_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(1).max(2_048).default(1024),
     BOT_TEST_CREDITS_ENABLED: z.enum(['true', 'false']).default('false').transform((value) => value === 'true'),
     BOT_TEST_CREDITS_PER_USER: z.coerce.number().int().min(0).max(100_000).default(100),
     BOT_TOKENS_PER_CREDIT: z.coerce.number().int().min(1).max(100_000).default(100)

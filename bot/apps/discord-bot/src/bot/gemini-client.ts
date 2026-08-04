@@ -13,6 +13,7 @@ export type GeminiTextReply = {
 
 type GeminiGenerateContentResponse = {
   candidates?: Array<{
+    finishReason?: string;
     content?: {
       parts?: Array<{ text?: string }>;
     };
@@ -36,6 +37,7 @@ export class GeminiTextClient {
       apiKey: string;
       model: string;
       maxOutputTokens: number;
+      systemInstruction?: string;
       fetchImpl?: typeof fetch;
     }
   ) {
@@ -52,6 +54,9 @@ export class GeminiTextClient {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
+        ...(this.options.systemInstruction
+          ? { systemInstruction: { parts: [{ text: this.options.systemInstruction }] } }
+          : {}),
         contents: [{ role: 'user', parts: [{ text: input.canonicalText }] }],
         generationConfig: { maxOutputTokens: this.options.maxOutputTokens }
       })
@@ -62,17 +67,19 @@ export class GeminiTextClient {
     }
 
     const body = (await response.json()) as GeminiGenerateContentResponse;
-    const text = body.candidates?.[0]?.content?.parts
+    const candidate = body.candidates?.[0];
+    const text = candidate?.content?.parts
       ?.map((part) => part.text ?? '')
       .join('')
       .trim();
-    if (!text) throw new Error('Gemini가 텍스트 응답을 반환하지 않았습니다.');
+    if (!text) throw new Error('Gemini returned an empty text response.');
+    const completedText = completeTruncatedSentence(text, candidate?.finishReason);
 
     const totalTokens = numberOrUndefined(body.usageMetadata?.totalTokenCount);
     if (totalTokens === undefined) throw new Error('Gemini usageMetadata.totalTokenCount를 받지 못했습니다.');
 
     return {
-      text,
+      text: completedText,
       usage: {
         promptTokens: numberOrUndefined(body.usageMetadata?.promptTokenCount) ?? 0,
         outputTokens: numberOrUndefined(body.usageMetadata?.candidatesTokenCount) ?? 0,
@@ -82,6 +89,12 @@ export class GeminiTextClient {
   }
 }
 
+function completeTruncatedSentence(text: string, finishReason: string | undefined): string {
+  if (finishReason !== 'MAX_TOKENS') return text;
+
+  const lastSentenceEnd = Math.max(text.lastIndexOf('.'), text.lastIndexOf('!'), text.lastIndexOf('?'));
+  return lastSentenceEnd >= 0 ? text.slice(0, lastSentenceEnd + 1).trim() : `${text.trimEnd()}...`;
+}
 function numberOrUndefined(value: unknown): number | undefined {
   const parsed = Number(value);
   return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : undefined;
