@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/app/lib/auth";
-import DashboardConsentGuard from "@/app/_components/DashboardConsentGuard";
+import { db } from "@/app/lib/db";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -10,8 +10,16 @@ export default async function DashboardPage() {
     redirect("/api/auth/signin/google?callbackUrl=/dashboard");
   }
 
+  const consent = await db.query(
+    "SELECT id FROM user_consents WHERE email = $1 LIMIT 1",
+    [session.user.email],
+  );
+
+  if ((consent.rowCount ?? 0) === 0) {
+    redirect("/consent");
+  }
+
   return (
-    <DashboardConsentGuard>
     <main className="min-h-screen bg-black px-6 py-12 text-white">
       <section className="mx-auto max-w-4xl">
         <p className="text-sm font-semibold text-indigo-300">
@@ -53,6 +61,5 @@ export default async function DashboardPage() {
         </div>
       </section>
     </main>
-    </DashboardConsentGuard>
   );
 }

@@ -13,6 +13,8 @@ export default function ConsentPage() {
   const [overseas, setOverseas] = useState(false);
   const [voice, setVoice] = useState(false);
   const [memory, setMemory] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const canContinue = terms && privacy && overseas;
 
@@ -22,25 +24,33 @@ export default function ConsentPage() {
     }
   }, [status]);
 
-  function handleContinue() {
+  async function handleContinue() {
     if (!canContinue || !session?.user) {
       return;
     }
 
-    localStorage.setItem("discord-anime-ai-consent", "accepted");
-    localStorage.setItem(
-      "discord-anime-ai-consent-detail",
-      JSON.stringify({
-        accepted: true,
-        acceptedAt: new Date().toISOString(),
-        email: session.user.email,
+    setIsSaving(true);
+    setErrorMessage("");
+
+    const response = await fetch("/api/consent", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         terms,
         privacy,
         overseas,
         voice,
         memory,
       }),
-    );
+    });
+
+    setIsSaving(false);
+
+    if (!response.ok) {
+      setErrorMessage("동의 저장에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      return;
+    }
+
     router.push("/dashboard");
   }
 
@@ -112,11 +122,15 @@ export default function ConsentPage() {
         <button
           type="button"
           onClick={handleContinue}
-          disabled={!canContinue}
+          disabled={!canContinue || isSaving}
           className="mt-8 w-full rounded-full bg-blue-500 py-3 font-semibold disabled:bg-zinc-700 disabled:text-zinc-400"
         >
-          동의하고 시작하기
+          {isSaving ? "저장 중..." : "동의하고 시작하기"}
         </button>
+
+        {errorMessage && (
+          <p className="mt-4 text-sm text-red-300">{errorMessage}</p>
+        )}
       </section>
     </main>
   );
