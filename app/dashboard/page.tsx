@@ -19,6 +19,21 @@ export default async function DashboardPage() {
     redirect("/consent");
   }
 
+  const account = await db.query(
+    `
+    SELECT discord_user_id, discord_username, discord_global_name
+    FROM user_accounts
+    WHERE email = $1
+    LIMIT 1
+    `,
+    [session.user.email],
+  );
+  const discordAccount = account.rows[0];
+  const discordName =
+    discordAccount?.discord_global_name ??
+    discordAccount?.discord_username ??
+    null;
+
   return (
     <main className="min-h-screen bg-black px-6 py-12 text-white">
       <section className="mx-auto max-w-4xl">
@@ -29,6 +44,25 @@ export default async function DashboardPage() {
         <p className="mt-4 text-zinc-400">
           {session.user.name ?? session.user.email} 계정으로 로그인되었습니다.
         </p>
+
+        <div className="mt-8 rounded-xl border border-zinc-800 bg-[#202020] p-5">
+          <h2 className="text-lg font-semibold">Discord 계정 연동</h2>
+          {discordName ? (
+            <p className="mt-2 text-sm text-zinc-400">
+              {discordName} 계정과 연결되었습니다.
+            </p>
+          ) : (
+            <p className="mt-2 text-sm text-zinc-400">
+              봇 사용 권한을 확인하려면 Discord 계정을 연결해야 합니다.
+            </p>
+          )}
+          <a
+            href="/api/discord/connect"
+            className="mt-4 inline-flex rounded-xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-400"
+          >
+            {discordName ? "Discord 계정 다시 연결하기" : "Discord 계정 연결하기"}
+          </a>
+        </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           <a
