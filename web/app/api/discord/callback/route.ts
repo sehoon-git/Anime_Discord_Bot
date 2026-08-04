@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/app/lib/auth";
 import { db } from "@/app/lib/db";
 import { getDiscordBotInviteUrl } from "@/app/lib/discord";
+import { upsertUser } from "@/app/lib/users";
 
 const DISCORD_TOKEN_URL = "https://discord.com/api/oauth2/token";
 const DISCORD_ME_URL = "https://discord.com/api/users/@me";
@@ -87,36 +88,51 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard?discord=user_error", baseUrl));
   }
 
-  await db.query(
-    `
-    INSERT INTO user_accounts (
-      email,
-      google_name,
-      discord_user_id,
-      discord_username,
-      discord_global_name,
-      discord_avatar,
-      updated_at
-    )
-    VALUES ($1, $2, $3, $4, $5, $6, NOW())
-    ON CONFLICT (email)
-    DO UPDATE SET
-      google_name = EXCLUDED.google_name,
-      discord_user_id = EXCLUDED.discord_user_id,
-      discord_username = EXCLUDED.discord_username,
-      discord_global_name = EXCLUDED.discord_global_name,
-      discord_avatar = EXCLUDED.discord_avatar,
-      updated_at = NOW()
-    `,
-    [
-      session.user.email,
-      session.user.name ?? null,
-      discordUser.id,
-      discordUser.username,
-      discordUser.global_name ?? null,
-      discordUser.avatar ?? null,
-    ],
-  );
+  try {
+    const userId = await upsertUser(session.user.email, session.user.name);
+
+    await db.query(
+      `
+      DELETE FROM user_accounts
+      WHERE provider = 'discord'
+        AND provider_user_id = $1
+        AND user_id <> $2
+      `,
+      [discordUser.id, userId],
+    );
+
+    await db.query(
+      `
+      INSERT INTO user_accounts (
+        user_id,
+        provider,
+        provider_user_id,
+        username,
+        global_name,
+        avatar,
+        updated_at
+      )
+      VALUES ($1, 'discord', $2, $3, $4, $5, NOW())
+      ON CONFLICT (user_id, provider)
+      DO UPDATE SET
+        provider_user_id = EXCLUDED.provider_user_id,
+        username = EXCLUDED.username,
+        global_name = EXCLUDED.global_name,
+        avatar = EXCLUDED.avatar,
+        updated_at = NOW()
+      `,
+      [
+        userId,
+        discordUser.id,
+        discordUser.username,
+        discordUser.global_name ?? null,
+        discordUser.avatar ?? null,
+      ],
+    );
+  } catch (error) {
+    console.error("[discord-callback][db]", error);
+    return NextResponse.redirect(new URL("/dashboard?discord=db_error", baseUrl));
+  }
 
   return NextResponse.redirect(getDiscordBotInviteUrl());
 }
