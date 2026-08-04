@@ -62,6 +62,14 @@ export default async function DashboardPage() {
           >
             {discordName ? "Discord 계정 다시 연결하기" : "Discord 계정 연결하기"}
           </a>
+          {discordName ? (
+            <a
+              href="/api/discord/bot-invite"
+              className="ml-3 mt-4 inline-flex rounded-xl border border-zinc-700 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-900"
+            >
+              봇 초대하기
+            </a>
+          ) : null}
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">

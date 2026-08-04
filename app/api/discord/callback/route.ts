@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/app/lib/auth";
 import { db } from "@/app/lib/db";
+import { getDiscordBotInviteUrl } from "@/app/lib/discord";
 
 const DISCORD_TOKEN_URL = "https://discord.com/api/oauth2/token";
 const DISCORD_ME_URL = "https://discord.com/api/users/@me";
@@ -117,7 +118,7 @@ export async function GET(request: NextRequest) {
     ],
   );
 
-  return NextResponse.redirect(new URL("/dashboard?discord=connected", baseUrl));
+  return NextResponse.redirect(getDiscordBotInviteUrl());
 }
 
 function getBaseUrl() {
