@@ -1,0 +1,267 @@
+import { db } from "@/app/lib/db";
+
+export type TurnRole = "user" | "assistant";
+export type TurnInputType = "text" | "voice";
+
+export type LinkedUser = {
+  id: string;
+  email: string;
+  name: string | null;
+};
+
+export type ConversationTurn = {
+  id: string;
+  role: TurnRole;
+  inputType: TurnInputType;
+  content: string;
+  createdAt: string;
+};
+
+export type UserMemory = {
+  id: string;
+  content: string;
+  source: string;
+  createdAt: string;
+};
+
+type TurnRow = {
+  id: string;
+  role: TurnRole;
+  input_type: TurnInputType;
+  content: string;
+  created_at: Date;
+};
+
+type MemoryRow = {
+  id: string;
+  content: string;
+  source: string;
+  created_at: Date;
+};
+
+export async function findLinkedUserByDiscordId(
+  discordUserId: string,
+): Promise<LinkedUser | null> {
+  const result = await db.query<LinkedUser>(
+    `
+    SELECT users.id::text, users.email, users.name
+    FROM users
+    JOIN user_accounts ON user_accounts.user_id = users.id
+    WHERE user_accounts.provider = 'discord'
+      AND user_accounts.provider_user_id = $1
+    LIMIT 1
+    `,
+    [discordUserId],
+  );
+
+  return result.rows[0] ?? null;
+}
+
+export async function hasConsent(userId: string, consentType: string) {
+  const result = await db.query<{ exists: boolean }>(
+    `
+    SELECT EXISTS (
+      SELECT 1
+      FROM user_consents
+      WHERE user_id = $1
+        AND consent_type = $2
+    )
+    `,
+    [userId, consentType],
+  );
+
+  return result.rows[0]?.exists ?? false;
+}
+
+export async function cleanupExpiredTurns() {
+  await db.query("DELETE FROM conversation_turns WHERE expires_at < NOW()");
+}
+
+export async function saveTurn(input: {
+  userId: string;
+  discordUserId: string;
+  guildId?: string | null;
+  channelId?: string | null;
+  role: TurnRole;
+  inputType: TurnInputType;
+  content: string;
+}) {
+  await db.query(
+    `
+    INSERT INTO conversation_turns (
+      user_id,
+      discord_user_id,
+      guild_id,
+      channel_id,
+      role,
+      input_type,
+      content
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `,
+    [
+      input.userId,
+      input.discordUserId,
+      input.guildId ?? null,
+      input.channelId ?? null,
+      input.role,
+      input.inputType,
+      input.content,
+    ],
+  );
+}
+
+export async function getRecentTurns(userId: string, limit = 20) {
+  const result = await db.query<TurnRow>(
+    `
+    SELECT id::text, role, input_type, content, created_at
+    FROM conversation_turns
+    WHERE user_id = $1
+    ORDER BY created_at DESC
+    LIMIT $2
+    `,
+    [userId, limit],
+  );
+
+  return result.rows.reverse().map((row) => ({
+    id: row.id,
+    role: row.role,
+    inputType: row.input_type,
+    content: row.content,
+    createdAt: row.created_at.toISOString(),
+  }));
+}
+
+export async function getConversationSummary(userId: string) {
+  const result = await db.query<{ summary: string; turn_count: number }>(
+    `
+    SELECT summary, turn_count
+    FROM conversation_summaries
+    WHERE user_id = $1
+    `,
+    [userId],
+  );
+
+  return result.rows[0] ?? null;
+}
+
+function buildSimpleSummary(turns: ConversationTurn[]) {
+  const userLines = turns
+    .filter((turn) => turn.role === "user")
+    .slice(-8)
+    .map((turn) => turn.content.trim())
+    .filter(Boolean);
+
+  if (userLines.length === 0) {
+    return "아직 요약할 사용자 대화가 충분하지 않습니다.";
+  }
+
+  return `최근 사용자는 다음 주제로 대화했습니다: ${userLines.join(" / ")}`;
+}
+
+export async function refreshSummaryIfNeeded(userId: string) {
+  const countResult = await db.query<{ count: string }>(
+    `
+    SELECT COUNT(*)::text AS count
+    FROM conversation_turns
+    WHERE user_id = $1
+    `,
+    [userId],
+  );
+
+  const turnCount = Number(countResult.rows[0]?.count ?? 0);
+  const current = await getConversationSummary(userId);
+
+  if (turnCount < 20) {
+    return current?.summary ?? "";
+  }
+
+  const recentTurns = await getRecentTurns(userId, 20);
+  const summary = buildSimpleSummary(recentTurns);
+
+  await db.query(
+    `
+    INSERT INTO conversation_summaries (user_id, summary, turn_count, updated_at)
+    VALUES ($1, $2, $3, NOW())
+    ON CONFLICT (user_id)
+    DO UPDATE SET
+      summary = EXCLUDED.summary,
+      turn_count = EXCLUDED.turn_count,
+      updated_at = NOW()
+    `,
+    [userId, summary, turnCount],
+  );
+
+  return summary;
+}
+
+function extractMemoryText(text: string) {
+  const match = text.match(/(?:기억해줘|기억해|remember)\s*[:：-]?\s*(.+)/i);
+  return match?.[1]?.trim() ?? null;
+}
+
+export async function maybeStoreMemory(userId: string, text: string) {
+  const memoryText = extractMemoryText(text);
+
+  if (!memoryText) {
+    return null;
+  }
+
+  const memoryAllowed = await hasConsent(userId, "memory");
+
+  if (!memoryAllowed) {
+    return null;
+  }
+
+  const result = await db.query<MemoryRow>(
+    `
+    INSERT INTO user_memories (user_id, content, source, updated_at)
+    VALUES ($1, $2, 'conversation', NOW())
+    RETURNING id::text, content, source, created_at
+    `,
+    [userId, memoryText],
+  );
+
+  const row = result.rows[0];
+
+  return {
+    id: row.id,
+    content: row.content,
+    source: row.source,
+    createdAt: row.created_at.toISOString(),
+  };
+}
+
+export async function listMemories(userId: string) {
+  const result = await db.query<MemoryRow>(
+    `
+    SELECT id::text, content, source, created_at
+    FROM user_memories
+    WHERE user_id = $1
+    ORDER BY created_at DESC
+    `,
+    [userId],
+  );
+
+  return result.rows.map((row) => ({
+    id: row.id,
+    content: row.content,
+    source: row.source,
+    createdAt: row.created_at.toISOString(),
+  }));
+}
+
+export async function deleteMemory(userId: string, memoryId: string) {
+  await db.query(
+    `
+    DELETE FROM user_memories
+    WHERE user_id = $1
+      AND id = $2
+    `,
+    [userId, memoryId],
+  );
+}
+
+export async function deleteAllMemories(userId: string) {
+  await db.query("DELETE FROM user_memories WHERE user_id = $1", [userId]);
+}

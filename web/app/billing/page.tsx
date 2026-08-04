@@ -1,224 +1,280 @@
-"use client";
+import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/lib/auth";
+import {
+  type BillingStatus,
+  getBillingStatusForUser,
+} from "@/app/lib/billing";
 
-import { useState } from "react";
+export const dynamic = "force-dynamic";
 
-type Plan = {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  buttonText: string;
-  featured?: boolean;
-  features: string[];
-};
-
-const plans: Plan[] = [
+const PLAN_CARDS = [
   {
-    id: "Like♥",
-    name: "Like♥",
+    code: "free",
+    name: "Free",
+    price: 0,
+    badge: "기본",
+    description: "서비스를 가볍게 테스트하는 기본 요금제입니다.",
+    features: [
+      "월 텍스트 100회",
+      "월 음성 10분",
+      "기억 기능 없음",
+      "Discord 계정 연동 가능",
+    ],
+  },
+  {
+    code: "pro",
+    name: "Pro",
     price: 9900,
-    description: "가볍게 AI 캐릭터와 대화를 시작",
-    buttonText: "Like 시작하기",
+    badge: "결제 연동 예정",
+    description: "실제 서비스 운영을 위한 유료 요금제입니다.",
     features: [
-      "AI 캐릭터 1개 사용",
-      "월 1,000회 텍스트 대화",
-      "월 60분 음성 대화",
-      "기본 한국어 음성",
-      "기본 서버 설정",
+      "월 텍스트 3,000회",
+      "월 음성 300분",
+      "기억 기능 사용",
+      "결제 성공 시 자동 활성화 예정",
     ],
   },
-  {
-    id: "More♥like",
-    name: "More♥like",
-    price: 19900,
-    description: "더 많은 대화와 음성 기능 이용",
-    buttonText: "More♥like 시작하기",
-    features: [
-      "AI 캐릭터 3개 사용",
-      "월 5,000회 텍스트 대화",
-      "월 300분 음성 대화",
-      "캐릭터 기억 기능",
-      "음성 채널 자동 응답",
-      "서버별 캐릭터 설정",
-    ],
-  },
-  {
-    id: "Love♥",
-    name: "Love♥",
-    price: 39900,
-    description: "대형 서버를 위한 프리미엄 플랜",
-    buttonText: "Love♥ 시작하기",
-    featured: true,
-    features: [
-      "AI 캐릭터 10개 사용",
-      "월 20,000회 텍스트 대화",
-      "월 1,000분 음성 대화",
-      "고급 기억 관리",
-      "우선 응답 처리",
-      "커스텀 캐릭터 설정",
-      "고급 음성 프로필",
-    ],
-  },
-];
-
-const paymentMethods = [
-  {
-    id: "google_pay",
-    name: "Google Pay",
-    logo: "G Pay",
-    className: "bg-white text-black hover:bg-zinc-200",
-  },
-  {
-    id: "paypal",
-    name: "PayPal",
-    logo: "PayPal",
-    className: "bg-[#ffc439] text-[#111820] hover:bg-[#f2b72f]",
-  },
-  {
-    id: "kakao_pay",
-    name: "Kakao Pay",
-    logo: "kakao pay",
-    className: "bg-[#fee500] text-[#191919] hover:bg-[#f4dc00]",
-  },
-];
+] as const;
 
 function formatPrice(price: number) {
-  return price.toLocaleString("ko-KR");
-}
-
-export default function BillingPage() {
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(
-    "monthly",
-  );
-
-  const isYearly = billingCycle === "yearly";
-
-  function getPrice(plan: Plan) {
-    return isYearly ? plan.price * 10 : plan.price;
+  if (price === 0) {
+    return "무료";
   }
 
+  return `${price.toLocaleString("ko-KR")}원 / 월`;
+}
+
+function formatLimit(used: number, limit: number) {
+  return `${used.toLocaleString("ko-KR")} / ${limit.toLocaleString("ko-KR")}`;
+}
+
+function formatDate(value: string | null) {
+  if (!value) {
+    return "기간 제한 없음";
+  }
+
+  return new Intl.DateTimeFormat("ko-KR", {
+    dateStyle: "medium",
+  }).format(new Date(value));
+}
+
+function UsageBar({
+  label,
+  used,
+  limit,
+}: {
+  label: string;
+  used: number;
+  limit: number;
+}) {
+  const percent =
+    limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;
+
+  return (
+    <div className="rounded-lg border border-zinc-800 bg-zinc-950/70 p-4">
+      <div className="flex items-center justify-between gap-4 text-sm">
+        <span className="font-medium text-zinc-200">{label}</span>
+        <span className="text-zinc-400">{formatLimit(used, limit)}</span>
+      </div>
+
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-800">
+        <div
+          className="h-full rounded-full bg-indigo-500"
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function PlanCard({
+  plan,
+  currentPlanCode,
+}: {
+  plan: (typeof PLAN_CARDS)[number];
+  currentPlanCode: string;
+}) {
+  const isCurrent = plan.code === currentPlanCode;
+
+  return (
+    <article
+      className={`rounded-lg border p-6 ${
+        isCurrent
+          ? "border-indigo-400 bg-indigo-950/30"
+          : "border-zinc-800 bg-zinc-950/70"
+      }`}
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-semibold">{plan.name}</h2>
+          <p className="mt-2 text-sm text-zinc-400">{plan.description}</p>
+        </div>
+
+        <span className="rounded-full border border-zinc-700 px-3 py-1 text-xs text-zinc-300">
+          {isCurrent ? "사용 중" : plan.badge}
+        </span>
+      </div>
+
+      <p className="mt-6 text-3xl font-semibold">{formatPrice(plan.price)}</p>
+
+      <ul className="mt-6 space-y-3 text-sm text-zinc-300">
+        {plan.features.map((feature) => (
+          <li key={feature}>- {feature}</li>
+        ))}
+      </ul>
+
+      <button
+        disabled
+        className={`mt-8 w-full rounded-lg px-4 py-3 text-sm font-semibold ${
+          isCurrent
+            ? "bg-zinc-800 text-zinc-400"
+            : "border border-zinc-700 text-zinc-400"
+        }`}
+      >
+        {isCurrent ? "현재 요금제" : "결제 버튼 준비 중"}
+      </button>
+    </article>
+  );
+}
+
+function LoginRequired() {
+  return (
+    <main className="min-h-screen bg-black px-6 py-16 text-white">
+      <section className="mx-auto max-w-3xl rounded-lg border border-zinc-800 bg-zinc-950/70 p-8">
+        <p className="text-sm font-semibold text-indigo-300">
+          Discord Anime AI
+        </p>
+        <h1 className="mt-3 text-3xl font-semibold">로그인이 필요합니다</h1>
+        <p className="mt-4 text-zinc-400">
+          요금제와 사용량은 로그인한 사용자 기준으로 저장됩니다.
+        </p>
+
+        <Link
+          href="/api/auth/signin"
+          className="mt-8 inline-flex rounded-lg bg-indigo-500 px-5 py-3 text-sm font-semibold text-white"
+        >
+          로그인하기
+        </Link>
+      </section>
+    </main>
+  );
+}
+
+function SetupRequired() {
+  return (
+    <main className="min-h-screen bg-black px-6 py-16 text-white">
+      <section className="mx-auto max-w-3xl rounded-lg border border-amber-700 bg-amber-950/20 p-8">
+        <p className="text-sm font-semibold text-amber-300">DB 설정 필요</p>
+        <h1 className="mt-3 text-3xl font-semibold">
+          결제용 테이블을 먼저 만들어야 합니다
+        </h1>
+        <p className="mt-4 text-zinc-300">
+          Neon SQL Editor에서 <code>web/docs/billing_schema.sql</code> 내용을
+          전체 실행하면 Free/Pro 요금제와 구독 테이블이 준비됩니다.
+        </p>
+      </section>
+    </main>
+  );
+}
+
+function BillingDashboard({ billing }: { billing: BillingStatus }) {
   return (
     <main className="min-h-screen bg-black px-6 py-10 text-white">
       <section className="mx-auto max-w-6xl">
-        <div className="text-center">
-          <h1 className="text-4xl font-semibold">플랜 업그레이드</h1>
-
-          <div className="mx-auto mt-6 flex w-[360px] rounded-full bg-zinc-800 p-1">
-            <button
-              onClick={() => setBillingCycle("monthly")}
-              className={`flex-1 rounded-full py-2 text-sm ${
-                !isYearly ? "bg-zinc-700 text-white" : "text-zinc-400"
-              }`}
-            >
-              월 결제
-            </button>
-
-            <button
-              onClick={() => setBillingCycle("yearly")}
-              className={`flex-1 rounded-full py-2 text-sm ${
-                isYearly ? "bg-zinc-700 text-white" : "text-zinc-400"
-              }`}
-            >
-              연 결제
-            </button>
-          </div>
+        <div>
+          <p className="text-sm font-semibold text-indigo-300">
+            Discord Anime AI
+          </p>
+          <h1 className="mt-3 text-4xl font-semibold">요금제</h1>
+          <p className="mt-4 max-w-2xl text-zinc-400">
+            지금은 결제 버튼을 붙이기 전 단계입니다. DB에 저장된 구독 상태와
+            이번 달 사용량을 먼저 확인합니다.
+          </p>
         </div>
 
-        <div className="mt-14 grid gap-6 lg:grid-cols-3">
-          {plans.map((plan) => (
-            <article
-              key={plan.id}
-              className={`flex min-h-[620px] flex-col rounded-2xl border p-6 ${
-                plan.featured
-                  ? "border-blue-400 bg-[#274968]"
-                  : "border-zinc-700 bg-[#202020]"
-              }`}
-            >
-              <h2 className="text-3xl font-medium">{plan.name}</h2>
+        <section className="mt-10 rounded-lg border border-zinc-800 bg-zinc-950/70 p-6">
+          <div className="grid gap-6 md:grid-cols-3">
+            <div>
+              <p className="text-sm text-zinc-500">현재 요금제</p>
+              <p className="mt-2 text-2xl font-semibold">
+                {billing.plan.name}
+              </p>
+            </div>
 
-              <div className="mt-8">
-                <span className="text-zinc-400">₩</span>
-                <span className="text-5xl font-light">
-                  {formatPrice(getPrice(plan))}
-                </span>
-                <span className="ml-2 text-sm">
-                  KRW / {isYearly ? "년" : "월"}
-                </span>
-              </div>
+            <div>
+              <p className="text-sm text-zinc-500">구독 상태</p>
+              <p className="mt-2 text-2xl font-semibold">
+                {billing.subscription.status}
+              </p>
+            </div>
 
-              <p className="mt-5 text-base">{plan.description}</p>
+            <div>
+              <p className="text-sm text-zinc-500">구독 기간</p>
+              <p className="mt-2 text-sm text-zinc-300">
+                {formatDate(billing.subscription.currentPeriodStart)} -{" "}
+                {formatDate(billing.subscription.currentPeriodEnd)}
+              </p>
+            </div>
+          </div>
 
-              <button
-                onClick={() => setSelectedPlan(plan)}
-                className={`mt-8 rounded-full py-3 text-sm font-semibold transition ${
-                  plan.featured
-                    ? "bg-[#4aa8ff] text-white hover:bg-[#67b7ff]"
-                    : "border border-zinc-600 text-white hover:bg-zinc-800"
-                }`}
-              >
-                결제하기
-              </button>
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            <UsageBar
+              label="이번 달 텍스트 사용량"
+              used={billing.usage.textMessages}
+              limit={billing.plan.monthlyTextMessages}
+            />
+            <UsageBar
+              label="이번 달 음성 사용량"
+              used={billing.usage.voiceMinutes}
+              limit={billing.plan.monthlyVoiceMinutes}
+            />
+          </div>
+        </section>
 
-              <ul className="mt-8 space-y-5 text-sm">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex gap-3">
-                    <span className="text-lg">✦</span>
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-auto pt-10 text-xs text-zinc-400">
-                이용 한도 적용
-                <br />
-                결제 관련 도움말 보기
-              </div>
-            </article>
+        <section className="mt-8 grid gap-6 md:grid-cols-2">
+          {PLAN_CARDS.map((plan) => (
+            <PlanCard
+              key={plan.code}
+              plan={plan}
+              currentPlanCode={billing.plan.code}
+            />
           ))}
-        </div>
+        </section>
+
+        <section className="mt-8 rounded-lg border border-zinc-800 bg-zinc-950/70 p-6">
+          <h2 className="text-xl font-semibold">다음에 붙일 결제 흐름</h2>
+          <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm text-zinc-300">
+            <li>토스페이먼츠 또는 Stripe에서 결제 세션을 만듭니다.</li>
+            <li>결제 성공 webhook을 받아 subscriptions 상태를 바꿉니다.</li>
+            <li>봇 사용 시 usage_events에 사용량을 쌓습니다.</li>
+            <li>무료 한도를 넘으면 봇과 웹에서 업그레이드를 안내합니다.</li>
+          </ol>
+        </section>
       </section>
-
-      {selectedPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md rounded-2xl border border-zinc-700 bg-[#202020] p-6 shadow-2xl">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-semibold">결제수단 선택</h2>
-                <p className="mt-2 text-sm text-zinc-400">
-                  {selectedPlan.name} 플랜 · ₩{formatPrice(getPrice(selectedPlan))}
-                  /{isYearly ? "년" : "월"}
-                </p>
-              </div>
-
-              <button
-                onClick={() => setSelectedPlan(null)}
-                className="rounded-full px-3 py-1 text-zinc-400 hover:bg-zinc-800 hover:text-white"
-              >
-                X
-              </button>
-            </div>
-
-            <div className="mt-8 space-y-3">
-              {paymentMethods.map((method) => (
-                <button
-                  key={method.id}
-                  className={`flex w-full items-center justify-center gap-3 rounded-xl px-4 py-4 font-bold transition ${method.className}`}
-                >
-                  <span className="rounded-md bg-white/80 px-2 py-1 text-xs font-black text-black">
-                    {method.logo}
-                  </span>
-                  {method.name}로 결제
-                </button>
-              ))}
-            </div>
-
-            <p className="mt-5 text-center text-xs text-zinc-500">
-              실제 결제 연동 전까지는 결제수단 선택 UI만 동작합니다.
-            </p>
-          </div>
-        </div>
-      )}
     </main>
   );
+}
+
+export default async function BillingPage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.email) {
+    return <LoginRequired />;
+  }
+
+  let billing;
+
+  try {
+    billing = await getBillingStatusForUser(
+      session.user.email,
+      session.user.name,
+    );
+  } catch (error) {
+    console.error("[billing][page]", error);
+
+    return <SetupRequired />;
+  }
+
+  return <BillingDashboard billing={billing} />;
 }
