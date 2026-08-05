@@ -3,8 +3,8 @@ import { authOptions } from "@/app/lib/auth";
 import { db } from "@/app/lib/db";
 import { upsertUser } from "@/app/lib/users";
 
-const REQUIRED_CONSENTS = ["terms", "privacy", "overseas"];
-const OPTIONAL_CONSENTS = ["voice", "memory"];
+const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory"];
+const OPTIONAL_CONSENTS = ["voice"];
 
 type DatabaseError = {
   code?: string;
@@ -56,7 +56,7 @@ export async function GET() {
   try {
     const result = await db.query<{ accepted_count: number }>(
       `
-      SELECT COUNT(*)::int AS accepted_count
+      SELECT COUNT(DISTINCT user_consents.consent_type)::int AS accepted_count
       FROM user_consents
       JOIN users ON users.id = user_consents.user_id
       WHERE users.email = $1
@@ -92,9 +92,9 @@ export async function POST(request: Request) {
   const voice = body.voice === true;
   const memory = body.memory === true;
 
-  if (!terms || !privacy || !overseas) {
+  if (!terms || !privacy || !overseas || !memory) {
     return Response.json(
-      { error: "Required consents are missing" },
+      { error: "필수 동의 항목이 누락되었습니다." },
       { status: 400 },
     );
   }
@@ -105,7 +105,6 @@ export async function POST(request: Request) {
     const acceptedTypes = [
       ...REQUIRED_CONSENTS,
       ...(voice ? ["voice"] : []),
-      ...(memory ? ["memory"] : []),
     ];
 
     await db.query(
