@@ -47,13 +47,13 @@ body {
 .hero-character {
   position: absolute;
   z-index: 0;
-  top: -4.5rem;
-  right: -4.5rem;
+  top: -11rem;
+  right: -3rem;
   width: min(70vw, 24rem);
   height: min(70vw, 24rem);
   overflow: hidden;
   border-radius: 52% 48% 58% 42% / 44% 48% 52% 56%;
-  opacity: 0.82;
+  opacity: 0.96;
   filter: saturate(0.92) contrast(0.98);
   box-shadow: 0 24px 70px rgba(111, 82, 133, 0.2);
   transform: rotate(5deg);
@@ -169,7 +169,7 @@ body[data-theme="dark"] .site-wash {
 }
 
 body[data-theme="dark"] .hero-character {
-  opacity: 0.58;
+  opacity: 0.78;
   box-shadow: 0 24px 70px rgba(8, 5, 14, 0.42);
 }
 
