@@ -1,6 +1,7 @@
 import { db } from "@/app/lib/db";
 
 export type UserGender = "female" | "male";
+export type UserLocale = "en-US" | "ko-KR";
 
 export type UserProfile = {
   userId: string;
@@ -9,6 +10,9 @@ export type UserProfile = {
   gender: UserGender | null;
   birthDate: string | null;
   nicknameUpdatedFrom: string | null;
+  phoneNumber: string | null;
+  phoneVerified: boolean;
+  locale: UserLocale;
 };
 
 type UserProfileRow = {
@@ -18,6 +22,9 @@ type UserProfileRow = {
   gender: UserGender | null;
   birth_date: Date | string | null;
   nickname_updated_from: string | null;
+  phone_number: string | null;
+  phone_verified: boolean;
+  locale: UserLocale;
 };
 
 let profileTableReady: Promise<void> | null = null;
@@ -36,6 +43,9 @@ function mapProfile(row: UserProfileRow): UserProfile {
     gender: row.gender,
     birthDate: formatBirthDate(row.birth_date),
     nicknameUpdatedFrom: row.nickname_updated_from,
+    phoneNumber: row.phone_number,
+    phoneVerified: row.phone_verified,
+    locale: row.locale ?? "en-US",
   };
 }
 
@@ -59,6 +69,15 @@ export async function ensureUserProfilesTable() {
 
       ALTER TABLE user_profiles
         ADD COLUMN IF NOT EXISTS birth_date DATE;
+
+      ALTER TABLE user_profiles
+        ADD COLUMN IF NOT EXISTS phone_number TEXT;
+
+      ALTER TABLE user_profiles
+        ADD COLUMN IF NOT EXISTS phone_verified BOOLEAN NOT NULL DEFAULT FALSE;
+
+      ALTER TABLE user_profiles
+        ADD COLUMN IF NOT EXISTS locale TEXT NOT NULL DEFAULT 'en-US';
       `,
     )
     .then(() => undefined);
@@ -103,7 +122,10 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
       nickname,
       gender,
       birth_date,
-      nickname_updated_from
+      nickname_updated_from,
+      phone_number,
+      phone_verified,
+      locale
     FROM user_profiles
     WHERE user_id = $1
     LIMIT 1
@@ -126,7 +148,10 @@ export async function getUserProfileByEmail(email: string) {
       user_profiles.nickname,
       user_profiles.gender,
       user_profiles.birth_date,
-      user_profiles.nickname_updated_from
+      user_profiles.nickname_updated_from,
+      user_profiles.phone_number,
+      user_profiles.phone_verified,
+      user_profiles.locale
     FROM users
     LEFT JOIN user_profiles ON user_profiles.user_id = users.id
     WHERE users.email = $1
@@ -155,6 +180,8 @@ export async function saveUserProfile(input: {
   gender: UserGender;
   birthDate: string;
   source?: string;
+  phoneNumber: string;
+  locale: UserLocale;
 }) {
   await ensureUserProfilesTable();
 
@@ -167,9 +194,12 @@ export async function saveUserProfile(input: {
       gender,
       birth_date,
       nickname_updated_from,
+      phone_number,
+      phone_verified,
+      locale,
       updated_at
     )
-    VALUES ($1, $2, $3, $4, $5::date, $6, NOW())
+    VALUES ($1, $2, $3, $4, $5::date, $6, $7, TRUE, $8, NOW())
     ON CONFLICT (user_id)
     DO UPDATE SET
       display_name = EXCLUDED.display_name,
@@ -177,6 +207,9 @@ export async function saveUserProfile(input: {
       gender = EXCLUDED.gender,
       birth_date = EXCLUDED.birth_date,
       nickname_updated_from = EXCLUDED.nickname_updated_from,
+      phone_number = EXCLUDED.phone_number,
+      phone_verified = EXCLUDED.phone_verified,
+      locale = EXCLUDED.locale,
       updated_at = NOW()
     RETURNING
       user_id::text,
@@ -184,7 +217,10 @@ export async function saveUserProfile(input: {
       nickname,
       gender,
       birth_date,
-      nickname_updated_from
+      nickname_updated_from,
+      phone_number,
+      phone_verified,
+      locale
     `,
     [
       input.userId,
@@ -193,6 +229,8 @@ export async function saveUserProfile(input: {
       input.gender,
       input.birthDate,
       input.source ?? "web",
+      input.phoneNumber,
+      input.locale,
     ],
   );
 
@@ -222,5 +260,18 @@ export async function updateUserNickname(input: {
       updated_at = NOW()
     `,
     [input.userId, input.nickname, input.source],
+  );
+}
+
+export async function updateUserLocale(userId: string, locale: UserLocale) {
+  await ensureUserProfilesTable();
+
+  await db.query(
+    `
+    UPDATE user_profiles
+    SET locale = $2, updated_at = NOW()
+    WHERE user_id = $1
+    `,
+    [userId, locale],
   );
 }

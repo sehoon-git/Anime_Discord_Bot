@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import HeaderMenu from "./_components/HeaderMenu";
 import "./globals.css";
@@ -17,13 +18,15 @@ const footerLinks = [
   { href: "/billing", label: "요금제" },
 ];
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = (await cookies()).get("locale")?.value === "ko-KR" ? "ko" : "en";
+
   return (
-    <html lang="ko">
+    <html lang={locale}>
       <body className="bg-[#fff8fc] text-[#493647]">
         <Providers>
           <header className="sticky top-0 z-40 border-b border-[#f0dce8] bg-white/85 shadow-[0_8px_30px_rgba(205,151,180,0.08)] backdrop-blur-xl">
@@ -38,12 +41,12 @@ export default function RootLayout({
 
                 <nav className="flex items-center text-sm font-semibold text-[#876b7d]">
                   <Link href="/billing" className="hover:text-[#d45d91]">
-                    요금제
+                    {locale === "ko" ? "요금제" : "Plans"}
                   </Link>
                 </nav>
               </div>
 
-              <HeaderMenu />
+              <HeaderMenu locale={locale === "ko" ? "ko-KR" : "en-US"} />
             </div>
           </header>
 
