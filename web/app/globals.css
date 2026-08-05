@@ -98,6 +98,8 @@ body {
 .billing-period-idle { color: #92768a; }
 .billing-period-idle:hover { background: #fff0f7; color: #d45d91; }
 .billing-period span { margin-left: 0.3rem; color: #d45d91; font-size: 0.68rem; }
+.billing-original-price { color: #ad8fa1; font-size: 0.85rem; font-weight: 700; text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: #e98ab5; }
+.billing-discount-note { margin-top: 0.25rem; color: #d45d91; font-size: 0.75rem; font-weight: 800; }
 @keyframes sparkle-breathe { 50% { transform: translateY(-0.25rem) rotate(6deg); box-shadow: 0 14px 30px rgba(205, 151, 180, 0.25); } }
 
 body[data-theme="dark"] .billing-status,
@@ -118,6 +120,8 @@ body[data-theme="dark"] .plan-card-love {
 body[data-theme="dark"] .billing-period-active { background: #d879aa !important; color: #fff !important; }
 body[data-theme="dark"] .billing-period-idle { color: #ead9e5 !important; }
 body[data-theme="dark"] .billing-period-idle:hover { background: #4b3b53 !important; }
+body[data-theme="dark"] .billing-original-price { color: #c8b1c5 !important; text-decoration-color: #e98ab5 !important; }
+body[data-theme="dark"] .billing-discount-note { color: #f2a2c4 !important; }
 body[data-theme="dark"] .status-label { color: #c8b1c5 !important; }
 body[data-theme="dark"] .status-value,
 body[data-theme="dark"] .plan-card h2,

@@ -34,7 +34,15 @@ export default function BillingPlans({ currentPlanCode }: BillingPlansProps) {
                 {plan.code === "more-like" ? <span className="plan-recommend">추천</span> : null}
               </div>
               <p className="mt-4 min-h-12 text-sm leading-6 text-[#92768a]">{plan.description}</p>
-              <p className="mt-8 text-3xl font-extrabold text-[#684b60]">{price(displayPrice)} <span className="text-sm font-bold text-[#a17f93]">/ {period === "monthly" ? "월" : "년"}</span></p>
+              <div className="mt-8 min-h-[4.75rem]">
+                {period === "yearly" ? (
+                  <p className="billing-original-price">{price(plan.monthly * 12)} / 년</p>
+                ) : null}
+                <p className="text-3xl font-extrabold text-[#684b60]">
+                  {price(displayPrice)} <span className="text-sm font-bold text-[#a17f93]">/ {period === "monthly" ? "월" : "년"}</span>
+                </p>
+                {period === "yearly" ? <p className="billing-discount-note">2개월 무료 적용</p> : null}
+              </div>
               <ul className="mt-7 space-y-4 text-sm text-[#76566b]">{plan.features.map((feature) => <li key={feature} className="flex items-center gap-3"><span className="check-mark">✓</span>{feature}</li>)}</ul>
               <button type="button" disabled className={`plan-action ${isCurrent ? "plan-action-current" : "plan-action-disabled"}`}>{isCurrent ? "현재 요금제" : "결제 기능 준비 중"}</button>
             </article>
