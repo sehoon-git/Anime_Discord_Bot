@@ -14,12 +14,12 @@ export default function ConsentPage() {
   const [terms, setTerms] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [overseas, setOverseas] = useState(false);
+  const [memory, setMemory] = useState(false);
   const [voice, setVoice] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const memory = true;
-  const canContinue = terms && privacy && overseas;
+  const canContinue = terms && privacy && overseas && memory;
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -36,7 +36,7 @@ export default function ConsentPage() {
       const response = await fetch("/api/consent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ terms, privacy, overseas, voice, memory }),
+        body: JSON.stringify({ terms, privacy, overseas, memory, voice }),
       });
 
       if (!response.ok) {
@@ -98,6 +98,21 @@ export default function ConsentPage() {
             <span>[필수] 개인정보 국외 이전 동의</span>
           </label>
 
+          <label className="flex items-start gap-3 font-semibold">
+            <input
+              className="mt-1"
+              type="checkbox"
+              checked={memory}
+              onChange={(event) => setMemory(event.target.checked)}
+            />
+            <span>
+              <span className="block">[필수] 장기기억 저장 동의</span>
+              <span className="mt-1 block text-sm font-normal text-zinc-400">
+                AI 캐릭터 대화 품질을 위해 필수로 저장합니다. 저장된 기억은 기억 관리에서 언제든 삭제할 수 있습니다.
+              </span>
+            </span>
+          </label>
+
           <label className="flex items-center gap-3 font-semibold">
             <input
               type="checkbox"
@@ -105,16 +120,6 @@ export default function ConsentPage() {
               onChange={(event) => setVoice(event.target.checked)}
             />
             <span>[선택] 음성 데이터 처리 동의</span>
-          </label>
-
-          <label className="flex items-start gap-3 font-semibold">
-            <input className="mt-1" type="checkbox" checked disabled readOnly />
-            <span>
-              <span className="block">[필수] 장기기억 저장 동의</span>
-              <span className="mt-1 block text-sm font-normal text-zinc-400">
-                AI 캐릭터 대화 품질을 위해 필수로 저장합니다. 저장된 기억은 기억 관리에서 언제든 삭제할 수 있습니다.
-              </span>
-            </span>
           </label>
         </div>
 
