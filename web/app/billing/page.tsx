@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth";
 import { type BillingStatus, getBillingStatusForUser } from "@/app/lib/billing";
+import BillingPlans from "@/app/_components/BillingPlans";
 
 export const dynamic = "force-dynamic";
 
@@ -127,8 +128,8 @@ function BillingDashboard({ billing }: { billing: BillingStatus }) {
           </div>
         </section>
 
-        <section className="mt-8 grid gap-6 md:grid-cols-2">
-          {PLAN_CARDS.map((plan) => <PlanCard key={plan.code} plan={plan} currentPlanCode={billing.plan.code} />)}
+        <section className="mt-8">
+          <BillingPlans currentPlanCode={billing.plan.code} />
         </section>
       </section>
     </main>
