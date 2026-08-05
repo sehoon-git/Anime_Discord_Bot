@@ -33,6 +33,46 @@ body {
     #fff8fc;
 }
 
+.type-caret {
+  display: inline-block;
+  width: 0.08em;
+  height: 0.9em;
+  margin-left: 0.12em;
+  vertical-align: -0.08em;
+  background: #e98ab5;
+  animation: caret-blink 0.9s steps(1) infinite;
+}
+
+.hero-scene { position: relative; animation: scene-float 6s ease-in-out infinite; }
+.hero-window {
+  overflow: hidden;
+  border: 1px solid #f0d7e5;
+  border-radius: 2rem;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 28px 70px rgba(205, 151, 180, 0.2);
+  backdrop-filter: blur(16px);
+}
+.chat-bubble { width: fit-content; max-width: 84%; border-radius: 1.15rem; padding: 0.75rem 1rem; font-size: 0.9rem; line-height: 1.5; animation: bubble-in 0.7s both; }
+.chat-bubble-ai { background: #fff0f7; color: #76566b; }
+.chat-bubble-user { margin-left: auto; background: linear-gradient(110deg, #ef9bc1, #aa98ee); color: white; animation-delay: 0.35s; }
+.chat-bubble-delay { animation-delay: 0.7s; }
+.live-dot { width: 0.6rem; height: 0.6rem; border-radius: 999px; background: #69cfa7; box-shadow: 0 0 0 0.3rem rgba(105, 207, 167, 0.16); }
+.sound-wave { display: inline-flex; align-items: center; gap: 0.18rem; height: 1rem; }
+.sound-wave i { width: 0.18rem; height: 0.45rem; border-radius: 999px; background: #e98ab5; animation: sound-wave 0.9s ease-in-out infinite alternate; }
+.sound-wave i:nth-child(2) { animation-delay: 0.15s; height: 0.8rem; }
+.sound-wave i:nth-child(3) { animation-delay: 0.3s; height: 0.6rem; }
+.sound-wave i:nth-child(4) { animation-delay: 0.45s; height: 0.95rem; }
+.hero-sticker { position: absolute; display: grid; width: 3.25rem; height: 3.25rem; place-items: center; border: 1px solid #f0d7e5; border-radius: 1.25rem; background: #fff8fc; color: #e98ab5; font-size: 1.5rem; box-shadow: 0 12px 30px rgba(205, 151, 180, 0.18); }
+.hero-sticker-heart { right: -1rem; top: 17%; transform: rotate(10deg); }
+.hero-sticker-star { bottom: -1rem; left: 8%; transform: rotate(-12deg); color: #a895f4; }
+.feature-reveal { animation: feature-rise 0.8s ease-out both; }
+@keyframes caret-blink { 50% { opacity: 0; } }
+@keyframes scene-float { 50% { transform: translateY(-0.7rem) rotate(0.5deg); } }
+@keyframes bubble-in { from { opacity: 0; transform: translateY(0.5rem); } to { opacity: 1; transform: translateY(0); } }
+@keyframes sound-wave { to { transform: scaleY(0.45); } }
+@keyframes feature-rise { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; } }
+
 body[data-theme="dark"] {
   --background: #29232f;
   --foreground: #f8edf4;
