@@ -8,7 +8,7 @@ export default function StartButton() {
 
   if (status === "loading") {
     return (
-      <span className="rounded-xl bg-indigo-500/60 px-6 py-3 font-semibold text-white">
+      <span className="rounded-2xl bg-[#e9b5cb] px-6 py-3 font-semibold text-white">
         확인 중
       </span>
     );
@@ -18,7 +18,7 @@ export default function StartButton() {
     return (
       <Link
         href="/profile"
-        className="rounded-xl bg-indigo-500 px-6 py-3 font-semibold text-white hover:bg-indigo-400"
+        className="rounded-2xl bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-6 py-3 font-semibold text-white shadow-lg shadow-pink-200/60 hover:brightness-105"
       >
         서비스 시작하기
       </Link>
@@ -29,7 +29,7 @@ export default function StartButton() {
     <button
       type="button"
       onClick={() => signIn("google", { callbackUrl: "/profile" })}
-      className="rounded-xl bg-indigo-500 px-6 py-3 font-semibold text-white hover:bg-indigo-400"
+      className="rounded-2xl bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-6 py-3 font-semibold text-white shadow-lg shadow-pink-200/60 hover:brightness-105"
     >
       Google로 시작하기
     </button>

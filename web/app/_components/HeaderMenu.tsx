@@ -54,7 +54,7 @@ export default function HeaderMenu() {
         aria-label="계정 메뉴 열기"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
-        className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-200 hover:bg-zinc-800 hover:text-white"
+        className="flex h-10 w-10 items-center justify-center rounded-full text-[#806579] hover:bg-[#fff0f7] hover:text-[#d45d91]"
       >
         <svg
           aria-hidden="true"
@@ -72,13 +72,13 @@ export default function HeaderMenu() {
       </button>
 
       {isOpen ? (
-        <div className="absolute right-0 top-12 w-44 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 py-2 shadow-2xl shadow-black/40">
+        <div className="absolute right-0 top-12 w-44 overflow-hidden rounded-2xl border border-[#efd4e2] bg-white py-2 shadow-xl shadow-pink-200/30">
           {menuItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               onClick={() => setIsOpen(false)}
-              className="block px-4 py-3 text-sm font-semibold text-zinc-200 hover:bg-zinc-800 hover:text-white"
+              className="block px-4 py-3 text-sm font-semibold text-[#76566b] hover:bg-[#fff0f7] hover:text-[#d45d91]"
             >
               {item.label}
             </Link>
@@ -90,7 +90,7 @@ export default function HeaderMenu() {
             type="button"
             disabled={status === "loading"}
             onClick={handleAuthClick}
-            className="block w-full px-4 py-3 text-left text-sm font-semibold text-zinc-200 hover:bg-zinc-800 hover:text-white disabled:cursor-wait disabled:text-zinc-500"
+              className="block w-full px-4 py-3 text-left text-sm font-semibold text-[#76566b] hover:bg-[#fff0f7] hover:text-[#d45d91] disabled:cursor-wait disabled:text-[#b79aaa]"
           >
             {status === "loading" ? "확인 중" : session?.user ? "로그아웃" : "로그인"}
           </button>

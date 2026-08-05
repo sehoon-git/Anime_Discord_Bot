@@ -54,14 +54,14 @@ function DashboardError({
   message: string;
 }) {
   return (
-    <main className="min-h-screen bg-black px-6 py-12 text-white">
-      <section className="mx-auto max-w-3xl rounded-xl border border-red-900/50 bg-[#202020] p-6">
-        <p className="text-sm font-semibold text-indigo-300">Discord Anime AI</p>
-        <h1 className="mt-3 text-3xl font-bold">{title}</h1>
-        <p className="mt-4 text-sm leading-6 text-red-200">{message}</p>
+    <main className="site-wash min-h-screen px-6 py-12 text-[#493647]">
+      <section className="mx-auto max-w-3xl rounded-3xl border border-[#f0d4e2] bg-white/85 p-6 shadow-[0_20px_60px_rgba(198,135,169,0.16)]">
+        <p className="text-sm font-semibold text-[#d45d91]">Discord Anime AI</p>
+        <h1 className="mt-3 text-3xl font-bold text-[#5b4054]">{title}</h1>
+        <p className="mt-4 text-sm leading-6 text-[#a44b67]">{message}</p>
         <Link
           href="/"
-          className="mt-6 inline-flex rounded-xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-400"
+          className="mt-6 inline-flex rounded-2xl bg-[#e97eab] px-5 py-3 text-sm font-semibold text-white hover:bg-[#d96798]"
         >
           처음으로 돌아가기
         </Link>
@@ -160,23 +160,23 @@ export default async function DashboardPage() {
     null;
 
   return (
-    <main className="min-h-screen bg-black px-6 py-12 text-white">
+    <main className="site-wash min-h-screen px-6 py-12 text-[#493647]">
       <section className="mx-auto max-w-4xl">
-        <p className="text-sm font-semibold text-indigo-300">Discord Anime AI</p>
+        <p className="text-sm font-semibold text-[#d45d91]">Discord Anime AI</p>
         <h1 className="mt-3 text-4xl font-bold">대시보드</h1>
-        <p className="mt-4 text-zinc-400">
+        <p className="mt-4 text-[#806579]">
           {profile?.nickname ?? session.user.name ?? userEmail} 계정으로 로그인되었습니다.
         </p>
 
-        <div className="mt-8 rounded-xl border border-zinc-800 bg-[#202020] p-5">
+        <div className="mt-8 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">
           <h2 className="text-lg font-semibold">Discord 계정 연동</h2>
 
           {discordName ? (
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-sm text-[#92768a]">
               {discordName} 계정과 연결되었습니다.
             </p>
           ) : (
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-sm text-[#92768a]">
               봇 사용 권한을 확인하려면 Discord 계정을 연결해야 합니다.
             </p>
           )}
@@ -189,7 +189,7 @@ export default async function DashboardPage() {
 
           <a
             href="/api/discord/connect"
-            className="mt-4 inline-flex rounded-xl bg-indigo-500 px-5 py-3 text-sm font-semibold text-white hover:bg-indigo-400"
+            className="mt-4 inline-flex rounded-2xl bg-[#e97eab] px-5 py-3 text-sm font-semibold text-white hover:bg-[#d96798]"
           >
             {discordName ? "Discord 계정 다시 연결하기" : "Discord 계정 연결하기"}
           </a>
@@ -197,7 +197,7 @@ export default async function DashboardPage() {
           {discordName ? (
             <a
               href="/api/discord/bot-invite"
-              className="ml-3 mt-4 inline-flex rounded-xl border border-zinc-700 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-900"
+              className="ml-3 mt-4 inline-flex rounded-2xl border border-[#e3bfd3] bg-white/60 px-5 py-3 text-sm font-semibold text-[#76566b] hover:bg-white"
             >
               봇 초대하기
             </a>
@@ -207,7 +207,7 @@ export default async function DashboardPage() {
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           <a
             href="/billing"
-            className="rounded-xl border border-zinc-800 bg-[#202020] p-5 hover:bg-zinc-900"
+            className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
           >
             <h2 className="text-lg font-semibold">요금제</h2>
             <p className="mt-3 text-sm text-zinc-400">
@@ -217,7 +217,7 @@ export default async function DashboardPage() {
 
           <a
             href="/memory"
-            className="rounded-xl border border-zinc-800 bg-[#202020] p-5 hover:bg-zinc-900"
+            className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
           >
             <h2 className="text-lg font-semibold">기억 관리</h2>
             <p className="mt-3 text-sm text-zinc-400">
@@ -227,7 +227,7 @@ export default async function DashboardPage() {
 
           <a
             href="/settings/privacy"
-            className="rounded-xl border border-zinc-800 bg-[#202020] p-5 hover:bg-zinc-900"
+            className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
           >
             <h2 className="text-lg font-semibold">개인정보 설정</h2>
             <p className="mt-3 text-sm text-zinc-400">

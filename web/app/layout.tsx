@@ -24,20 +24,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className="bg-[#171717] text-white">
+      <body className="bg-[#fff8fc] text-[#493647]">
         <Providers>
-          <header className="sticky top-0 z-40 border-b border-zinc-800 bg-[#171717]/95 backdrop-blur">
+          <header className="sticky top-0 z-40 border-b border-[#f0dce8] bg-white/85 shadow-[0_8px_30px_rgba(205,151,180,0.08)] backdrop-blur-xl">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5">
               <div className="flex items-center gap-8">
                 <Link href="/" className="flex items-center gap-2 font-bold">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-pink-500">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f58bb6] to-[#a895f4] text-sm text-white shadow-md shadow-pink-200">
                     AI
                   </span>
-                  <span>Discord Anime AI</span>
+                  <span className="text-[#5b4054]">Discord Anime AI</span>
                 </Link>
 
-                <nav className="flex items-center text-sm font-semibold text-zinc-300">
-                  <Link href="/billing" className="hover:text-white">
+                <nav className="flex items-center text-sm font-semibold text-[#876b7d]">
+                  <Link href="/billing" className="hover:text-[#d45d91]">
                     요금제
                   </Link>
                 </nav>
@@ -49,16 +49,16 @@ export default function RootLayout({
 
           {children}
 
-          <footer className="border-t border-zinc-800 bg-[#171717] px-6 py-10 text-sm text-zinc-500">
+          <footer className="border-t border-[#f0dce8] bg-[#fff0f7] px-6 py-10 text-sm text-[#9b7f91]">
             <div className="mx-auto max-w-7xl">
-              <p className="font-semibold text-zinc-300">Discord Anime AI</p>
+              <p className="font-semibold text-[#6b4d61]">Discord Anime AI</p>
 
               <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
                 {footerLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}
-                    className="hover:text-white"
+                    className="hover:text-[#d45d91]"
                   >
                     {link.label}
                   </Link>
