@@ -86,3 +86,35 @@ body[data-theme="dark"] input::placeholder {
 body[data-theme="dark"] .bg-black {
   background-color: #29232f !important;
 }
+
+/* Keep the dark theme readable when a page still carries a light card utility. */
+body[data-theme="dark"] main [class*="rounded"] {
+  background-color: #3a3042 !important;
+  border-color: #5c4a63 !important;
+}
+
+body[data-theme="dark"] main [class*="bg-gradient"] {
+  background-image: linear-gradient(110deg, #dd78ad, #9584e9) !important;
+}
+
+body[data-theme="dark"] main h1,
+body[data-theme="dark"] main h2,
+body[data-theme="dark"] main h3,
+body[data-theme="dark"] main label,
+body[data-theme="dark"] main a {
+  color: #fff5fa !important;
+}
+
+body[data-theme="dark"] main p {
+  color: #e1d2de !important;
+}
+
+body[data-theme="dark"] main input {
+  background-color: #342b3b !important;
+  color: #fff5fa !important;
+  border-color: #735b78 !important;
+}
+
+body[data-theme="dark"] main input::placeholder {
+  color: #c1acc0 !important;
+}
