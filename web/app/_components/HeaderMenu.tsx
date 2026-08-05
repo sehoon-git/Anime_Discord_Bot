@@ -72,25 +72,25 @@ export default function HeaderMenu() {
       </button>
 
       {isOpen ? (
-        <div className="absolute right-0 top-12 w-44 overflow-hidden rounded-2xl border border-[#efd4e2] bg-white py-2 shadow-xl shadow-pink-200/30">
+        <div className="theme-menu absolute right-0 top-12 w-44 overflow-hidden rounded-2xl border border-[#efd4e2] bg-white py-2 shadow-xl shadow-pink-200/30">
           {menuItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               onClick={() => setIsOpen(false)}
-              className="block px-4 py-3 text-sm font-semibold text-[#76566b] hover:bg-[#fff0f7] hover:text-[#d45d91]"
+              className="theme-menu-item block px-4 py-3 text-sm font-semibold text-[#76566b] hover:bg-[#fff0f7] hover:text-[#d45d91]"
             >
               {item.label}
             </Link>
           ))}
 
-          <div className="my-2 border-t border-zinc-700" />
+          <div className="theme-menu-divider my-2 border-t border-zinc-700" />
 
           <button
             type="button"
             disabled={status === "loading"}
             onClick={handleAuthClick}
-              className="block w-full px-4 py-3 text-left text-sm font-semibold text-[#76566b] hover:bg-[#fff0f7] hover:text-[#d45d91] disabled:cursor-wait disabled:text-[#b79aaa]"
+              className="theme-menu-item block w-full px-4 py-3 text-left text-sm font-semibold text-[#76566b] hover:bg-[#fff0f7] hover:text-[#d45d91] disabled:cursor-wait disabled:text-[#b79aaa]"
           >
             {status === "loading" ? "확인 중" : session?.user ? "로그아웃" : "로그인"}
           </button>

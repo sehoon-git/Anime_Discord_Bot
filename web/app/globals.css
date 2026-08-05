@@ -118,3 +118,22 @@ body[data-theme="dark"] main input {
 body[data-theme="dark"] main input::placeholder {
   color: #c1acc0 !important;
 }
+
+body[data-theme="dark"] .theme-menu {
+  background: #3a3042 !important;
+  border-color: #695674 !important;
+  box-shadow: 0 18px 45px rgba(12, 8, 18, 0.38) !important;
+}
+
+body[data-theme="dark"] .theme-menu-item {
+  color: #fff5fa !important;
+}
+
+body[data-theme="dark"] .theme-menu-item:hover {
+  background: #4b3b53 !important;
+  color: #ffffff !important;
+}
+
+body[data-theme="dark"] .theme-menu-divider {
+  border-color: #63516b !important;
+}
