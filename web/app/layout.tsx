@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import AuthButton from "./_components/AuthButton";
+import HeaderMenu from "./_components/HeaderMenu";
 import "./globals.css";
 import Providers from "./providers";
 
@@ -35,19 +36,10 @@ export default function RootLayout({
                 <span>Discord Anime AI</span>
               </Link>
 
-              <nav className="hidden items-center gap-6 text-sm text-zinc-300 md:flex">
-                <Link href="/billing" className="hover:text-white">
-                  요금제
-                </Link>
-                <Link href="/memory" className="hover:text-white">
-                  기억 관리
-                </Link>
-                <Link href="/settings/privacy" className="hover:text-white">
-                  설정
-                </Link>
-              </nav>
-
-              <AuthButton />
+              <div className="flex items-center gap-3">
+                <HeaderMenu />
+                <AuthButton />
+              </div>
             </div>
           </header>
 
