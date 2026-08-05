@@ -37,8 +37,6 @@ export default async function ProfilePage() {
             initialNickname={profile?.nickname ?? ""}
             initialGender={profile?.gender ?? null}
             initialBirthDate={profile?.birthDate ?? null}
-            initialPhoneNumber={profile?.phoneNumber ?? ""}
-            initialPhoneVerified={profile?.phoneVerified ?? false}
             initialLocale={profile?.locale ?? "en-US"}
           />
         </div>

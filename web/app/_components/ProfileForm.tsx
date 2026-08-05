@@ -12,8 +12,6 @@ type ProfileFormProps = {
   initialNickname: string;
   initialGender?: Gender | null;
   initialBirthDate?: string | null;
-  initialPhoneNumber?: string | null;
-  initialPhoneVerified?: boolean;
   initialLocale?: Locale;
 };
 
@@ -40,8 +38,6 @@ export default function ProfileForm({
   initialNickname,
   initialGender = null,
   initialBirthDate = null,
-  initialPhoneNumber = "",
-  initialPhoneVerified = false,
   initialLocale = "en-US",
 }: ProfileFormProps) {
   const router = useRouter();
@@ -52,12 +48,7 @@ export default function ProfileForm({
   const [birthYear, setBirthYear] = useState(initialBirth.year);
   const [birthMonth, setBirthMonth] = useState(initialBirth.month);
   const [birthDay, setBirthDay] = useState(initialBirth.day);
-  const [phoneNumber, setPhoneNumber] = useState(initialPhoneNumber ?? "");
-  const [phoneVerified, setPhoneVerified] = useState(initialPhoneVerified);
-  const [locale, setLocale] = useState<Locale>(initialLocale);
-  const [smsUrl, setSmsUrl] = useState("");
-  const [phoneMessage, setPhoneMessage] = useState("");
-  const [isCheckingPhone, setIsCheckingPhone] = useState(false);
+  const [locale] = useState<Locale>(initialLocale);
   const [terms, setTerms] = useState(false);
   const [privacy, setPrivacy] = useState(false);
   const [overseas, setOverseas] = useState(false);
@@ -73,7 +64,7 @@ export default function ProfileForm({
 
   const requiredConsentsChecked = terms && privacy && overseas && memory;
   const allConsentsChecked = requiredConsentsChecked && voice;
-  const canSave = displayName.trim().length >= 2 && nickname.trim().length >= 2 && Boolean(gender) && Boolean(birthDate) && phoneVerified && requiredConsentsChecked;
+  const canSave = displayName.trim().length >= 2 && nickname.trim().length >= 2 && Boolean(gender) && Boolean(birthDate) && requiredConsentsChecked;
 
   function setAllConsents(checked: boolean) {
     setTerms(checked); setPrivacy(checked); setOverseas(checked); setMemory(checked); setVoice(checked);
@@ -83,36 +74,12 @@ export default function ProfileForm({
     ({ terms: setTerms, privacy: setPrivacy, overseas: setOverseas, memory: setMemory }[key])(checked);
   }
 
-  async function requestPhoneCode() {
-    setIsCheckingPhone(true); setPhoneMessage("");
-    try {
-      const response = await fetch("/api/phone-verification", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "start", phoneNumber }) });
-      const data = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(data?.error ?? "인증 문자를 준비하지 못했습니다.");
-      setSmsUrl(data.smsUrl ?? "");
-      setPhoneMessage(`문자 앱에서 ${data.smsNumber}로 인증번호 ${data.code}를 보내주세요.`);
-      setLocale("ko-KR");
-    } catch (error) { setPhoneMessage(error instanceof Error ? error.message : "인증 문자를 준비하지 못했습니다."); }
-    finally { setIsCheckingPhone(false); }
-  }
-
-  async function confirmPhone() {
-    setIsCheckingPhone(true); setPhoneMessage("");
-    try {
-      const response = await fetch("/api/phone-verification", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "check", phoneNumber }) });
-      const data = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(data?.error ?? "인증이 확인되지 않았습니다.");
-      setPhoneVerified(true); setLocale("ko-KR"); setPhoneMessage("휴대폰 인증이 완료되었습니다. 기본 언어를 한국어로 설정했습니다.");
-    } catch (error) { setPhoneMessage(error instanceof Error ? error.message : "인증이 확인되지 않았습니다."); }
-    finally { setIsCheckingPhone(false); }
-  }
-
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!canSave || isSaving || !gender) return;
     setIsSaving(true); setErrorMessage("");
     try {
-      const response = await fetch("/api/profile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ displayName, nickname, gender, birthDate, phoneNumber, locale, terms, privacy, overseas, memory, voice }) });
+      const response = await fetch("/api/profile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ displayName, nickname, gender, birthDate, locale, terms, privacy, overseas, memory, voice }) });
       const data = await response.json().catch(() => null);
       if (!response.ok) { setErrorMessage(data?.error ?? "프로필을 저장하지 못했습니다."); return; }
       document.cookie = `locale=${locale}; path=/; max-age=31536000; samesite=lax`;
@@ -133,15 +100,6 @@ export default function ProfileForm({
       <section><h2 className="text-sm font-bold text-[#684b60]">성별</h2><div className="mt-3 grid grid-cols-2 gap-3">{([["female", "여자"], ["male", "남자"]] as const).map(([value, label]) => <button key={value} type="button" onClick={() => setGender(value)} className={`rounded-2xl px-4 py-3 text-sm font-bold transition ${gender === value ? "bg-gradient-to-r from-[#ef8fba] to-[#a895f4] text-white shadow-lg shadow-pink-200/60" : "border border-[#efd8e5] bg-white/65 text-[#806579] hover:border-[#e6a9c4] hover:bg-white"}`}>{label}</button>)}</div></section>
 
       <section><h2 className="text-sm font-bold text-[#684b60]">생년월일</h2><div className="mt-3 grid grid-cols-3 gap-3"><input inputMode="numeric" maxLength={4} value={birthYear} onChange={(event) => setBirthYear(event.target.value.replace(/\D/g, ""))} className={fieldClass} placeholder="연도 YYYY" /><input inputMode="numeric" maxLength={2} value={birthMonth} onChange={(event) => setBirthMonth(event.target.value.replace(/\D/g, ""))} className={fieldClass} placeholder="월 MM" /><input inputMode="numeric" maxLength={2} value={birthDay} onChange={(event) => setBirthDay(event.target.value.replace(/\D/g, ""))} className={fieldClass} placeholder="일 DD" /></div></section>
-
-      <section className="rounded-3xl border border-[#f0d7e5] bg-white/70 p-5 shadow-xl shadow-pink-100/50">
-        <h2 className="text-sm font-bold text-[#684b60]">휴대폰 인증</h2>
-        <p className="mt-2 text-sm leading-6 text-[#92768a]">OCTOMO 문자 인증으로 가입을 확인합니다. 인증이 끝나면 한국어가 기본 언어로 선택됩니다.</p>
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row"><input inputMode="tel" value={phoneNumber} onChange={(event) => { setPhoneNumber(event.target.value); setPhoneVerified(false); }} className={`${fieldClass} mt-0`} placeholder="01012345678" /><button type="button" onClick={requestPhoneCode} disabled={isCheckingPhone} className="shrink-0 rounded-2xl bg-[#f2a6c7] px-4 py-3 text-sm font-bold text-white disabled:opacity-60">인증 문자 준비</button></div>
-        {smsUrl ? <a href={smsUrl} className="mt-3 inline-block rounded-xl bg-[#684b60] px-4 py-2 text-sm font-bold text-white">문자 앱 열기</a> : null}
-        {smsUrl ? <button type="button" onClick={confirmPhone} disabled={isCheckingPhone} className="ml-2 rounded-xl border border-[#e9b4cf] px-4 py-2 text-sm font-bold text-[#a4577e] disabled:opacity-60">인증 완료 확인</button> : null}
-        {phoneMessage ? <p className="mt-3 text-sm font-semibold text-[#a4577e]">{phoneMessage}</p> : null}
-      </section>
 
       <section className="rounded-3xl border border-[#f0d7e5] bg-[#fffafd]/90 p-5 shadow-xl shadow-pink-100/50"><label className="flex items-center gap-3 text-base font-extrabold text-[#684b60]"><input type="checkbox" checked={allConsentsChecked} onChange={(event) => setAllConsents(event.target.checked)} className="h-4 w-4 accent-[#e878ab]" /><span>약관 전체 동의</span></label><div className="mt-5 space-y-4 text-sm">
         {([ ["terms", "[필수] 서비스 이용약관", "/terms"], ["privacy", "[필수] 개인정보 수집 및 이용", "/privacy"], ["overseas", "[필수] 개인정보 국외 이전", "/privacy"], ["memory", "[필수] 장기기억 저장", "/privacy"], ["voice", "[선택] 음성 데이터 처리", "/voice-policy"] ] as const).map(([key, label, href]) => <label key={key} className="flex items-center justify-between gap-3"><span className={`flex items-center gap-3 font-semibold ${key === "voice" ? "text-[#aa8e9f]" : "text-[#76566b]"}`}><input type="checkbox" checked={key === "terms" ? terms : key === "privacy" ? privacy : key === "overseas" ? overseas : key === "memory" ? memory : voice} onChange={(event) => key === "voice" ? setVoice(event.target.checked) : updateRequiredConsent(key, event.target.checked)} className="accent-[#e878ab]" />{label}</span><ConsentLink href={href} /></label>)}

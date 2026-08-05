@@ -180,7 +180,7 @@ export async function saveUserProfile(input: {
   gender: UserGender;
   birthDate: string;
   source?: string;
-  phoneNumber: string;
+  phoneNumber?: string | null;
   locale: UserLocale;
 }) {
   await ensureUserProfilesTable();
@@ -199,7 +199,7 @@ export async function saveUserProfile(input: {
       locale,
       updated_at
     )
-    VALUES ($1, $2, $3, $4, $5::date, $6, $7, TRUE, $8, NOW())
+    VALUES ($1, $2, $3, $4, $5::date, $6, $7, FALSE, $8, NOW())
     ON CONFLICT (user_id)
     DO UPDATE SET
       display_name = EXCLUDED.display_name,

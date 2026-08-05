@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 
 import { authOptions } from "@/app/lib/auth";
 import { db } from "@/app/lib/db";
-import { isVerifiedPhone } from "@/app/lib/phoneVerification";
 import {
   getUserProfileByEmail,
   saveUserProfile,
@@ -38,12 +37,6 @@ function cleanBirthDate(value: unknown) {
   if (date > new Date()) return null;
 
   return value;
-}
-
-function cleanPhone(value: unknown) {
-  if (typeof value !== "string") return "";
-  const phone = value.replace(/\D/g, "");
-  return /^010\d{8}$/.test(phone) ? phone : "";
 }
 
 function cleanLocale(value: unknown): UserLocale {
@@ -119,7 +112,6 @@ export async function POST(request: Request) {
   const nickname = cleanText(body?.nickname, MAX_NICKNAME_LENGTH);
   const gender = cleanGender(body?.gender);
   const birthDate = cleanBirthDate(body?.birthDate);
-  const phoneNumber = cleanPhone(body?.phoneNumber);
   const locale = cleanLocale(body?.locale);
   const voice = body?.voice === true;
 
@@ -149,13 +141,6 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!phoneNumber) {
-    return NextResponse.json(
-      { ok: false, error: "휴대폰 번호를 정확히 입력해주세요." },
-      { status: 400 },
-    );
-  }
-
   if (!terms || !privacy || !overseas || !memory) {
     return NextResponse.json(
       { ok: false, error: "필수 약관에 모두 동의해주세요." },
@@ -164,13 +149,6 @@ export async function POST(request: Request) {
   }
 
   const userId = await upsertUser(session.user.email, session.user.name);
-  if (!(await isVerifiedPhone(userId, phoneNumber))) {
-    return NextResponse.json(
-      { ok: false, error: "휴대폰 인증을 먼저 완료해주세요." },
-      { status: 400 },
-    );
-  }
-
   const profile = await saveUserProfile({
     userId,
     displayName,
@@ -178,7 +156,6 @@ export async function POST(request: Request) {
     gender,
     birthDate,
     source: "web",
-    phoneNumber,
     locale,
   });
 
