@@ -51,8 +51,8 @@ body {
   right: 0.75rem;
   width: min(58vw, 20rem);
   height: min(58vw, 20rem);
-  overflow: visible;
-  border-radius: 0;
+  overflow: hidden;
+  border-radius: 50%;
   opacity: 1;
   filter: saturate(0.92) contrast(0.98);
   -webkit-mask-image: radial-gradient(ellipse at center, #000 52%, rgba(0, 0, 0, 0.88) 70%, transparent 100%);
