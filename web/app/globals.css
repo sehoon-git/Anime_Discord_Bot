@@ -51,11 +51,13 @@ body {
   right: 0.75rem;
   width: min(58vw, 20rem);
   height: min(58vw, 20rem);
-  overflow: hidden;
-  border-radius: 52% 48% 58% 42% / 44% 48% 52% 56%;
+  overflow: visible;
+  border-radius: 0;
   opacity: 1;
   filter: saturate(0.92) contrast(0.98);
-  box-shadow: 0 24px 70px rgba(111, 82, 133, 0.2);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 52%, rgba(0, 0, 0, 0.88) 70%, transparent 100%);
+  mask-image: radial-gradient(ellipse at center, #000 52%, rgba(0, 0, 0, 0.88) 70%, transparent 100%);
+  box-shadow: none;
   transform: rotate(5deg);
 }
 .hero-character::after {
@@ -173,7 +175,7 @@ body[data-theme="dark"] .site-wash {
 
 body[data-theme="dark"] .hero-character {
   opacity: 0.9;
-  box-shadow: 0 24px 70px rgba(8, 5, 14, 0.42);
+  box-shadow: none;
 }
 
 body[data-theme="dark"] .hero-character::after {
