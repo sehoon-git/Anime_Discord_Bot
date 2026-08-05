@@ -32,3 +32,57 @@ body {
     linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(255, 246, 251, 0.86) 48%, rgba(244, 240, 255, 0.88)),
     #fff8fc;
 }
+
+body[data-theme="dark"] {
+  --background: #29232f;
+  --foreground: #f8edf4;
+  background: #29232f;
+  color: #f8edf4;
+}
+
+body[data-theme="dark"] .site-wash {
+  background: linear-gradient(135deg, #2d2635, #34283a 52%, #292b3d), #29232f;
+}
+
+body[data-theme="dark"] header {
+  border-color: #514257;
+  background: rgba(45, 38, 53, 0.9);
+}
+
+body[data-theme="dark"] footer {
+  border-color: #514257;
+  background: #33283a;
+}
+
+body[data-theme="dark"] [class*="bg-white"],
+body[data-theme="dark"] [class*="bg-[#fff"],
+body[data-theme="dark"] [class*="bg-[#1b171d"],
+body[data-theme="dark"] [class*="bg-[#171217"]],
+body[data-theme="dark"] [class*="bg-[#202020"]] {
+  background-color: #3a3042 !important;
+}
+
+body[data-theme="dark"] [class*="border-[#"] {
+  border-color: #5c4a63 !important;
+}
+
+body[data-theme="dark"] [class*="text-[#"] {
+  color: #f8edf4 !important;
+}
+
+body[data-theme="dark"] [class*="text-zinc-"],
+body[data-theme="dark"] [class*="text-slate-"] {
+  color: #d9c9d6 !important;
+}
+
+body[data-theme="dark"] input {
+  color: #fff5fa;
+}
+
+body[data-theme="dark"] input::placeholder {
+  color: #bba8bb;
+}
+
+body[data-theme="dark"] .bg-black {
+  background-color: #29232f !important;
+}
