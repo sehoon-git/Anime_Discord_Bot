@@ -63,7 +63,7 @@ export default function ProfileForm({
           maxLength={40}
           onChange={(event) => setDisplayName(event.target.value)}
           className="mt-2 w-full border-0 border-b border-zinc-700 bg-transparent px-0 py-3 text-lg text-white outline-none transition focus:border-indigo-400"
-          placeholder="예: 김세훈"
+          placeholder="예: 사용자"
         />
       </label>
 
@@ -78,7 +78,7 @@ export default function ProfileForm({
           placeholder="AI가 불러줄 이름"
         />
         <span className="mt-2 block text-sm text-zinc-500">
-          AI 캐릭터가 대화 중 이 이름으로 불러줍니다. Discord에서 “나를 세훈이라 불러줘”라고 말하면 이 값도 바뀔 수 있습니다.
+          AI 캐릭터가 대화 중 이 이름으로 불러줍니다. Discord에서 “나를 OO이라 불러줘”라고 말하면 이 값도 바뀔 수 있습니다.
         </span>
       </label>
 
