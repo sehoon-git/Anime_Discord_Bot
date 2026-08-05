@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -7,6 +8,52 @@ import { useRouter } from "next/navigation";
 type ConsentErrorResponse = {
   error?: string;
 };
+
+type ConsentItemProps = {
+  checked: boolean;
+  detailHref: string;
+  id: string;
+  label: string;
+  onChange: (checked: boolean) => void;
+  description?: string;
+};
+
+function ConsentItem({
+  checked,
+  detailHref,
+  id,
+  label,
+  onChange,
+  description,
+}: ConsentItemProps) {
+  return (
+    <div className="flex items-start gap-3 font-semibold">
+      <input
+        id={id}
+        className={description ? "mt-1" : undefined}
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      <div>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <label htmlFor={id}>{label}</label>
+          <Link
+            href={detailHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-semibold text-blue-400 underline-offset-4 hover:text-blue-300 hover:underline"
+          >
+            [상세보기]
+          </Link>
+        </div>
+        {description ? (
+          <p className="mt-1 text-sm font-normal text-zinc-400">{description}</p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 export default function ConsentPage() {
   const router = useRouter();
@@ -71,56 +118,46 @@ export default function ConsentPage() {
         </p>
 
         <div className="mt-8 space-y-4">
-          <label className="flex items-center gap-3 font-semibold">
-            <input
-              type="checkbox"
-              checked={terms}
-              onChange={(event) => setTerms(event.target.checked)}
-            />
-            <span>[필수] 이용약관 동의</span>
-          </label>
+          <ConsentItem
+            id="consent-terms"
+            checked={terms}
+            onChange={setTerms}
+            label="[필수] 이용약관 동의"
+            detailHref="/terms"
+          />
 
-          <label className="flex items-center gap-3 font-semibold">
-            <input
-              type="checkbox"
-              checked={privacy}
-              onChange={(event) => setPrivacy(event.target.checked)}
-            />
-            <span>[필수] 개인정보 수집 및 이용 동의</span>
-          </label>
+          <ConsentItem
+            id="consent-privacy"
+            checked={privacy}
+            onChange={setPrivacy}
+            label="[필수] 개인정보 수집 및 이용 동의"
+            detailHref="/privacy"
+          />
 
-          <label className="flex items-center gap-3 font-semibold">
-            <input
-              type="checkbox"
-              checked={overseas}
-              onChange={(event) => setOverseas(event.target.checked)}
-            />
-            <span>[필수] 개인정보 국외 이전 동의</span>
-          </label>
+          <ConsentItem
+            id="consent-overseas"
+            checked={overseas}
+            onChange={setOverseas}
+            label="[필수] 개인정보 국외 이전 동의"
+            detailHref="/privacy"
+          />
 
-          <label className="flex items-start gap-3 font-semibold">
-            <input
-              className="mt-1"
-              type="checkbox"
-              checked={memory}
-              onChange={(event) => setMemory(event.target.checked)}
-            />
-            <span>
-              <span className="block">[필수] 장기기억 저장 동의</span>
-              <span className="mt-1 block text-sm font-normal text-zinc-400">
-                AI 캐릭터 대화 품질을 위해 필수로 저장합니다. 저장된 기억은 기억 관리에서 언제든 삭제할 수 있습니다.
-              </span>
-            </span>
-          </label>
+          <ConsentItem
+            id="consent-memory"
+            checked={memory}
+            onChange={setMemory}
+            label="[필수] 장기기억 저장 동의"
+            detailHref="/privacy"
+            description="AI 캐릭터 대화 품질을 위해 필수로 저장합니다. 저장된 기억은 기억 관리에서 언제든 삭제할 수 있습니다."
+          />
 
-          <label className="flex items-center gap-3 font-semibold">
-            <input
-              type="checkbox"
-              checked={voice}
-              onChange={(event) => setVoice(event.target.checked)}
-            />
-            <span>[선택] 음성 데이터 처리 동의</span>
-          </label>
+          <ConsentItem
+            id="consent-voice"
+            checked={voice}
+            onChange={setVoice}
+            label="[선택] 음성 데이터 처리 동의"
+            detailHref="/voice-policy"
+          />
         </div>
 
         <button
