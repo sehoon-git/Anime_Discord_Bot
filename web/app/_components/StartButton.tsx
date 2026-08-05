@@ -17,7 +17,7 @@ export default function StartButton() {
   if (session?.user) {
     return (
       <Link
-        href="/consent"
+        href="/profile"
         className="rounded-xl bg-indigo-500 px-6 py-3 font-semibold text-white hover:bg-indigo-400"
       >
         서비스 시작하기
@@ -28,7 +28,7 @@ export default function StartButton() {
   return (
     <button
       type="button"
-      onClick={() => signIn("google", { callbackUrl: "/consent" })}
+      onClick={() => signIn("google", { callbackUrl: "/profile" })}
       className="rounded-xl bg-indigo-500 px-6 py-3 font-semibold text-white hover:bg-indigo-400"
     >
       Google로 시작하기

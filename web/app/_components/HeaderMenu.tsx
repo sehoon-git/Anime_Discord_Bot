@@ -44,7 +44,7 @@ export default function HeaderMenu() {
       return;
     }
 
-    signIn("google", { callbackUrl: "/consent" });
+    signIn("google", { callbackUrl: "/profile" });
   }
 
   return (

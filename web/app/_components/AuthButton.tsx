@@ -26,9 +26,9 @@ export default function AuthButton() {
   }
 
   return (
-      <button
-        type="button"
-      onClick={() => signIn("google", { callbackUrl: "/consent" })}
+    <button
+      type="button"
+      onClick={() => signIn("google", { callbackUrl: "/profile" })}
       className="rounded-xl bg-zinc-800 px-4 py-2 text-sm font-semibold hover:bg-zinc-700"
     >
       Google로 로그인
