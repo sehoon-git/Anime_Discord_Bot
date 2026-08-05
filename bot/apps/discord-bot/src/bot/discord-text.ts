@@ -21,7 +21,7 @@ export function makeTextTurn(input: {
 
 export function splitDiscordMessage(text: string, maxLength = 2_000): string[] {
   const normalized = text.trim();
-  if (!normalized) return ['응답 내용이 비어 있습니다.'];
+  if (!normalized) return ['The reply was empty.'];
   if (normalized.length <= maxLength) return [normalized];
 
   const chunks: string[] = [];
@@ -34,4 +34,20 @@ export function splitDiscordMessage(text: string, maxLength = 2_000): string[] {
   }
   if (remaining) chunks.push(remaining);
   return chunks;
+}
+
+export function splitSnsStyleMessage(text: string): string[] {
+  const normalChunks = splitDiscordMessage(text);
+  if (normalChunks.length !== 1 || text.includes('```')) return normalChunks;
+
+  const sentences = normalChunks[0]
+    .split(/(?<=[.!?])\s+/u)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+  if (sentences.length < 3) return normalChunks;
+
+  const grouped = sentences.length <= 4
+    ? sentences
+    : [...sentences.slice(0, 3), sentences.slice(3).join(' ')];
+  return grouped.flatMap((sentence) => splitDiscordMessage(sentence));
 }

@@ -15,8 +15,16 @@ const configSchema = z
     BOT_AUTO_REPLY_CHANNEL_ID: z.string().trim().transform((value) => value || undefined).optional(),
     BOT_TEST_DIRECT_GEMINI: z.enum(['true', 'false']).default('false').transform((value) => value === 'true'),
     GEMINI_API_KEY: z.string().optional(),
-    GEMINI_MODEL: z.string().min(1).default('gemini-3.6-flash'),
+    GEMINI_MODEL: z.string().min(1).default('gemini-3.5-flash-lite'),
+    GEMINI_AVAILABLE_MODELS: z
+      .string()
+      .default('gemini-3.5-flash-lite,gemini-3.6-flash')
+      .transform((value) => [...new Set(value.split(',').map((model) => model.trim()).filter(Boolean))]),
     GEMINI_MAX_OUTPUT_TOKENS: z.coerce.number().int().min(1).max(2_048).default(1024),
+    BOT_UPGRADE_URL: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().url().optional()
+    ),
     BOT_TEST_CREDITS_ENABLED: z.enum(['true', 'false']).default('false').transform((value) => value === 'true'),
     BOT_TEST_CREDITS_PER_USER: z.coerce.number().int().min(0).max(100_000).default(100),
     BOT_TOKENS_PER_CREDIT: z.coerce.number().int().min(1).max(100_000).default(100)
@@ -34,6 +42,13 @@ const configSchema = z
         code: z.ZodIssueCode.custom,
         path: ['BOT_TEST_CREDITS_ENABLED'],
         message: '테스트 토큰 크레딧은 BOT_TEST_DIRECT_GEMINI=true일 때만 사용할 수 있습니다.'
+      });
+    }
+    if (!value.GEMINI_AVAILABLE_MODELS.includes(value.GEMINI_MODEL)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['GEMINI_AVAILABLE_MODELS'],
+        message: 'GEMINI_AVAILABLE_MODELS must include GEMINI_MODEL.'
       });
     }
   });

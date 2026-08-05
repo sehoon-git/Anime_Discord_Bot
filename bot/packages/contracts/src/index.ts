@@ -1,6 +1,6 @@
 export type TurnModality = 'text' | 'voice';
 
-export type VoiceProvider = 'melotts' | 'kokoro' | 'chatterbox';
+export type VoiceProvider = 'melotts' | 'kokoro' | 'chatterbox' | 'gemini';
 
 export type VoiceProfile = {
   id: string;

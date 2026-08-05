@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { makeTextTurn, splitDiscordMessage } from './discord-text.js';
+import { makeTextTurn, splitDiscordMessage, splitSnsStyleMessage } from './discord-text.js';
 
 test('makeTextTurn creates a text envelope without audio data', () => {
   const turn = makeTextTurn({
@@ -23,4 +23,12 @@ test('splitDiscordMessage keeps every chunk within Discord message limits', () =
   assert.ok(chunks.length > 1);
   assert.ok(chunks.every((chunk) => chunk.length <= 2_000));
   assert.equal(chunks.join(' '), source);
+});
+
+test('splitSnsStyleMessage separates replies with three or more sentences', () => {
+  assert.deepEqual(
+    splitSnsStyleMessage('First thought. Second thought. Third thought.'),
+    ['First thought.', 'Second thought.', 'Third thought.']
+  );
+  assert.deepEqual(splitSnsStyleMessage('First thought. Second thought.'), ['First thought. Second thought.']);
 });

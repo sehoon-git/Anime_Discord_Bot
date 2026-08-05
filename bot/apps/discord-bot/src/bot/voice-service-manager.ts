@@ -1,6 +1,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { join, resolve } from 'node:path';
+import { tmpdir } from 'node:os';
 
 type VoiceServiceManagerOptions = {
   baseUrl: string;
@@ -9,6 +10,14 @@ type VoiceServiceManagerOptions = {
   logger?: Pick<Console, 'error' | 'info' | 'warn'>;
 };
 
+export function resolveVoiceServiceDirectory(workingDirectory = process.cwd()): string {
+  const candidates = [
+    resolve(workingDirectory, 'apps', 'voice-service'),
+    resolve(workingDirectory, '..', 'voice-service'),
+    resolve(workingDirectory, '..', '..', 'voice-service')
+  ];
+  return candidates.find((directory) => existsSync(join(directory, 'pyproject.toml'))) ?? candidates[0];
+}
 export class VoiceServiceManager {
   private readonly baseUrl: string;
   private readonly serviceDirectory: string;
@@ -20,7 +29,7 @@ export class VoiceServiceManager {
 
   constructor(options: VoiceServiceManagerOptions) {
     this.baseUrl = options.baseUrl.replace(/\/$/, '');
-    this.serviceDirectory = options.serviceDirectory ?? resolve(process.cwd(), 'apps', 'voice-service');
+    this.serviceDirectory = options.serviceDirectory ?? resolve(process.cwd(), '..', 'voice-service');
     this.startupTimeoutMs = options.startupTimeoutMs ?? 20_000;
     this.logger = options.logger ?? console;
   }
@@ -70,23 +79,38 @@ export class VoiceServiceManager {
       throw new Error(this.lastError);
     }
 
-    const ffmpeg = process.env.FFMPEG_BIN ?? resolve(process.cwd(), 'tools', 'ffmpeg', 'ffmpeg.exe');
+    const ffmpeg = process.env.FFMPEG_BIN ?? resolve(process.cwd(), '..', '..', 'tools', 'ffmpeg', 'ffmpeg.exe');
     if (!existsSync(ffmpeg)) {
       this.lastError = `FFmpeg를 찾을 수 없습니다: ${ffmpeg}`;
       throw new Error(this.lastError);
     }
 
     const url = new URL(this.baseUrl);
-    const child = spawn(python, ['-m', 'uvicorn', 'voice_service.main:app', '--host', url.hostname, '--port', url.port || '8000'], {
-      cwd: this.serviceDirectory,
-      env: { ...process.env, FFMPEG_BIN: ffmpeg },
-      stdio: ['ignore', 'pipe', 'pipe']
-    });
+    const sourceDirectory = join(this.serviceDirectory, 'src');
+    const child = spawn(
+      python,
+      ['-m', 'uvicorn', 'voice_service.main:app', '--app-dir', sourceDirectory, '--host', url.hostname, '--port', url.port || '8000'],
+      {
+        // MeloTTS/NLTK rejects dependencies found beneath its working directory.
+        // Run from the OS temp directory and explicitly provide the app source.
+        cwd: tmpdir(),
+        env: { ...process.env, FFMPEG_BIN: ffmpeg, PYTHONPATH: sourceDirectory },
+        stdio: ['ignore', 'pipe', 'pipe']
+      }
+    );
     this.child = child;
     child.stderr.setEncoding('utf8');
     child.stderr.on('data', (chunk: string) => {
       const detail = chunk.trim();
-      if (detail) this.lastError = detail;
+      if (!detail || /^\d+%\|/.test(detail)) return; // tqdm progress, not a service error
+      if (/\b(error|critical|traceback|exception)\b/i.test(detail)) {
+        this.lastError = detail;
+        this.logger.error(`[voice-service] ${detail}`);
+      } else if (/\bwarning\b/i.test(detail)) {
+        this.logger.warn(`[voice-service] ${detail}`);
+      } else {
+        this.logger.info(`[voice-service] ${detail}`);
+      }
     });
     child.on('error', (error) => {
       this.lastError = `음성 서비스 실행 실패: ${error.message}`;

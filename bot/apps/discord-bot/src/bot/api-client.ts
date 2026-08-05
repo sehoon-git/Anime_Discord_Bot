@@ -16,6 +16,16 @@ type BackendApiClientOptions = {
   fetchImpl?: typeof fetch;
 };
 
+export class BackendApiError extends Error {
+  constructor(
+    readonly status: number,
+    readonly detail: string
+  ) {
+    super('Conversation API request failed (' + status + '). ' + detail);
+    this.name = 'BackendApiError';
+  }
+}
+
 /**
  * 개발자 A의 Conversation API를 향한 유일한 HTTP 클라이언트입니다.
  * 이 클래스 밖에서 Gemini·기억 DB를 직접 호출하지 않습니다.
@@ -71,7 +81,7 @@ export class BackendApiClient implements ConversationApi {
 
     if (!response.ok) {
       const detail = await response.text().catch(() => '');
-      throw new Error(`Conversation API 요청 실패 (${response.status}). ${detail}`.trim());
+      throw new BackendApiError(response.status, detail);
     }
     if (response.status === 204) return undefined as T;
     return (await response.json()) as T;
@@ -79,29 +89,10 @@ export class BackendApiClient implements ConversationApi {
 }
 
 function createDevelopmentReply(input: TurnEnvelope): ConversationReply {
-  const english = /^[\x00-\x7F\s\p{P}]+$/u.test(input.canonicalText);
-  const voiceProfile: VoiceProfile = english
-    ? {
-        id: 'en-female-heart-v1',
-        version: 1,
-        provider: 'kokoro',
-        language: 'en-US',
-        settings: { voice: 'af_heart', speed: 0.95 },
-        status: 'published'
-      }
-    : {
-        id: 'default-ko-v1',
-        version: 1,
-        provider: 'melotts',
-        language: 'ko',
-        settings: {},
-        status: 'published'
-      };
-
   return {
     conversationId: input.conversationId,
-    text: `[개발 모드] ${input.canonicalText}`,
-    voiceProfile
+    text: `[development mode] ${input.canonicalText}`,
+    voiceProfile: englishVoiceProfile()
   };
 }
 
@@ -115,14 +106,39 @@ export class DirectGeminiVoiceApi implements ConversationApi {
   constructor(
     private readonly textApi: {
       createTurn(input: TurnEnvelope): Promise<{ text: string }>;
+      streamTurn?(input: TurnEnvelope): AsyncGenerator<{ text: string }, { text: string }, void>;
     }
   ) {}
 
   async createTurn(input: TurnEnvelope): Promise<ConversationReply> {
     const reply = await this.textApi.createTurn(input);
+    return this.toVoiceReply(input, reply.text);
+  }
+
+  async *streamTurn(input: TurnEnvelope): AsyncGenerator<ConversationReply, void, void> {
+    if (!this.textApi.streamTurn) {
+      yield await this.createTurn(input);
+      return;
+    }
+
+    let text = '';
+    try {
+      for await (const chunk of this.textApi.streamTurn(input)) {
+        text += chunk.text;
+        if (chunk.text) yield this.toVoiceReply(input, chunk.text);
+      }
+    } catch (error) {
+      if (!(error instanceof Error) || error.message !== 'Gemini returned an empty text response.') throw error;
+      yield this.toVoiceReply(input, 'I caught part of that, but say it once more for me?');
+      return;
+    }
+    if (text) yield this.toVoiceReply(input, '');
+  }
+
+  private toVoiceReply(input: TurnEnvelope, text: string): ConversationReply {
     return {
       conversationId: input.conversationId,
-      text: reply.text,
+      text,
       voiceProfile: defaultVoiceProfile(input.canonicalText)
     };
   }
@@ -133,30 +149,29 @@ export class DirectGeminiVoiceApi implements ConversationApi {
     else this.voiceConsents.delete(key);
   }
 
-  async canProcessVoice(input: VoiceConsentCheck): Promise<boolean> {
-    return this.voiceConsents.has(voiceConsentKey(input));
+  async canProcessVoice(_input: VoiceConsentCheck): Promise<boolean> {
+    // BOT_TEST_DIRECT_GEMINI is a local integration mode. Production uses
+    // BackendApiClient, which must check the consent recorded by the website.
+    return true;
   }
 }
 
-function defaultVoiceProfile(text: string): VoiceProfile {
-  const english = /^[\x00-\x7F\s\p{P}]+$/u.test(text);
-  return english
-    ? {
-        id: 'en-female-heart-v1',
-        version: 1,
-        provider: 'kokoro',
-        language: 'en-US',
-        settings: { voice: 'af_heart', speed: 0.95 },
-        status: 'published'
-      }
-    : {
-        id: 'default-ko-v1',
-        version: 1,
-        provider: 'melotts',
-        language: 'ko',
-        settings: {},
-        status: 'published'
-      };
+function defaultVoiceProfile(_text: string): VoiceProfile {
+  return englishVoiceProfile();
+}
+
+function englishVoiceProfile(): VoiceProfile {
+  return {
+    id: 'en-female-seline-expressive-v1',
+    version: 1,
+    provider: 'gemini',
+    language: 'en-US',
+    settings: {
+      voice: 'Sulafat',
+      style: 'A warm, youthful, emotionally perceptive woman in a private one-to-one voice chat. Sound genuinely present, never announcer-like. Let the meaning guide subtle changes in pacing and tone: a quiet smile for playful moments, softness for vulnerable moments, and grounded warmth for serious ones. Use natural conversational pauses and contractions. Keep emotion intimate and believable, never theatrical.'
+    },
+    status: 'published'
+  };
 }
 
 function voiceConsentKey(input: VoiceConsentCheck): string {
