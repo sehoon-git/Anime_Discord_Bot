@@ -1,4 +1,5 @@
-import { db } from "@/app/lib/db";
+import { botPool, webPool } from "@/app/lib/db";
+import { ensureUserProfilesTable, updateUserNickname } from "@/app/lib/users";
 
 export type TurnRole = "user" | "assistant";
 export type TurnInputType = "text" | "voice";
@@ -7,6 +8,7 @@ export type LinkedUser = {
   id: string;
   email: string;
   name: string | null;
+  nickname: string | null;
 };
 
 export type ConversationTurn = {
@@ -42,11 +44,18 @@ type MemoryRow = {
 export async function findLinkedUserByDiscordId(
   discordUserId: string,
 ): Promise<LinkedUser | null> {
-  const result = await db.query<LinkedUser>(
+  await ensureUserProfilesTable();
+
+  const result = await webPool.query<LinkedUser>(
     `
-    SELECT users.id::text, users.email, users.name
+    SELECT
+      users.id::text,
+      users.email,
+      users.name,
+      user_profiles.nickname
     FROM users
     JOIN user_accounts ON user_accounts.user_id = users.id
+    LEFT JOIN user_profiles ON user_profiles.user_id = users.id
     WHERE user_accounts.provider = 'discord'
       AND user_accounts.provider_user_id = $1
     LIMIT 1
@@ -57,8 +66,43 @@ export async function findLinkedUserByDiscordId(
   return result.rows[0] ?? null;
 }
 
+export function extractPreferredNickname(text: string) {
+  const patterns = [
+    /(?:나를|나는|저를|전)\s*([가-힣A-Za-z0-9_ -]{2,30}?)(?:라고|이라|라|으로|로)\s*불러\s*줘/i,
+    /(?:앞으로|이제부터)\s*(?:나를|저를)?\s*([가-힣A-Za-z0-9_ -]{2,30}?)(?:라고|이라|라|으로|로)\s*불러\s*줘/i,
+    /(?:내\s*닉네임|닉네임)\s*(?:은|을|를|:)?\s*([가-힣A-Za-z0-9_ -]{2,30})/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    const nickname = match?.[1]?.replace(/\s+/g, " ").trim();
+
+    if (nickname) {
+      return nickname;
+    }
+  }
+
+  return null;
+}
+
+export async function maybeUpdatePreferredNickname(userId: string, text: string) {
+  const nickname = extractPreferredNickname(text);
+
+  if (!nickname) {
+    return null;
+  }
+
+  await updateUserNickname({
+    userId,
+    nickname,
+    source: "discord",
+  });
+
+  return nickname;
+}
+
 export async function hasConsent(userId: string, consentType: string) {
-  const result = await db.query<{ exists: boolean }>(
+  const result = await webPool.query<{ exists: boolean }>(
     `
     SELECT EXISTS (
       SELECT 1
@@ -74,7 +118,7 @@ export async function hasConsent(userId: string, consentType: string) {
 }
 
 export async function cleanupExpiredTurns() {
-  await db.query("DELETE FROM conversation_turns WHERE expires_at < NOW()");
+  await botPool.query("DELETE FROM conversation_turns WHERE expires_at < NOW()");
 }
 
 export async function saveTurn(input: {
@@ -86,7 +130,7 @@ export async function saveTurn(input: {
   inputType: TurnInputType;
   content: string;
 }) {
-  await db.query(
+  await botPool.query(
     `
     INSERT INTO conversation_turns (
       user_id,
@@ -112,7 +156,7 @@ export async function saveTurn(input: {
 }
 
 export async function getRecentTurns(userId: string, limit = 20) {
-  const result = await db.query<TurnRow>(
+  const result = await botPool.query<TurnRow>(
     `
     SELECT id::text, role, input_type, content, created_at
     FROM conversation_turns
@@ -133,7 +177,7 @@ export async function getRecentTurns(userId: string, limit = 20) {
 }
 
 export async function getConversationSummary(userId: string) {
-  const result = await db.query<{ summary: string; turn_count: number }>(
+  const result = await botPool.query<{ summary: string; turn_count: number }>(
     `
     SELECT summary, turn_count
     FROM conversation_summaries
@@ -153,14 +197,14 @@ function buildSimpleSummary(turns: ConversationTurn[]) {
     .filter(Boolean);
 
   if (userLines.length === 0) {
-    return "아직 요약할 사용자 대화가 충분하지 않습니다.";
+    return "아직 요약할 대화가 충분하지 않습니다.";
   }
 
   return `최근 사용자는 다음 주제로 대화했습니다: ${userLines.join(" / ")}`;
 }
 
 export async function refreshSummaryIfNeeded(userId: string) {
-  const countResult = await db.query<{ count: string }>(
+  const countResult = await botPool.query<{ count: string }>(
     `
     SELECT COUNT(*)::text AS count
     FROM conversation_turns
@@ -179,7 +223,7 @@ export async function refreshSummaryIfNeeded(userId: string) {
   const recentTurns = await getRecentTurns(userId, 20);
   const summary = buildSimpleSummary(recentTurns);
 
-  await db.query(
+  await botPool.query(
     `
     INSERT INTO conversation_summaries (user_id, summary, turn_count, updated_at)
     VALUES ($1, $2, $3, NOW())
@@ -213,7 +257,7 @@ export async function maybeStoreMemory(userId: string, text: string) {
     return null;
   }
 
-  const result = await db.query<MemoryRow>(
+  const result = await botPool.query<MemoryRow>(
     `
     INSERT INTO user_memories (user_id, content, source, updated_at)
     VALUES ($1, $2, 'conversation', NOW())
@@ -233,7 +277,7 @@ export async function maybeStoreMemory(userId: string, text: string) {
 }
 
 export async function listMemories(userId: string) {
-  const result = await db.query<MemoryRow>(
+  const result = await botPool.query<MemoryRow>(
     `
     SELECT id::text, content, source, created_at
     FROM user_memories
@@ -252,7 +296,7 @@ export async function listMemories(userId: string) {
 }
 
 export async function deleteMemory(userId: string, memoryId: string) {
-  await db.query(
+  await botPool.query(
     `
     DELETE FROM user_memories
     WHERE user_id = $1
@@ -263,5 +307,5 @@ export async function deleteMemory(userId: string, memoryId: string) {
 }
 
 export async function deleteAllMemories(userId: string) {
-  await db.query("DELETE FROM user_memories WHERE user_id = $1", [userId]);
+  await botPool.query("DELETE FROM user_memories WHERE user_id = $1", [userId]);
 }

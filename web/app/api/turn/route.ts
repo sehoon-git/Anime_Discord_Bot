@@ -7,6 +7,7 @@ import {
   hasConsent,
   listMemories,
   maybeStoreMemory,
+  maybeUpdatePreferredNickname,
   refreshSummaryIfNeeded,
   saveTurn,
   type TurnInputType,
@@ -60,6 +61,12 @@ export async function POST(request: Request) {
       inputType,
       content: text,
     });
+
+    const updatedNickname = await maybeUpdatePreferredNickname(linkedUser.id, text);
+
+    if (updatedNickname) {
+      linkedUser.nickname = updatedNickname;
+    }
 
     const savedMemory = await maybeStoreMemory(linkedUser.id, text);
 
