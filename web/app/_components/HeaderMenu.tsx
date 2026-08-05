@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
 const menuItems = [
-  { href: "/billing", label: "요금제" },
   { href: "/memory", label: "기억 관리" },
   { href: "/settings/privacy", label: "설정" },
 ];
@@ -12,6 +12,7 @@ const menuItems = [
 export default function HeaderMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     function handlePointerDown(event: PointerEvent) {
@@ -35,11 +36,22 @@ export default function HeaderMenu() {
     };
   }, []);
 
+  function handleAuthClick() {
+    setIsOpen(false);
+
+    if (session?.user) {
+      signOut({ callbackUrl: "/" });
+      return;
+    }
+
+    signIn("google", { callbackUrl: "/consent" });
+  }
+
   return (
     <div ref={menuRef} className="relative">
       <button
         type="button"
-        aria-label="메뉴 열기"
+        aria-label="계정 메뉴 열기"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((current) => !current)}
         className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-200 hover:bg-zinc-800 hover:text-white"
@@ -71,6 +83,17 @@ export default function HeaderMenu() {
               {item.label}
             </Link>
           ))}
+
+          <div className="my-2 border-t border-zinc-700" />
+
+          <button
+            type="button"
+            disabled={status === "loading"}
+            onClick={handleAuthClick}
+            className="block w-full px-4 py-3 text-left text-sm font-semibold text-zinc-200 hover:bg-zinc-800 hover:text-white disabled:cursor-wait disabled:text-zinc-500"
+          >
+            {status === "loading" ? "확인 중" : session?.user ? "로그아웃" : "로그인"}
+          </button>
         </div>
       ) : null}
     </div>

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import AuthButton from "./_components/AuthButton";
 import HeaderMenu from "./_components/HeaderMenu";
 import "./globals.css";
 import Providers from "./providers";
@@ -29,17 +28,22 @@ export default function RootLayout({
         <Providers>
           <header className="sticky top-0 z-40 border-b border-zinc-800 bg-[#171717]/95 backdrop-blur">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5">
-              <Link href="/" className="flex items-center gap-2 font-bold">
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-pink-500">
-                  AI
-                </span>
-                <span>Discord Anime AI</span>
-              </Link>
+              <div className="flex items-center gap-8">
+                <Link href="/" className="flex items-center gap-2 font-bold">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-pink-500">
+                    AI
+                  </span>
+                  <span>Discord Anime AI</span>
+                </Link>
 
-              <div className="flex items-center gap-3">
-                <HeaderMenu />
-                <AuthButton />
+                <nav className="flex items-center text-sm font-semibold text-zinc-300">
+                  <Link href="/billing" className="hover:text-white">
+                    요금제
+                  </Link>
+                </nav>
               </div>
+
+              <HeaderMenu />
             </div>
           </header>
 
