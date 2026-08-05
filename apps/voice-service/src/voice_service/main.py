@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import logging
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import Response
+from fastapi.responses import Response, StreamingResponse
 from pydantic import BaseModel, Field
 
 from .runtime import ModelUnavailableError, SpeechRequest, VoiceRuntime
 from .settings import Settings
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Discord Anime AI Voice Service", version="0.1.0")
 runtime = VoiceRuntime(Settings.from_environment())
@@ -46,6 +50,7 @@ async def transcriptions(request: Request) -> dict[str, object]:
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     except Exception as error:  # 모델 내부 오류는 원본 오디오를 로그에 남기지 않는다.
+        logger.exception("Speech transcription failed")
         raise HTTPException(status_code=502, detail="음성 인식에 실패했습니다.") from error
 
     return {"text": text, "confidence": confidence}
@@ -73,3 +78,39 @@ async def speech(payload: SpeechPayload) -> Response:
         raise HTTPException(status_code=502, detail="음성 합성에 실패했습니다.") from error
 
     return Response(content=ogg_opus, media_type="audio/ogg; codecs=opus")
+
+@app.post("/v1/speech/stream")
+async def speech_stream(payload: SpeechPayload) -> StreamingResponse:
+    profile = payload.voiceProfile
+    request = SpeechRequest(
+        text=payload.text,
+        profile_id=profile.id,
+        provider=profile.provider,
+        language=profile.language,
+        settings=profile.settings,
+    )
+    try:
+        iterator = runtime.synthesize_pcm_stream(request)
+        # Prime once before headers are sent so unavailable models and invalid
+        # profiles still become ordinary HTTP errors instead of broken audio.
+        first_chunk = await run_in_threadpool(next_stream_chunk, iterator)
+    except ModelUnavailableError as error:
+        raise HTTPException(status_code=503, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except Exception as error:
+        logger.exception("Speech synthesis failed for provider=%s", profile.provider)
+        raise HTTPException(status_code=502, detail="Speech synthesis failed.") from error
+
+    def chunks():
+        yield first_chunk
+        yield from iterator
+
+    return StreamingResponse(chunks(), media_type="audio/L16;rate=48000;channels=2")
+
+
+def next_stream_chunk(iterator):
+    try:
+        return next(iterator)
+    except StopIteration as error:
+        raise ValueError("Speech synthesis produced no audio.") from error

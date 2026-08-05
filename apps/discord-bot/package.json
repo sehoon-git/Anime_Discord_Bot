@@ -8,6 +8,7 @@
     "check": "tsc -b --pretty false",
     "test": "tsx --test src/**/*.test.ts",
     "dev": "tsx watch src/bot/index.ts",
+    "start": "tsx src/bot/index.ts",
     "register:commands": "tsx src/bot/register-commands.ts"
   },
   "dependencies": {

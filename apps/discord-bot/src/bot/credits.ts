@@ -1,3 +1,15 @@
+export type CreditUsage = {
+  usedCredits: number;
+  remainingCredits: number;
+  includedCredits: number;
+};
+
+export type CreditStore = {
+  getBalance(userId: string): number;
+  getUsage(userId: string): CreditUsage;
+  tryConsume(userId: string, amount: number): boolean;
+  refund(userId: string, amount: number): void;
+};
 export class CreditExhaustedError extends Error {
   constructor(requiredCredits: number, availableCredits: number) {
     super(`❌ 크레딧이 부족합니다. 이번 답변에는 ${requiredCredits} 크레딧이 필요하지만 ${availableCredits} 크레딧만 남았습니다.`);
@@ -20,6 +32,15 @@ export class TestCreditStore {
 
   getBalance(userId: string): number {
     return this.balances.get(userId) ?? this.initialCreditsPerUser;
+  }
+
+  getUsage(userId: string): CreditUsage {
+    const remainingCredits = this.getBalance(userId);
+    return {
+      usedCredits: this.initialCreditsPerUser - remainingCredits,
+      remainingCredits,
+      includedCredits: this.initialCreditsPerUser
+    };
   }
 
   tryConsume(userId: string, amount: number): boolean {
@@ -50,7 +71,7 @@ export function creditsForTokens(totalTokens: number, tokensPerCredit: number): 
  * 테스트용 사후 차감 방식이므로 운영 전에는 countTokens 기반의 사전 승인으로 바꾼다.
  */
 export async function runWithTokenCredit<T>(input: {
-  store?: TestCreditStore;
+  store?: CreditStore;
   userId: string;
   beforeRun?: () => Promise<void>;
   operation: () => Promise<T>;
