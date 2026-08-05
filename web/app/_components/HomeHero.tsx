@@ -44,7 +44,7 @@ export default function HomeHero() {
             좋아하는 캐릭터와 이야기를 나누고, 목소리를 듣고, 함께한 순간을 기억해요.
             디스코드에서 시작하는 가장 포근한 AI 대화입니다.
           </p>
-          <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-14 flex flex-col justify-center gap-3 sm:flex-row">
             <StartButton />
             <a href="#features" className="rounded-2xl border border-[#e3bfd3] bg-white/70 px-6 py-3 font-semibold text-[#76566b] shadow-sm transition hover:-translate-y-0.5 hover:bg-white">
               더 알아보기
@@ -52,7 +52,7 @@ export default function HomeHero() {
           </div>
         </div>
 
-        <div className="hero-scene relative z-10 mt-14 w-full max-w-4xl" aria-label="Seline AI 캐릭터와 대화하는 화면">
+        <div className="hero-scene relative z-10 mt-[4.5rem] w-full max-w-4xl" aria-label="Seline AI 캐릭터와 대화하는 화면">
           <div className="hero-character" aria-hidden="true">
             <Image src="/seline-icon.png" alt="" fill priority sizes="(max-width: 1024px) 45vw, 360px" className="object-cover" />
           </div>
