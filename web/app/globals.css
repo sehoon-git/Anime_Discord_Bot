@@ -44,6 +44,31 @@ body {
 }
 
 .hero-scene { position: relative; animation: scene-float 6s ease-in-out infinite; }
+.hero-character {
+  position: absolute;
+  z-index: 0;
+  top: -4.5rem;
+  right: -4.5rem;
+  width: min(70vw, 24rem);
+  height: min(70vw, 24rem);
+  overflow: hidden;
+  border-radius: 52% 48% 58% 42% / 44% 48% 52% 56%;
+  opacity: 0.82;
+  filter: saturate(0.92) contrast(0.98);
+  box-shadow: 0 24px 70px rgba(111, 82, 133, 0.2);
+  transform: rotate(5deg);
+}
+.hero-character::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 240, 248, 0.12), rgba(255, 248, 252, 0.55));
+  pointer-events: none;
+}
+.hero-sparkle { position: absolute; border-radius: 999px; background: rgba(255, 255, 255, 0.78); box-shadow: 0 0 0 0.5rem rgba(255, 255, 255, 0.22); animation: sparkle-breathe 3s ease-in-out infinite; }
+.hero-sparkle-one { top: 17%; right: 16%; width: 0.75rem; height: 0.75rem; }
+.hero-sparkle-two { bottom: 20%; left: 11%; width: 0.45rem; height: 0.45rem; animation-delay: 0.9s; }
+.hero-character-glow { position: absolute; top: 8%; right: 9%; width: 22rem; height: 22rem; border-radius: 999px; background: rgba(236, 188, 219, 0.2); filter: blur(42px); }
 .hero-window {
   overflow: hidden;
   border: 1px solid #f0d7e5;
@@ -71,6 +96,7 @@ body {
 @keyframes bubble-in { from { opacity: 0; transform: translateY(0.5rem); } to { opacity: 1; transform: translateY(0); } }
 @keyframes sound-wave { to { transform: scaleY(0.45); } }
 @keyframes feature-rise { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 1023px) { .hero-character { top: -2.5rem; right: -1rem; width: min(62vw, 20rem); height: min(62vw, 20rem); opacity: 0.42; } .hero-character-glow { right: 0; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; } }
 
 .billing-intro { position: relative; }
@@ -140,6 +166,15 @@ body[data-theme="dark"] {
 
 body[data-theme="dark"] .site-wash {
   background: linear-gradient(135deg, #2d2635, #34283a 52%, #292b3d), #29232f;
+}
+
+body[data-theme="dark"] .hero-character {
+  opacity: 0.58;
+  box-shadow: 0 24px 70px rgba(8, 5, 14, 0.42);
+}
+
+body[data-theme="dark"] .hero-character::after {
+  background: linear-gradient(135deg, rgba(50, 37, 57, 0.08), rgba(45, 38, 53, 0.62));
 }
 
 body[data-theme="dark"] header {
