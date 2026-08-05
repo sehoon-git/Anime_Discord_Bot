@@ -25,14 +25,14 @@ export default function HomeHero() {
 
   return (
     <>
-      <section className="relative isolate mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl items-center justify-center overflow-hidden px-6 pb-16 pt-16 lg:flex-row lg:gap-12 lg:text-left">
+      <section className="relative isolate mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl flex-col items-center justify-center overflow-hidden px-6 pb-16 pt-16 text-center">
         <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
           <div className="hero-sparkle hero-sparkle-one" />
           <div className="hero-sparkle hero-sparkle-two" />
           <div className="hero-character-glow" />
         </div>
 
-        <div className="relative z-10 max-w-2xl lg:flex-1">
+        <div className="relative z-10 max-w-3xl">
           <p className="mb-6 text-sm font-bold tracking-wide text-[#d45d91]">
             Discord Anime AI <span className="ml-2 text-[#b19ac5]">/ voice chat</span>
           </p>
@@ -40,11 +40,11 @@ export default function HomeHero() {
             {titleLines[lineIndex].slice(0, visibleCount)}
             <span className="type-caret" aria-hidden="true" />
           </h1>
-          <p className="mt-7 max-w-xl text-lg leading-8 text-[#806579]">
+          <p className="mx-auto mt-7 max-w-xl text-lg leading-8 text-[#806579]">
             좋아하는 캐릭터와 이야기를 나누고, 목소리를 듣고, 함께한 순간을 기억해요.
             디스코드에서 시작하는 가장 포근한 AI 대화입니다.
           </p>
-          <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
             <StartButton />
             <a href="#features" className="rounded-2xl border border-[#e3bfd3] bg-white/70 px-6 py-3 font-semibold text-[#76566b] shadow-sm transition hover:-translate-y-0.5 hover:bg-white">
               더 알아보기
@@ -52,7 +52,7 @@ export default function HomeHero() {
           </div>
         </div>
 
-        <div className="hero-scene relative z-10 mt-14 w-full max-w-md lg:mt-0 lg:flex-1" aria-label="Seline AI 캐릭터와 대화하는 화면">
+        <div className="hero-scene relative z-10 mt-14 w-full max-w-4xl" aria-label="Seline AI 캐릭터와 대화하는 화면">
           <div className="hero-character" aria-hidden="true">
             <Image src="/seline-icon.png" alt="" fill priority sizes="(max-width: 1024px) 45vw, 360px" className="object-cover" />
           </div>
