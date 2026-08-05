@@ -19,20 +19,26 @@ export default async function ProfilePage() {
   const profile = await getUserProfileByEmail(session.user.email);
 
   return (
-    <main className="min-h-screen bg-black px-6 py-12 text-white">
-      <section className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-zinc-900 p-8">
-        <p className="text-sm font-semibold text-indigo-400">Discord Anime AI</p>
-        <h1 className="mt-3 text-3xl font-bold">회원가입</h1>
-        <p className="mt-4 text-zinc-400">
-          Google 계정으로 로그인되었습니다. 서비스에서 사용할 이름, AI가 불러줄 닉네임, 기본 가입 정보를 입력해주세요.
-        </p>
+    <main className="min-h-screen bg-[#070506] px-6 py-12 text-white">
+      <section className="mx-auto max-w-2xl overflow-hidden rounded-[28px] border border-rose-100/15 bg-[#1b171d]/95 shadow-2xl shadow-pink-950/20">
+        <div className="border-b border-rose-100/10 bg-gradient-to-r from-rose-500/12 via-fuchsia-500/8 to-indigo-500/10 px-8 py-7">
+          <p className="text-sm font-bold text-rose-200">Discord Anime AI</p>
+          <h1 className="mt-3 text-3xl font-extrabold tracking-normal">
+            회원가입
+          </h1>
+          <p className="mt-4 leading-7 text-zinc-300">
+            Google 계정으로 로그인되었습니다. 서비스에서 사용할 이름, AI가 불러줄 닉네임, 기본 가입 정보를 입력해주세요.
+          </p>
+        </div>
 
-        <ProfileForm
-          initialDisplayName={profile?.displayName ?? session.user.name ?? ""}
-          initialNickname={profile?.nickname ?? ""}
-          initialGender={profile?.gender ?? null}
-          initialBirthDate={profile?.birthDate ?? null}
-        />
+        <div className="px-8 pb-8">
+          <ProfileForm
+            initialDisplayName={profile?.displayName ?? session.user.name ?? ""}
+            initialNickname={profile?.nickname ?? ""}
+            initialGender={profile?.gender ?? null}
+            initialBirthDate={profile?.birthDate ?? null}
+          />
+        </div>
       </section>
     </main>
   );
