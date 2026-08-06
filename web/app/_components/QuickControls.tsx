@@ -68,8 +68,8 @@ export default function QuickControls({ locale }: { locale: Locale }) {
       {open ? (
         <div className="theme-menu absolute right-0 top-14 z-50 w-40 overflow-hidden rounded-2xl border border-[#efd4e2] bg-white p-2 shadow-xl shadow-pink-200/30">
           <p className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#aa8e9f]">{ko ? "언어" : "Language"}</p>
-          <button type="button" onClick={() => changeLocale("en-US")} className={`theme-menu-item block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold ${locale === "en-US" ? "bg-[#fff0f7] text-[#d45d91]" : "text-[#76566b] hover:bg-[#fff0f7]"}`}>English</button>
-          <button type="button" onClick={() => changeLocale("ko-KR")} className={`theme-menu-item block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold ${locale === "ko-KR" ? "bg-[#fff0f7] text-[#d45d91]" : "text-[#76566b] hover:bg-[#fff0f7]"}`}>한국어</button>
+          <button type="button" aria-current={locale === "en-US" ? "true" : undefined} onClick={() => changeLocale("en-US")} className={`theme-menu-item block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold ${locale === "en-US" ? "bg-[#fff0f7] text-[#d45d91]" : "text-[#76566b] hover:bg-[#fff0f7]"}`}>English</button>
+          <button type="button" aria-current={locale === "ko-KR" ? "true" : undefined} onClick={() => changeLocale("ko-KR")} className={`theme-menu-item block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold ${locale === "ko-KR" ? "bg-[#fff0f7] text-[#d45d91]" : "text-[#76566b] hover:bg-[#fff0f7]"}`}>한국어</button>
         </div>
       ) : null}
     </div>

@@ -269,8 +269,41 @@ body[data-theme="dark"] .theme-menu-item {
 }
 
 body[data-theme="dark"] .theme-menu-item:hover {
-  background: #4b3b53 !important;
+  background: #5a4664 !important;
   color: #ffffff !important;
+}
+
+/* Keep active and hovered controls visibly distinct in the dark theme. */
+body[data-theme="dark"] .theme-menu-item[aria-current="true"],
+body[data-theme="dark"] .theme-menu-item[data-selected="true"] {
+  background: #d879aa !important;
+  color: #241b2a !important;
+}
+
+body[data-theme="dark"] .theme-menu-item[aria-current="true"]:hover,
+body[data-theme="dark"] .theme-menu-item[data-selected="true"]:hover {
+  background: #e58bbb !important;
+  color: #241b2a !important;
+}
+
+body[data-theme="dark"] button[aria-pressed="true"] {
+  background: #8f5f86 !important;
+  border-color: #ef9fc2 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(239, 159, 194, 0.2), 0 8px 20px rgba(12, 8, 18, 0.28) !important;
+}
+
+body[data-theme="dark"] button[aria-pressed="false"]:hover,
+body[data-theme="dark"] button:not([aria-pressed])[class*="hover:bg"]:hover {
+  background: #5a4664 !important;
+  border-color: #b987aa !important;
+  color: #ffffff !important;
+}
+
+body[data-theme="dark"] .theme-menu button[aria-pressed="true"],
+body[data-theme="dark"] .theme-menu button[data-selected="true"] {
+  background: #d879aa !important;
+  color: #241b2a !important;
 }
 
 body[data-theme="dark"] .theme-menu-divider {
