@@ -37,12 +37,22 @@ function unauthorized() {
   return NextResponse.json({ ok: false, error: "UNAUTHORIZED_BOT" }, { status: 401 });
 }
 
+function isAuthorizedBot(request: Request) {
+  const authorization = request.headers.get("authorization");
+  const bearer = authorization?.startsWith("Bearer ")
+    ? authorization.slice("Bearer ".length).trim()
+    : null;
+  const apiKey = request.headers.get("x-bot-api-key");
+  return Boolean(
+    process.env.BOT_SECRET_KEY &&
+      (bearer === process.env.BOT_SECRET_KEY || apiKey === process.env.BOT_SECRET_KEY),
+  );
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const discordUserId = searchParams.get("discordUserId");
-  const apiKey = request.headers.get("x-bot-api-key");
-
-  if (apiKey !== process.env.BOT_SECRET_KEY) {
+  if (!isAuthorizedBot(request)) {
     return unauthorized();
   }
 
@@ -86,9 +96,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const apiKey = request.headers.get("x-bot-api-key");
-
-  if (apiKey !== process.env.BOT_SECRET_KEY) {
+  if (!isAuthorizedBot(request)) {
     return unauthorized();
   }
 
@@ -133,7 +141,7 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  if (request.headers.get("x-bot-api-key") !== process.env.BOT_SECRET_KEY) {
+  if (!isAuthorizedBot(request)) {
     return unauthorized();
   }
 
