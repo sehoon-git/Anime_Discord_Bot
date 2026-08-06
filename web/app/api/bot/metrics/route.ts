@@ -47,6 +47,7 @@ export async function POST(request: Request) {
         outputTokens: body.modelUsage.outputTokens,
         totalTokens: body.modelUsage.totalTokens,
         creditsUsed: body.modelUsage.creditsUsed,
+        deductCredits: body.modelUsage.creditAlreadyConsumed !== true,
         requestType: body.modelUsage.requestType,
         success: body.modelUsage.success,
         failureCode: body.modelUsage.failureCode,

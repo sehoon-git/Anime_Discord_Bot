@@ -20,6 +20,7 @@ import {
 import { preprocessTurnEnvelope } from "@/app/lib/preprocess";
 import { getUserProfile } from "@/app/lib/users";
 import { getAssistantPreferences, recordPerformanceEvent } from "@/app/lib/operations";
+import { getCreditBalance } from "@/app/lib/credits";
 
 export const runtime = "nodejs";
 
@@ -100,6 +101,19 @@ export async function POST(request: Request) {
       );
     }
 
+    const creditBalance = await getCreditBalance(linkedUser.id);
+    if (creditBalance <= 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "CREDIT_INSUFFICIENT",
+          balance: creditBalance,
+          messageForBot: "크레딧이 부족합니다. 크레딧을 충전한 후 다시 시도해 주세요.",
+        },
+        { status: 402 },
+      );
+    }
+
     const userProfile = await getUserProfile(linkedUser.id);
     const preferences = await getAssistantPreferences(linkedUser.id);
     const responseLocale = userProfile?.locale ?? turn.locale;
@@ -176,6 +190,7 @@ export async function POST(request: Request) {
       user: linkedUser,
       turn: { ...turn, locale: responseLocale },
       context: {
+        creditBalance,
         memoryAllowed,
         summary: refreshedSummary || summary?.summary || null,
         recentTurns: recentAfter,

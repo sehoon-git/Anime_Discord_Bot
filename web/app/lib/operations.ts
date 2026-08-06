@@ -87,6 +87,7 @@ export async function recordModelUsageEvent(input: {
   outputTokens?: number;
   totalTokens?: number;
   creditsUsed?: number;
+  deductCredits?: boolean;
   requestType?: string;
   success?: boolean;
   failureCode?: string | null;
@@ -115,7 +116,7 @@ export async function recordModelUsageEvent(input: {
 
   // Test credits are consumed when the trusted bot reports model usage.
   // Keep the balance at zero until a real billing provider is connected.
-  if (input.userId && creditsUsed > 0) {
+  if (input.userId && creditsUsed > 0 && input.deductCredits !== false) {
     await webPool.query(
       `INSERT INTO credit_balances (user_id, balance)
        VALUES ($1, 0)
