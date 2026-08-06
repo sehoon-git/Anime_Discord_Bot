@@ -208,6 +208,46 @@ body[data-theme="dark"] .hero-character::after {
   background: linear-gradient(135deg, rgba(50, 37, 57, 0.04), rgba(45, 38, 53, 0.3));
 }
 
+/* The homepage conversation preview needs its own dark contrast. */
+body[data-theme="dark"] .hero-window {
+  border-color: #765c7b;
+  background: rgba(50, 42, 61, 0.96);
+  box-shadow: 0 28px 70px rgba(10, 7, 16, 0.34);
+}
+
+body[data-theme="dark"] .hero-window .chat-bubble {
+  color: #fff7fb !important;
+}
+
+body[data-theme="dark"] .hero-window .chat-bubble-ai {
+  background: #5b4864 !important;
+}
+
+body[data-theme="dark"] .hero-window .chat-bubble-user {
+  background: linear-gradient(110deg, #df82ae, #9d8ae8) !important;
+  color: #ffffff !important;
+}
+
+body[data-theme="dark"] .hero-window .border-b {
+  border-color: #765c7b !important;
+}
+
+body[data-theme="dark"] .hero-window .text-\[\#684b60\] {
+  color: #fff7fb !important;
+}
+
+body[data-theme="dark"] .hero-window .text-\[\#ad8fa1\] {
+  color: #d7bfd1 !important;
+}
+
+body[data-theme="dark"] .hero-window .bg-\[\#fff0f7\] {
+  background: #49384f !important;
+}
+
+body[data-theme="dark"] .hero-window .text-\[\#d45d91\] {
+  color: #ffc0dc !important;
+}
+
 body[data-theme="dark"] header {
   border-color: #514257;
   background: rgba(45, 38, 53, 0.9);
