@@ -43,14 +43,18 @@ export default function HomeHero({ locale = "ko" }: { locale?: Locale }) {
   return <>
     <section className="relative isolate mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl flex-col items-center justify-center overflow-hidden px-6 pb-16 pt-16 text-center">
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true"><div className="hero-sparkle hero-sparkle-one" /><div className="hero-sparkle hero-sparkle-two" /><div className="hero-character-glow" /></div>
-      <div className="hero-side-portraits pointer-events-none absolute inset-x-0 top-[29%] hidden justify-between px-3 lg:flex" aria-hidden="true">
-        <div className="hero-side-portrait hero-side-portrait-left">
-          <Image src="/seline-icon.png" alt="" fill sizes="220px" className="object-cover" />
-          <span className="hero-side-note hero-side-note-left">Seline is here</span>
+      <div className="hero-side-decor pointer-events-none absolute inset-x-0 top-[29%] hidden items-center justify-between px-8 lg:flex" aria-hidden="true">
+        <div className="hero-side-cluster hero-side-cluster-left">
+          <span className="hero-orbit hero-orbit-pink" />
+          <span className="hero-orbit hero-orbit-lilac" />
+          <span className="hero-side-chip hero-side-chip-voice"><i /><i /><i /><i /><b>VOICE</b></span>
+          <span className="hero-side-spark hero-side-spark-left">✦</span>
         </div>
-        <div className="hero-side-portrait hero-side-portrait-right">
-          <Image src="/seline-icon.png" alt="" fill sizes="220px" className="object-cover" />
-          <span className="hero-side-note hero-side-note-right">Let us talk</span>
+        <div className="hero-side-cluster hero-side-cluster-right">
+          <span className="hero-side-chip hero-side-chip-memory"><b>MEMORY</b><i /><i /><i /></span>
+          <span className="hero-orbit hero-orbit-blue" />
+          <span className="hero-orbit hero-orbit-pink hero-orbit-small" />
+          <span className="hero-side-spark hero-side-spark-right">♥</span>
         </div>
       </div>
       <div className="relative z-10 max-w-3xl">
