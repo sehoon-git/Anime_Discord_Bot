@@ -2,53 +2,21 @@
 
 import { useState } from "react";
 
-type BillingPlansProps = { currentPlanCode: string };
-type Plan = { code: string; name: string; monthly: number; yearly: number; badge: string; description: string; features: string[] };
+type Locale = "en" | "ko";
+type BillingPlansProps = { currentPlanCode: string; locale?: Locale };
+type Plan = { code: string; name: string; monthly: number; yearly: number; badge: { en: string; ko: string }; description: { en: string; ko: string }; features: { en: string; ko: string }[] };
 
 const plans: Plan[] = [
-  { code: "like", name: "Like♥", monthly: 5900, yearly: 59000, badge: "가볍게 시작", description: "좋아하는 캐릭터와 매일 조금씩 가까워져요.", features: ["월 텍스트 500회", "월 음성 30분", "기본 캐릭터 선택", "Discord 계정 연동"] },
-  { code: "more-like", name: "More♥Like", monthly: 15900, yearly: 159000, badge: "가장 인기", description: "더 오래, 더 깊게 대화하고 싶은 분에게 잘 맞아요.", features: ["월 텍스트 3,000회", "월 음성 300분", "장기기억 기능 사용", "캐릭터 우선 응답"] },
-  { code: "love", name: "Love♥", monthly: 35900, yearly: 359000, badge: "마음껏 대화", description: "캐릭터와의 시간을 가장 풍성하게 채워보세요.", features: ["월 텍스트 10,000회", "월 음성 1,000분", "장기기억 확장 사용", "새 기능 먼저 만나기"] },
+  { code: "like", name: "Like♥", monthly: 5900, yearly: 59000, badge: { en: "A gentle start", ko: "가볍게 시작" }, description: { en: "A lovely way to get a little closer to your favorite character every day.", ko: "좋아하는 캐릭터와 매일 조금씩 가까워져요." }, features: [{ en: "500 text messages / month", ko: "월 텍스트 500회" }, { en: "30 voice minutes / month", ko: "월 음성 30분" }, { en: "Basic character selection", ko: "기본 캐릭터 선택" }, { en: "Discord account connection", ko: "Discord 계정 연동" }] },
+  { code: "more-like", name: "More♥Like", monthly: 15900, yearly: 159000, badge: { en: "Most popular", ko: "가장 인기" }, description: { en: "Made for anyone who wants longer, deeper conversations every day.", ko: "더 오래, 더 깊게 대화하고 싶은 분에게 잘 맞아요." }, features: [{ en: "3,000 text messages / month", ko: "월 텍스트 3,000회" }, { en: "300 voice minutes / month", ko: "월 음성 300분" }, { en: "Long-term memory", ko: "장기기억 기능 사용" }, { en: "Priority character responses", ko: "캐릭터 우선 응답" }] },
+  { code: "love", name: "Love♥", monthly: 35900, yearly: 359000, badge: { en: "Talk freely", ko: "마음껏 대화" }, description: { en: "Fill your time with the richest, most personal character experience.", ko: "캐릭터와의 시간을 가장 풍성하게 채워보세요." }, features: [{ en: "10,000 text messages / month", ko: "월 텍스트 10,000회" }, { en: "1,000 voice minutes / month", ko: "월 음성 1,000분" }, { en: "Expanded long-term memory", ko: "장기기억 확장 사용" }, { en: "Early access to new features", ko: "새 기능 먼저 만나기" }] },
 ];
 
-function price(value: number) { return `${value.toLocaleString("ko-KR")}원`; }
+function price(value: number, locale: Locale) { return locale === "en" ? `₩${value.toLocaleString("en-US")}` : `${value.toLocaleString("ko-KR")}원`; }
 
-export default function BillingPlans({ currentPlanCode }: BillingPlansProps) {
+export default function BillingPlans({ currentPlanCode, locale = "ko" }: BillingPlansProps) {
   const [period, setPeriod] = useState<"monthly" | "yearly">("monthly");
   const mappedCurrent = currentPlanCode === "free" ? "like" : currentPlanCode === "pro" ? "more-like" : currentPlanCode;
-
-  return (
-    <>
-      <div className="billing-period" role="group" aria-label="구독 주기">
-        <button type="button" className={period === "monthly" ? "billing-period-active" : "billing-period-idle"} onClick={() => setPeriod("monthly")}>월간 구독</button>
-        <button type="button" className={period === "yearly" ? "billing-period-active" : "billing-period-idle"} onClick={() => setPeriod("yearly")}>연간 구독 <span>2개월 무료</span></button>
-      </div>
-      <div className="mt-6 grid gap-6 md:grid-cols-3">
-        {plans.map((plan) => {
-          const isCurrent = plan.code === mappedCurrent;
-          const displayPrice = period === "monthly" ? plan.monthly : plan.yearly;
-          return (
-            <article key={plan.code} className={`plan-card group ${isCurrent ? "plan-card-current" : plan.code === "more-like" ? "plan-card-pro" : "plan-card-love"}`}>
-              <div className="flex items-start justify-between gap-3">
-                <div><span className="text-sm font-bold text-[#d45d91]">{isCurrent ? "현재 사용 중" : plan.badge}</span><h2 className="mt-3 text-3xl font-extrabold text-[#5b4054]">{plan.name}</h2></div>
-                {plan.code === "more-like" ? <span className="plan-recommend">추천</span> : null}
-              </div>
-              <p className="mt-4 min-h-12 text-sm leading-6 text-[#92768a]">{plan.description}</p>
-              <div className="mt-8 min-h-[4.75rem]">
-                {period === "yearly" ? (
-                  <p className="billing-original-price">{price(plan.monthly * 12)} / 년</p>
-                ) : null}
-                <p className="text-3xl font-extrabold text-[#684b60]">
-                  {price(displayPrice)} <span className="text-sm font-bold text-[#a17f93]">/ {period === "monthly" ? "월" : "년"}</span>
-                </p>
-                {period === "yearly" ? <p className="billing-discount-note">2개월 무료 적용</p> : null}
-              </div>
-              <ul className="mt-7 space-y-4 text-sm text-[#76566b]">{plan.features.map((feature) => <li key={feature} className="flex items-center gap-3"><span className="check-mark">✓</span>{feature}</li>)}</ul>
-              <button type="button" disabled className={`plan-action ${isCurrent ? "plan-action-current" : "plan-action-disabled"}`}>{isCurrent ? "현재 요금제" : "결제 기능 준비 중"}</button>
-            </article>
-          );
-        })}
-      </div>
-    </>
-  );
+  const en = locale === "en";
+  return <><div className="billing-period" role="group" aria-label={en ? "Billing period" : "구독 주기"}><button type="button" className={period === "monthly" ? "billing-period-active" : "billing-period-idle"} onClick={() => setPeriod("monthly")}>{en ? "Monthly" : "월간 구독"}</button><button type="button" className={period === "yearly" ? "billing-period-active" : "billing-period-idle"} onClick={() => setPeriod("yearly")}>{en ? "Yearly" : "연간 구독"} <span>{en ? "2 months free" : "2개월 무료"}</span></button></div><div className="mt-6 grid gap-6 md:grid-cols-3">{plans.map((plan) => { const isCurrent = plan.code === mappedCurrent; const displayPrice = period === "monthly" ? plan.monthly : plan.yearly; return <article key={plan.code} className={`plan-card group ${isCurrent ? "plan-card-current" : plan.code === "more-like" ? "plan-card-pro" : "plan-card-love"}`}><div className="flex items-start justify-between gap-3"><div><span className="text-sm font-bold text-[#d45d91]">{isCurrent ? (en ? "Currently using" : "현재 사용 중") : plan.badge[locale]}</span><h2 className="mt-3 text-3xl font-extrabold text-[#5b4054]">{plan.name}</h2></div>{plan.code === "more-like" ? <span className="plan-recommend">{en ? "Popular" : "추천"}</span> : null}</div><p className="mt-4 min-h-12 text-sm leading-6 text-[#92768a]">{plan.description[locale]}</p><div className="mt-8 min-h-[4.75rem]">{period === "yearly" ? <p className="billing-original-price">{price(plan.monthly * 12, locale)} / {en ? "year" : "년"}</p> : null}<p className="text-3xl font-extrabold text-[#684b60]">{price(displayPrice, locale)} <span className="text-sm font-bold text-[#a17f93]">/ {en ? (period === "monthly" ? "month" : "year") : (period === "monthly" ? "월" : "년")}</span></p>{period === "yearly" ? <p className="billing-discount-note">{en ? "2 months free applied" : "2개월 무료 적용"}</p> : null}</div><ul className="mt-7 space-y-4 text-sm text-[#76566b]">{plan.features.map((feature) => <li key={feature.en} className="flex items-center gap-3"><span className="check-mark">✓</span>{feature[locale]}</li>)}</ul><button type="button" disabled className={`plan-action ${isCurrent ? "plan-action-current" : "plan-action-disabled"}`}>{isCurrent ? (en ? "Current plan" : "현재 요금제") : (en ? "Payment coming soon" : "결제 기능 준비 중")}</button></article>; })}</div></>;
 }
