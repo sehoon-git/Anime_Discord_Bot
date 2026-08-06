@@ -19,6 +19,7 @@ import { loadConfig } from './config.js';
 import { creditsForTokens, runWithTokenCredit, TestCreditStore } from './credits.js';
 import { makeTextTurn, splitDiscordMessage } from './discord-text.js';
 import { GeminiTextClient, type GeminiTokenUsage } from './gemini-client.js';
+import { createSelineEmbed } from './discord-ui.js';
 import { VoiceServiceManager } from './voice-service-manager.js';
 
 const TEST_SELINE_PERSONA = [
@@ -356,7 +357,12 @@ async function handleMessage(message: Message): Promise<void> {
       ),
     creditCost: creditsFromReply,
     deliver: async (reply) => {
-      for (const chunk of splitDiscordMessage(reply.text)) await message.reply(chunk);
+      for (const chunk of splitDiscordMessage(reply.text)) {
+        await message.reply({
+          embeds: [createSelineEmbed(chunk)],
+          allowedMentions: { repliedUser: false }
+        });
+      }
     }
   });
 }
@@ -378,8 +384,13 @@ async function replyFromText(interaction: ChatInputCommandInteraction, text: str
     creditCost: creditsFromReply,
     deliver: async (reply) => {
       const [first, ...rest] = splitDiscordMessage(reply.text);
-      await interaction.editReply(first);
-      for (const chunk of rest) await interaction.followUp(chunk);
+      await interaction.editReply({ embeds: [createSelineEmbed(first)] });
+      for (const chunk of rest) {
+        await interaction.followUp({
+          embeds: [createSelineEmbed(chunk)],
+          allowedMentions: { repliedUser: false }
+        });
+      }
     }
   });
 }
