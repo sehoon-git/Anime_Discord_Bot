@@ -23,6 +23,25 @@ function UsageBar({ label, used, limit, locale }: { label: string; used: number;
   return <div className="usage-pill"><div className="flex items-center justify-between gap-4 text-sm"><span className="font-bold text-[#684b60]">{label}</span><span className="text-[#a17f93]">{formatLimit(used, limit, locale)}</span></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-[#f3dfeb]"><div className="h-full rounded-full bg-gradient-to-r from-[#ef9bc1] to-[#aa98ee] transition-all" style={{ width: `${percent}%` }} /></div></div>;
 }
 
+// Kept temporarily for compatibility with the existing dashboard layout.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function CreditSummary({ billing, locale }: { billing: BillingStatus; locale: Locale }) {
+  const en = locale === "en";
+  return <section className="billing-status mt-6">
+    <div className="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p className="status-label">{en ? "Test credits" : "테스트 크레딧"}</p>
+        <p className="status-value">{billing.credits.balance.toLocaleString(en ? "en-US" : "ko-KR")} <span className="text-base font-semibold">{en ? "credits left" : "크레딧 남음"}</span></p>
+      </div>
+      <p className="text-sm text-[#76566b]">{en ? `Used this month: ${billing.usage.creditsUsed.toLocaleString("en-US")}` : `이번 달 사용: ${billing.usage.creditsUsed.toLocaleString("ko-KR")} 크레딧`}</p>
+    </div>
+    <div className="mt-5 flex flex-wrap items-center gap-3">
+      {null}
+      <span className="text-xs text-[#92768a]">{en ? "Temporary test top-up. No payment is charged." : "임시 테스트용 충전이며 실제 결제는 발생하지 않습니다."}</span>
+    </div>
+  </section>;
+}
+
 function LoginRequired({ locale }: { locale: Locale }) {
   const en = locale === "en";
   return <main className="site-wash min-h-screen px-6 py-16 text-[#493647]"><section className="mx-auto max-w-3xl rounded-3xl border border-[#f0d7e5] bg-white/80 p-8 shadow-[0_20px_60px_rgba(198,135,169,0.16)]"><p className="text-sm font-semibold text-[#d45d91]">Discord Anime AI</p><h1 className="mt-3 text-3xl font-semibold text-[#5b4054]">{en ? "Login required" : "로그인이 필요합니다"}</h1><p className="mt-4 text-[#92768a]">{en ? "Please log in to view your subscription and usage." : "요금제와 사용량을 확인하려면 먼저 로그인해주세요."}</p><Link href="/api/auth/signin" className="mt-8 inline-flex rounded-2xl bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-200/60">{en ? "Log in" : "로그인하기"}</Link></section></main>;

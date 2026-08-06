@@ -91,6 +91,7 @@ export async function recordModelUsageEvent(input: {
   success?: boolean;
   failureCode?: string | null;
 }) {
+  const creditsUsed = Math.max(0, input.creditsUsed ?? 0);
   await webPool.query(
     `INSERT INTO model_usage_events
       (user_id, discord_user_id, provider, model, input_tokens,
@@ -105,12 +106,29 @@ export async function recordModelUsageEvent(input: {
       Math.max(0, input.inputTokens ?? 0),
       Math.max(0, input.outputTokens ?? 0),
       Math.max(0, input.totalTokens ?? 0),
-      Math.max(0, input.creditsUsed ?? 0),
+      creditsUsed,
       input.requestType ?? "text",
       input.success ?? true,
       input.failureCode ?? null,
     ],
   );
+
+  // Test credits are consumed when the trusted bot reports model usage.
+  // Keep the balance at zero until a real billing provider is connected.
+  if (input.userId && creditsUsed > 0) {
+    await webPool.query(
+      `INSERT INTO credit_balances (user_id, balance)
+       VALUES ($1, 0)
+       ON CONFLICT (user_id) DO NOTHING`,
+      [input.userId],
+    );
+    await webPool.query(
+      `UPDATE credit_balances
+       SET balance = GREATEST(0, balance - $2), updated_at = NOW()
+       WHERE user_id = $1`,
+      [input.userId, creditsUsed],
+    );
+  }
 }
 
 export async function upsertVoiceConsent(input: {

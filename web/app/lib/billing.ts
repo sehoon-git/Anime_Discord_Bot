@@ -1,7 +1,7 @@
 import { db } from "@/app/lib/db";
 import { upsertUser } from "@/app/lib/users";
 
-const REQUIRED_CONSENTS = ["terms", "privacy", "overseas"];
+const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory"];
 
 export type UsageEventType = "text_message" | "voice_minute";
 
@@ -23,6 +23,10 @@ export type BillingStatus = {
   usage: {
     textMessages: number;
     voiceMinutes: number;
+    creditsUsed: number;
+  };
+  credits: {
+    balance: number;
   };
 };
 
@@ -49,6 +53,8 @@ type DiscordAccountRow = {
   name: string | null;
 };
 
+type CreditRow = { balance: number };
+
 function toIsoString(value: Date | string | null) {
   if (!value) {
     return null;
@@ -67,6 +73,15 @@ async function ensureFreeSubscription(userId: string) {
     ON CONFLICT (user_id)
     DO NOTHING
     `,
+    [userId],
+  );
+}
+
+async function ensureCreditBalance(userId: string) {
+  await db.query(
+    `INSERT INTO credit_balances (user_id, balance)
+     VALUES ($1, 0)
+     ON CONFLICT (user_id) DO NOTHING`,
     [userId],
   );
 }
@@ -127,8 +142,25 @@ export async function getBillingStatusForUser(
 
       return acc;
     },
-    { textMessages: 0, voiceMinutes: 0 },
+    { textMessages: 0, voiceMinutes: 0, creditsUsed: 0 },
   );
+
+  await ensureCreditBalance(userId);
+  const [creditResult, modelUsageResult] = await Promise.all([
+    db.query<CreditRow>(
+      `SELECT balance FROM credit_balances WHERE user_id = $1 LIMIT 1`,
+      [userId],
+    ),
+    db.query<{ credits_used: number }>(
+      `SELECT COALESCE(SUM(credits_used), 0)::int AS credits_used
+       FROM model_usage_events
+       WHERE user_id = $1 AND created_at >= date_trunc('month', NOW())`,
+      [userId],
+    ),
+  ]);
+
+  const credit = creditResult.rows[0] ?? { balance: 0 };
+  usage.creditsUsed = modelUsageResult.rows[0]?.credits_used ?? 0;
 
   return {
     userId,
@@ -146,7 +178,24 @@ export async function getBillingStatusForUser(
       currentPeriodEnd: toIsoString(billing.current_period_end),
     },
     usage,
+    credits: { balance: credit.balance },
   };
+}
+
+export async function addTestCredits(userId: string, amount = 100) {
+  if (!Number.isInteger(amount) || amount <= 0 || amount > 10000) {
+    throw new Error("Invalid test credit amount");
+  }
+
+  await ensureCreditBalance(userId);
+  const result = await db.query<{ balance: number }>(
+    `UPDATE credit_balances
+     SET balance = balance + $2, updated_at = NOW()
+     WHERE user_id = $1
+     RETURNING balance`,
+    [userId, amount],
+  );
+  return result.rows[0]?.balance ?? 0;
 }
 
 export async function recordUsageEvent(
