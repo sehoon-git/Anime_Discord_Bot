@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import HeaderMenu from "./_components/HeaderMenu";
+import QuickControls from "./_components/QuickControls";
 import "./globals.css";
 import Providers from "./providers";
 
@@ -26,7 +27,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 <Link href="/" className="flex items-center gap-2 font-bold"><span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f58bb6] to-[#a895f4] text-sm text-white shadow-md shadow-pink-200">AI</span><span className="text-[#5b4054]">Discord Anime AI</span></Link>
                 <nav className="flex items-center text-sm font-semibold text-[#876b7d]"><Link href="/billing" className="hover:text-[#d45d91]">{isKorean ? "요금제" : "Plans"}</Link></nav>
               </div>
-              <HeaderMenu locale={isKorean ? "ko-KR" : "en-US"} />
+              <div className="flex items-center gap-2"><QuickControls locale={isKorean ? "ko-KR" : "en-US"} /><HeaderMenu locale={isKorean ? "ko-KR" : "en-US"} /></div>
             </div>
           </header>
           {children}
