@@ -1,231 +1,40 @@
-export const legalDocs = {
-  terms: {
-    title: "서비스 이용약관",
-    effectiveDate: "2026년 8월 4일",
-    sections: [
-      {
-        title: "서비스의 목적",
-        body: [
-          "Discord Anime AI는 Discord 서버에서 AI 캐릭터와 텍스트 및 음성 대화를 제공하는 서비스입니다.",
-          "본 약관은 이용자가 서비스를 이용하는 조건, 회사와 이용자의 권리 및 의무, 유료 플랜과 구독 이용 조건을 정합니다.",
-        ],
-      },
-      {
-        title: "계정 및 Discord 연동",
-        body: [
-          "이용자는 Google 계정 또는 Discord 계정을 통해 서비스에 로그인할 수 있습니다.",
-          "Discord 서버 관리 기능은 해당 서버에 대한 관리 권한을 가진 이용자에게만 제공됩니다.",
-          "이용자는 본인의 계정 정보를 안전하게 관리해야 하며, 계정 도용이나 무단 사용이 의심되는 경우 즉시 회사에 알려야 합니다.",
-        ],
-      },
-      {
-        title: "AI 캐릭터 응답",
-        body: [
-          "AI 캐릭터의 응답은 인공지능이 생성한 콘텐츠이며 실제 사람의 의견, 조언 또는 전문적 판단이 아닙니다.",
-          "이용자는 AI 응답을 법률, 의료, 금융 등 전문적 의사결정의 유일한 근거로 사용해서는 안 됩니다.",
-        ],
-      },
-      {
-        title: "음성 기능",
-        body: [
-          "음성 기능은 이용자의 명시적 동의가 있는 경우에만 사용할 수 있습니다.",
-          "Discord 음성 채널에서 봇을 사용하는 경우, 봇은 음성 처리 사실과 AI 합성 음성 사용 사실을 명확히 안내해야 합니다.",
-          "동의하지 않은 이용자의 음성은 STT 처리 대상에서 제외하는 것을 원칙으로 합니다.",
-        ],
-      },
-      {
-        title: "금지 행위",
-        body: [
-          "이용자는 타인의 개인정보, 음성, 초상, 저작물을 무단으로 수집하거나 복제하는 행위를 할 수 없습니다.",
-          "유명인, 성우, 실제 인물, 저작권 캐릭터의 음성을 무단으로 모방하거나 복제하는 행위는 금지됩니다.",
-          "불법, 혐오, 성착취, 개인정보 침해, 사기, 스팸, 서비스 방해 목적의 이용은 금지됩니다.",
-        ],
-      },
-      {
-        title: "유료 플랜 및 정기결제",
-        body: [
-          "유료 플랜은 월 단위 또는 연 단위 정기구독으로 제공될 수 있습니다.",
-          "이용자는 결제 전 플랜명, 가격, 결제 주기, 자동 갱신 여부, 해지 방법을 확인해야 합니다.",
-          "정기구독은 이용자가 해지하기 전까지 매 결제 주기마다 자동 갱신될 수 있습니다.",
-        ],
-      },
-      {
-        title: "구독 해지 및 환불",
-        body: [
-          "이용자는 대시보드에서 언제든지 구독을 해지할 수 있습니다.",
-          "환불 기준은 별도의 환불 및 구독 정책에 따릅니다.",
-          "미성년자의 결제는 법정대리인의 동의 여부에 따라 취소될 수 있습니다.",
-        ],
-      },
-      {
-        title: "서비스 변경 및 중단",
-        body: [
-          "회사는 운영상 필요에 따라 서비스의 일부 기능을 변경, 제한 또는 중단할 수 있습니다.",
-          "중요한 변경이 있는 경우 서비스 내 공지 또는 이메일 등 적절한 방법으로 안내합니다.",
-        ],
-      },
-      {
-        title: "문의",
-        body: [
-          "서비스 관련 문의는 help@example.com 으로 접수할 수 있습니다.",
-          "사업자 정보, 통신판매업 신고 정보, 고객센터 정보는 서비스 하단에 표시합니다.",
-        ],
-      },
-    ],
-  },
+export type LegalLocale = "en-US" | "ko-KR";
+type BilingualSection = { ko: { title: string; body: string[] }; en: { title: string; body: string[] } };
+export type LegalDoc = { title: { ko: string; en: string }; effectiveDate: string; sections: BilingualSection[] };
 
-  privacy: {
-    title: "개인정보 처리방침",
-    effectiveDate: "2026년 8월 4일",
-    sections: [
-      {
-        title: "수집하는 개인정보",
-        body: [
-          "회사는 서비스 제공을 위해 계정 ID, 이메일, Discord 사용자 ID, Discord 서버 ID, 서버 설정, 캐릭터 설정, 구독 상태, 결제 상태, 동의 기록을 처리할 수 있습니다.",
-          "음성 기능 이용 시 음성 원본을 일시적으로 처리할 수 있으며, 원음 저장은 하지 않는 것을 원칙으로 합니다.",
-        ],
-      },
-      {
-        title: "개인정보 이용 목적",
-        body: [
-          "수집한 정보는 로그인, 서버 관리, AI 캐릭터 설정, 음성 대화 제공, 구독 결제, 고객 지원, 부정 이용 방지 목적으로 사용됩니다.",
-        ],
-      },
-      {
-        title: "음성 데이터 처리",
-        body: [
-          "음성 데이터는 STT 처리를 위해 일시적으로 처리될 수 있습니다.",
-          "음성 원본은 별도로 저장하지 않으며, 처리 완료 후 즉시 파기하는 것을 원칙으로 합니다.",
-          "전사된 텍스트는 서비스 응답 생성, 안전성 검토, 이용자 동의 기반 기억 기능에 사용될 수 있습니다.",
-        ],
-      },
-      {
-        title: "장기기억",
-        body: [
-          "장기기억 기능은 이용자가 선택적으로 동의한 경우에만 활성화됩니다.",
-          "건강, 정치적 견해, 종교, 범죄 경력, 성생활 등 민감정보는 기억 저장 대상에서 제외하는 것을 원칙으로 합니다.",
-          "이용자는 저장된 기억을 조회하거나 삭제할 수 있습니다.",
-        ],
-      },
-      {
-        title: "국외 이전",
-        body: [
-          "외부 AI API 또는 해외 클라우드 서비스를 이용하는 경우 개인정보가 국외에서 처리될 수 있습니다.",
-          "국외 이전이 필요한 경우 이전받는 자, 이전 국가, 이전 목적, 이전 항목, 보유 기간을 고지하고 동의를 받습니다.",
-        ],
-      },
-      {
-        title: "보유 및 파기",
-        body: [
-          "회원 정보는 회원 탈퇴 또는 개인정보 삭제 요청 시 지체 없이 파기합니다.",
-          "법령상 보관이 필요한 결제 및 거래 기록은 관련 법령에 따라 일정 기간 보관될 수 있습니다.",
-        ],
-      },
-      {
-        title: "이용자의 권리",
-        body: [
-          "이용자는 개인정보 열람, 정정, 삭제, 처리정지, 동의 철회를 요청할 수 있습니다.",
-          "요청은 서비스 내 설정 화면 또는 고객센터를 통해 접수할 수 있습니다.",
-        ],
-      },
-    ],
-  },
+const section = (koTitle: string, koBody: string[], enTitle: string, enBody: string[]): BilingualSection => ({ ko: { title: koTitle, body: koBody }, en: { title: enTitle, body: enBody } });
+const date = "2026-08-06";
 
-  voicePolicy: {
-    title: "음성 데이터 처리 정책",
-    effectiveDate: "2026년 8월 4일",
-    sections: [
-      {
-        title: "AI 음성 고지",
-        body: [
-          "본 서비스의 캐릭터 음성은 실제 사람이 아닌 AI 합성 음성입니다.",
-          "Discord 봇 상태 메시지, 도움말, 음성 채널 안내 메시지에서 AI 음성 사용 사실을 고지합니다.",
-        ],
-      },
-      {
-        title: "음성 처리 동의",
-        body: [
-          "음성 대화 기능은 이용자의 명시적 동의가 있는 경우에만 사용할 수 있습니다.",
-          "동의하지 않은 이용자의 음성은 STT 처리 대상에서 제외되어야 합니다.",
-        ],
-      },
-      {
-        title: "원음 저장 금지",
-        body: [
-          "서비스는 음성 원본 파일을 서버에 저장하지 않는 것을 원칙으로 합니다.",
-          "음성 데이터는 STT 처리에 필요한 시간 동안만 일시적으로 처리되며, 처리 완료 후 즉시 파기됩니다.",
-        ],
-      },
-      {
-        title: "금지되는 음성 사용",
-        body: [
-          "타인의 목소리, 유명인, 성우, 캐릭터 음성을 무단으로 복제하거나 유사하게 재현하는 행위는 금지됩니다.",
-          "커스텀 보이스 기능을 제공하는 경우 권리자 동의 또는 라이선스 증빙이 필요합니다.",
-        ],
-      },
-    ],
-  },
-
-  refundPolicy: {
-    title: "환불 및 구독 정책",
-    effectiveDate: "2026년 8월 4일",
-    sections: [
-      {
-        title: "정기구독",
-        body: [
-          "유료 플랜은 월 결제 또는 연 결제로 제공됩니다.",
-          "정기구독은 해지 전까지 매 결제 주기마다 자동 갱신됩니다.",
-        ],
-      },
-      {
-        title: "구독 해지",
-        body: [
-          "이용자는 대시보드에서 언제든지 구독을 해지할 수 있습니다.",
-          "해지 후에도 이미 결제된 기간의 종료일까지 유료 기능을 사용할 수 있습니다.",
-        ],
-      },
-      {
-        title: "환불 기준",
-        body: [
-          "결제 후 7일 이내이며 유료 기능을 실질적으로 사용하지 않은 경우 전액 환불을 요청할 수 있습니다.",
-          "이미 사용한 음성 시간, 크레딧, API 사용량이 있는 경우 사용량에 따라 환불이 제한될 수 있습니다.",
-          "이용자의 약관 위반으로 서비스가 제한된 경우 환불이 거절될 수 있습니다.",
-        ],
-      },
-      {
-        title: "미성년자 결제",
-        body: [
-          "미성년자가 법정대리인의 동의 없이 결제한 경우 관련 법령에 따라 결제 취소가 가능할 수 있습니다.",
-        ],
-      },
-    ],
-  },
-
-  licenses: {
-    title: "오픈소스 및 AI 모델 라이선스 고지",
-    effectiveDate: "2026년 8월 4일",
-    sections: [
-      {
-        title: "라이선스 관리 원칙",
-        body: [
-          "서비스는 오픈소스 라이브러리와 AI 모델을 사용할 수 있으며, 각 라이선스 조건을 준수합니다.",
-          "코드 라이선스와 모델 가중치 라이선스는 별도로 확인하여 기록합니다.",
-        ],
-      },
-      {
-        title: "AI 모델",
-        body: [
-          "MeloTTS, Kokoro-82M, faster-whisper 등 외부 모델을 사용하는 경우 모델명, 버전, 다운로드 출처, 라이선스, 상업적 이용 가능 여부를 기록합니다.",
-          "모델 파일의 해시 또는 Commit SHA를 THIRD_PARTY_NOTICES.md에 기록합니다.",
-        ],
-      },
-      {
-        title: "금지 사항",
-        body: [
-          "라이선스가 불명확하거나 상업적 이용이 허용되지 않은 모델은 서비스에 사용하지 않습니다.",
-          "권리자의 허락 없이 특정 인물 또는 캐릭터의 음성을 복제한 모델은 등록하지 않습니다.",
-        ],
-      },
-    ],
-  },
+export const legalDocs: Record<string, LegalDoc> = {
+  terms: { title: { ko: "서비스 이용약관", en: "Terms of Service" }, effectiveDate: date, sections: [
+    section("제1조 목적", ["이 약관은 Discord Anime AI(이하 ‘서비스’)의 이용 조건과 운영자 및 이용자의 권리·의무를 정합니다.", "서비스는 AI 캐릭터와의 텍스트·음성 대화 및 관련 설정·기억 관리 기능을 제공합니다."], "1. Purpose", ["These Terms govern your use of Discord Anime AI (the Service) and define the rights and responsibilities of the operator and users.", "The Service provides text and voice conversations with AI characters, along with related settings and memory-management features."]),
+    section("제2조 계정 및 Discord 연동", ["이용자는 Google 등 지원되는 로그인 수단을 통해 계정을 만들 수 있습니다. 이용자는 계정과 연동된 Discord 계정 및 초대 권한을 안전하게 관리해야 합니다.", "서버 관리 기능은 이용자가 해당 서버에서 필요한 권한을 보유한 경우에만 제공됩니다."], "2. Accounts and Discord integration", ["You may create an account using Google or another supported sign-in method. You are responsible for protecting your account and any Discord account or invitation permissions linked to it.", "Server-management features are available only when you have the permissions required for that server."]),
+    section("제3조 AI 응답의 한계", ["AI 응답은 자동 생성된 참고 정보이며 사람의 전문적인 조언이나 사실 확인을 대신하지 않습니다. 의료·법률·금융·안전과 관련한 판단은 반드시 적절한 전문가에게 확인해야 합니다.", "이용자는 AI 응답의 정확성·완전성·최신성을 보장할 수 없다는 점을 이해하고 사용해야 합니다."], "3. Limitations of AI responses", ["AI responses are automatically generated for general information and are not a substitute for professional medical, legal, financial, or safety advice.", "You understand that the Service does not guarantee the accuracy, completeness, or timeliness of an AI response."]),
+    section("제4조 음성 기능", ["음성 기능은 별도의 음성 처리 동의가 필요한 기능입니다. 동의하지 않으면 음성 인식 기능을 사용할 수 없으며, 설정에서 동의를 철회할 수 있습니다.", "서비스는 음성 원본 파일을 영구 보관하지 않는 것을 기본 정책으로 합니다. 처리에 필요한 임시 데이터는 처리 완료 후 삭제합니다."], "4. Voice features", ["Voice features require separate consent for voice processing. Without consent, voice recognition is unavailable, and you may withdraw consent in Settings.", "The Service does not permanently retain raw voice recordings by default. Temporary data required for processing is deleted after processing is complete."]),
+    section("제5조 금지행위", ["이용자는 법령 위반, 타인의 권리 침해, 불법·유해 콘텐츠 생성 요청, 서비스나 API의 보안 우회, 과도한 자동 요청, 타인의 개인정보 수집·공개를 해서는 안 됩니다.", "운영자는 위반을 조사하고 필요한 경우 이용 제한, 계정 정지 또는 관계 기관 신고를 할 수 있습니다."], "5. Prohibited conduct", ["You must not violate laws or third-party rights, request illegal or harmful content, bypass Service or API security, send excessive automated requests, or collect or disclose another person's personal information.", "The operator may investigate violations and restrict use, suspend accounts, or report matters to authorities where necessary."]),
+    section("제6조 유료 플랜 및 환불", ["유료 플랜의 가격, 제공량, 결제 주기 및 자동 갱신 여부는 결제 화면에 표시합니다. 결제 기능을 실제로 제공하기 전에는 플랜 화면의 가격이 예시 또는 준비 중인 정보일 수 있습니다.", "환불·청약철회는 결제 화면과 별도 환불정책 및 관련 법령에 따릅니다."], "6. Paid plans and refunds", ["Prices, allowances, billing cycles, and automatic-renewal terms for paid plans will be shown before purchase. Until payments are enabled, prices shown on the plans page may be examples or indicate a feature in preparation.", "Refunds and withdrawal rights are governed by the checkout notice, the Refund Policy, and applicable law."]),
+    section("제7조 서비스 변경·중단", ["운영자는 보안, 법령 준수, 유지보수 또는 기능 개선을 위해 서비스의 전부 또는 일부를 변경·중단할 수 있습니다. 중요한 변경은 가능한 방법으로 사전에 알립니다."], "7. Changes and suspension", ["The operator may change or suspend all or part of the Service for security, legal compliance, maintenance, or improvements. Material changes will be announced in advance where reasonably possible."]),
+    section("제8조 문의 및 운영자 정보", ["운영자 상호·대표자·주소·사업자등록번호·개인정보 보호책임자 및 연락처는 출시 전에 실제 정보로 이 문서에 반드시 기재해야 합니다.", "현재 개발 단계에서는 문의 채널이 확정되지 않았으므로, 공개 전 운영자 정보를 확정하고 본 문서를 갱신해야 합니다."], "8. Contact and operator information", ["Before launch, the operator's legal name, representative, address, business registration number, privacy officer, and contact details must be filled in with accurate information.", "Because the support channel has not been finalized during development, the operator must complete and update this section before public release."]),
+  ] },
+  privacy: { title: { ko: "개인정보처리방침", en: "Privacy Policy" }, effectiveDate: date, sections: [
+    section("1. 처리하는 개인정보", ["계정: Google 로그인 식별자, 이메일, 이름, 프로필 이미지 등 OAuth 제공 정보.", "프로필: 서비스에서 사용할 이름, AI가 부를 닉네임, 성별, 생년월일, 언어·시간대.", "Discord 연동: Discord 사용자 ID, 서버 ID, 채널 ID 및 서버·채널 권한 설정.", "서비스 이용: 대화 메시지와 최근 대화, 장기기억, 동의 기록, 음성 설정, 플랜·크레딧·사용량 및 오류 성능 이벤트.", "음성: 음성 기능 사용 시 STT 처리에 필요한 임시 음성 데이터. 원본 음성 파일은 저장하지 않습니다."], "1. Personal information we process", ["Account: Google sign-in identifier, email, name, profile image, and other information provided by OAuth.", "Profile: service name, AI nickname, gender, date of birth, language, and time zone.", "Discord integration: Discord user ID, server ID, channel ID, and server/channel permission settings.", "Service use: conversation messages and recent turns, long-term memories, consent records, voice settings, plan/credit/usage information, and error-performance events.", "Voice: temporary voice data needed for speech-to-text processing when voice features are used. Raw voice recordings are not stored."]),
+    section("2. 처리 목적 및 법적 근거", ["계정 생성·로그인, 서비스 제공, Discord 연동, AI 응답 생성, 장기기억 제공, 설정 저장, 결제·사용량 관리, 장애 분석 및 보안을 위해 처리합니다.", "장기기억 저장과 음성 인식은 별도 동의를 기반으로 하며, 서비스 제공에 필요한 항목은 계약 이행 또는 정당한 이익 등 적용 가능한 법적 근거에 따라 처리합니다."], "2. Purposes and legal bases", ["We process information to create and authenticate accounts, provide the Service, integrate Discord, generate AI responses, provide long-term memory, save settings, manage billing and usage, diagnose failures, and protect security.", "Long-term memory and speech recognition are based on separate consent. Other necessary processing is based on the applicable legal basis, such as performance of a contract or legitimate interests."]),
+    section("3. 보유 및 파기", ["계정·프로필은 계정 삭제 또는 처리 목적 달성 시까지 보유합니다. 장기기억은 이용자가 삭제하거나 서비스 이용을 종료할 때까지 보유하며, 설정한 보관 기간이 있으면 그 기간이 지난 후 삭제합니다.", "최근 대화는 채널별 최대 48턴 정책에 따라 관리하며, 성능 이벤트는 원칙적으로 14일 이내 보관 후 자동 삭제합니다.", "법령에 따라 보존해야 하는 거래 기록은 해당 법정 기간 동안 별도로 보관한 뒤 파기합니다."], "3. Retention and deletion", ["Account and profile data are retained until account deletion or completion of the relevant purpose. Long-term memories are retained until you delete them or stop using the Service, subject to any retention period you configure.", "Recent conversations are managed under a maximum of 48 turns per channel. Performance events are normally retained for no more than 14 days and then automatically deleted.", "Transaction records that must be retained by law are kept separately for the legally required period and then destroyed."]),
+    section("4. 국외 처리 및 처리위탁", ["서비스는 Vercel, Neon(PostgreSQL), Google OAuth, AI·음성 처리 제공자 등 해외 또는 외부 인프라를 사용할 수 있습니다. 제공자와 국가는 실제 계약 및 배포 환경에 맞게 출시 전에 정확히 기재해야 합니다.", "국외 이전이 있는 경우 이전받는 자, 국가, 이전 항목, 목적, 보유기간, 이전 시점과 방법 및 법적 근거를 개인정보처리방침과 동의 화면에 구체적으로 공개합니다."], "4. Overseas processing and processors", ["The Service may use Vercel, Neon (PostgreSQL), Google OAuth, and AI or voice-processing providers located outside Korea or operated by third parties. The actual providers and countries must be listed before launch based on the contracts and deployment environment.", "Where overseas transfer occurs, we will specifically disclose the recipient, country, categories, purpose, retention period, timing and method, and legal basis in this Privacy Policy and the consent notice."]),
+    section("5. 제3자 제공", ["운영자는 원칙적으로 이용자의 개인정보를 판매하거나 광고 목적으로 제3자에게 제공하지 않습니다. 법령상 의무, 이용자의 별도 동의, 또는 서비스 제공에 필요한 처리위탁이 있는 경우에만 필요한 범위에서 처리합니다."], "5. Sharing with third parties", ["We do not sell personal information or share it with third parties for advertising purposes by default. We disclose or provide information only when required by law, separately consented to, or necessary for a disclosed service processor."]),
+    section("6. 안전성 확보 및 미보관 원칙", ["운영자는 접근권한 제한, 비밀키 보호, 전송·저장 보안, 접속기록 및 시스템 점검 등 합리적인 관리적·기술적 보호조치를 적용합니다.", "API 키, 비밀번호, 원본 음성 파일, 실시간 음성 버퍼는 DB에 저장하지 않습니다. 성능 이벤트에는 처리시간·성공 여부 등 최소한의 수치만 기록합니다."], "6. Security and data minimization", ["We apply reasonable administrative and technical safeguards, including access control, secret protection, secure transmission and storage, access-log management, and system monitoring.", "We do not store API keys, passwords, raw voice files, or real-time voice buffers in the database. Performance events contain only minimal metrics such as processing time and success status."]),
+    section("7. 이용자의 권리", ["이용자는 개인정보 열람, 정정, 삭제, 처리정지 및 동의 철회를 요청할 수 있습니다. 장기기억은 기억 관리 화면에서 직접 조회·고정·삭제할 수 있습니다.", "권리 행사를 위해 출시 전에 실제 운영자·개인정보 보호책임자 연락처를 이 문서에 기재해야 합니다."], "7. Your rights", ["You may request access, correction, deletion, restriction of processing, or withdrawal of consent. You can view, pin, and delete long-term memories in the Memory page.", "The operator's actual privacy contact must be listed here before launch so users can exercise these rights."]),
+  ] },
+  voicePolicy: { title: { ko: "음성 데이터 처리 정책", en: "Voice Data Policy" }, effectiveDate: date, sections: [
+    section("1. 음성 기능의 성격", ["서비스의 AI 음성은 합성 음성입니다. 실제 사람의 목소리나 특정인의 음성을 복제하는 기능이 아닙니다."], "1. Nature of voice features", ["The Service uses synthetic AI voices. It is not intended to clone a real person's voice or a specific individual's voice."]),
+    section("2. 별도 동의", ["음성 인식·STT 기능은 별도 동의를 받은 경우에만 사용합니다. 음성 데이터 처리 허용 설정을 끄면 음성 인식 기능을 사용할 수 없습니다.", "Discord 서버·채널의 음성 허용 설정과 개인의 음성 동의가 모두 충족되어야 음성 기능을 사용할 수 있습니다."], "2. Separate consent", ["Speech recognition and speech-to-text features are used only when separate consent has been obtained. Turning off voice-data processing disables speech recognition.", "Both personal voice consent and the Discord server/channel permission settings must allow voice use before voice features operate."]),
+    section("3. 원본 음성 미보관", ["원본 음성 PCM 파일과 재생 버퍼는 데이터베이스나 영구 저장소에 저장하지 않습니다. STT에 필요한 동안 임시 처리하고 처리 완료 후 폐기합니다.", "장애 분석에는 원본 음성 대신 캡처 길이, VAD 판정, STT 성공 여부와 처리시간 같은 수치만 저장하며, 수치는 원칙적으로 14일 이내 삭제합니다."], "3. No storage of raw voice", ["Raw voice PCM files and playback buffers are not stored in the database or permanent storage. They are processed temporarily for speech-to-text and discarded after processing.", "For diagnostics, we store metrics such as capture duration, voice-activity detection result, STT success, and processing time instead of raw audio. These metrics are normally deleted within 14 days."]),
+    section("4. 이용자 주의사항", ["음성 채널에 함께 있는 다른 사람의 목소리를 처리하려면 해당 사람에게도 필요한 고지와 동의를 받아야 합니다. 타인의 음성을 몰래 녹음하거나 복제하지 마세요.", "음성 기능에 문제가 있거나 동의를 철회하려면 설정에서 음성 처리를 끄고 서비스 문의 채널을 이용하세요."], "4. User responsibilities", ["If other people are present in a voice channel, you must provide any required notice and obtain any required consent before processing their voices. Do not secretly record or clone another person's voice.", "To report a voice issue or withdraw consent, turn off voice processing in Settings and use the Service's support channel."]),
+  ] },
+  refundPolicy: { title: { ko: "환불 및 구독 정책", en: "Refund and Subscription Policy" }, effectiveDate: date, sections: [
+    section("1. 구독 안내", ["월간·연간 플랜의 가격, 제공량, 결제주기, 갱신 및 해지 조건은 결제 전에 표시합니다. 결제 기능이 활성화되기 전의 가격은 예시일 수 있습니다."], "1. Subscription information", ["Prices, allowances, billing cycles, renewal, and cancellation terms for monthly and annual plans are shown before payment. Prices shown before payments are enabled may be examples."]),
+    section("2. 청약철회 및 환불", ["환불과 청약철회는 전자상거래 등에서의 소비자보호에 관한 법률 등 관련 법령을 따릅니다. 디지털 콘텐츠나 즉시 제공되는 서비스는 제공이 시작된 후 청약철회가 제한될 수 있으며, 그 제한은 결제 전에 고지합니다.", "구체적인 환불 금액은 이용 기간, 사용량, 이미 제공된 서비스 및 관련 법령을 반영해 산정합니다."], "2. Withdrawal and refunds", ["Refunds and withdrawal rights follow the Act on Consumer Protection in Electronic Commerce and other applicable laws. Withdrawal may be restricted after digital content or an immediately provided service has begun, and any restriction will be disclosed before payment.", "The refund amount may reflect the period used, usage, services already delivered, and applicable law."]),
+    section("3. 해지", ["이용자는 설정 또는 결제 관리 화면에서 구독 해지를 요청할 수 있어야 하며, 해지 후에도 이미 결제된 기간의 잔여 이용 가능 여부를 결제 화면에 안내합니다."], "3. Cancellation", ["Users must be able to request cancellation from Settings or the billing-management screen. The checkout notice will explain whether access continues through the paid period after cancellation."]),
+  ] },
+  licenses: { title: { ko: "오픈소스 및 AI 모델 라이선스 고지", en: "Open-source and AI Model Licenses" }, effectiveDate: date, sections: [section("라이선스", ["서비스에서 사용하는 오픈소스 패키지와 AI 모델은 각 라이선스 조건에 따라 사용합니다. 상세 목록은 저장소의 고지 문서에서 확인할 수 있습니다."], "Licenses", ["Open-source packages and AI models used by the Service are used under their respective license terms. See the repository notices for the detailed list."])] },
 };
