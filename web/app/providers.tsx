@@ -19,11 +19,16 @@ export function useTheme() {
 }
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "light";
+  // New visitors start in dark mode. A returning visitor keeps their saved choice.
+  const [theme, setTheme] = useState<Theme>("dark");
+
+  useEffect(() => {
     const savedTheme = window.localStorage.getItem("anime-ai-theme");
-    return savedTheme === "dark" ? "dark" : "light";
-  });
+    if (savedTheme === "light" || savedTheme === "dark") {
+      const frame = window.requestAnimationFrame(() => setTheme(savedTheme));
+      return () => window.cancelAnimationFrame(frame);
+    }
+  }, []);
 
   useEffect(() => {
     document.body.dataset.theme = theme;

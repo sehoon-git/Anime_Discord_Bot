@@ -19,7 +19,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
   return (
     <html lang={isKorean ? "ko" : "en"}>
-      <body className="bg-[#fff8fc] text-[#493647]">
+      <body data-theme="dark" className="bg-[#fff8fc] text-[#493647]">
         <Providers>
           <header className="sticky top-0 z-40 border-b border-[#f0dce8] bg-white/85 shadow-[0_8px_30px_rgba(205,151,180,0.08)] backdrop-blur-xl">
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5">
