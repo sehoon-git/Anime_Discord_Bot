@@ -43,6 +43,16 @@ export default function HomeHero({ locale = "ko" }: { locale?: Locale }) {
   return <>
     <section className="relative isolate mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl flex-col items-center justify-center overflow-hidden px-6 pb-16 pt-16 text-center">
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true"><div className="hero-sparkle hero-sparkle-one" /><div className="hero-sparkle hero-sparkle-two" /><div className="hero-character-glow" /></div>
+      <div className="hero-side-portraits pointer-events-none absolute inset-x-0 top-[29%] hidden justify-between px-3 lg:flex" aria-hidden="true">
+        <div className="hero-side-portrait hero-side-portrait-left">
+          <Image src="/seline-icon.png" alt="" fill sizes="220px" className="object-cover" />
+          <span className="hero-side-note hero-side-note-left">Seline is here</span>
+        </div>
+        <div className="hero-side-portrait hero-side-portrait-right">
+          <Image src="/seline-icon.png" alt="" fill sizes="220px" className="object-cover" />
+          <span className="hero-side-note hero-side-note-right">Let us talk</span>
+        </div>
+      </div>
       <div className="relative z-10 max-w-3xl">
         <p className="mb-6 text-sm font-bold tracking-wide text-[#d45d91]">{text.eyebrow}</p>
         <h1 className="min-h-[8.5rem] whitespace-pre-line text-5xl font-extrabold leading-[1.18] tracking-[-0.03em] text-[#5b4054] md:text-7xl">{text.titleLines[lineIndex].slice(0, visibleCount)}<span className="type-caret" aria-hidden="true" /></h1>
