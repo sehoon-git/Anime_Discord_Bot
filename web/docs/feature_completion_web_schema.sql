@@ -74,7 +74,7 @@ CREATE INDEX IF NOT EXISTS idx_model_usage_events_user_created
   ON model_usage_events(user_id, created_at DESC);
 
 INSERT INTO language_settings (user_id, locale, timezone)
-SELECT id, COALESCE(locale, 'en-US'), COALESCE(timezone, 'Asia/Seoul')
+SELECT user_id, COALESCE(locale, 'en-US'), COALESCE(timezone, 'Asia/Seoul')
 FROM user_profiles
 ON CONFLICT (user_id) DO NOTHING;
 

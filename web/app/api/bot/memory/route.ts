@@ -1,5 +1,41 @@
 import { NextResponse } from "next/server";
-import { pool } from "@/app/lib/db";
+import { botPool, webPool } from "@/app/lib/db";
+
+async function resolveUserId(discordUserId: string) {
+  const result = await webPool.query<{ user_id: string }>(
+    `
+    SELECT users.id::text AS user_id
+    FROM users
+    JOIN user_accounts ON user_accounts.user_id = users.id
+    WHERE user_accounts.provider = 'discord'
+      AND user_accounts.provider_user_id = $1
+    LIMIT 1
+    `,
+    [discordUserId],
+  );
+
+  return result.rows[0]?.user_id ?? null;
+}
+
+async function hasMemoryConsent(userId: string) {
+  const result = await webPool.query<{ exists: boolean }>(
+    `
+    SELECT EXISTS (
+      SELECT 1
+      FROM user_consents
+      WHERE user_id = $1
+        AND consent_type = 'memory'
+    )
+    `,
+    [userId],
+  );
+
+  return result.rows[0]?.exists ?? false;
+}
+
+function unauthorized() {
+  return NextResponse.json({ ok: false, error: "UNAUTHORIZED_BOT" }, { status: 401 });
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -7,7 +43,7 @@ export async function GET(request: Request) {
   const apiKey = request.headers.get("x-bot-api-key");
 
   if (apiKey !== process.env.BOT_SECRET_KEY) {
-    return NextResponse.json({ ok: false, error: "UNAUTHORIZED_BOT" }, { status: 401 });
+    return unauthorized();
   }
 
   if (!discordUserId) {
@@ -15,16 +51,34 @@ export async function GET(request: Request) {
   }
 
   try {
-    const res = await pool.query(
-      `SELECT m.id, m.content, m.created_at
-       FROM user_memories m
-       JOIN user_accounts a ON a.user_id = m.user_id
-       WHERE a.provider = 'discord' AND a.provider_user_id = $1
-       ORDER BY m.created_at DESC LIMIT 10`,
-      [discordUserId]
+    const userId = await resolveUserId(discordUserId);
+
+    if (!userId) {
+      return NextResponse.json({ ok: false, error: "USER_NOT_FOUND" }, { status: 404 });
+    }
+
+    const memoryAllowed = await hasMemoryConsent(userId);
+
+    if (!memoryAllowed) {
+      return NextResponse.json({ ok: true, memoryAllowed: false, memories: [] });
+    }
+
+    const result = await botPool.query(
+      `
+      SELECT id::text, content, source, confidence, is_pinned, created_at, expires_at
+      FROM user_memories
+      WHERE user_id = $1 AND deleted_at IS NULL
+      ORDER BY is_pinned DESC, created_at DESC
+      LIMIT 10
+      `,
+      [userId],
     );
 
-    return NextResponse.json({ ok: true, memories: res.rows });
+    return NextResponse.json({
+      ok: true,
+      memoryAllowed: true,
+      memories: result.rows,
+    });
   } catch (error) {
     console.error("GET /api/bot/memory Error:", error);
     return NextResponse.json({ ok: false, error: "SERVER_ERROR" }, { status: 500 });
@@ -35,30 +89,84 @@ export async function POST(request: Request) {
   const apiKey = request.headers.get("x-bot-api-key");
 
   if (apiKey !== process.env.BOT_SECRET_KEY) {
-    return NextResponse.json({ ok: false, error: "UNAUTHORIZED_BOT" }, { status: 401 });
+    return unauthorized();
   }
 
   try {
     const { discordUserId, content } = await request.json();
 
-    const userRes = await pool.query(
-      `SELECT user_id FROM user_accounts WHERE provider = 'discord' AND provider_user_id = $1`,
-      [discordUserId]
-    );
+    if (
+      typeof discordUserId !== "string" ||
+      typeof content !== "string" ||
+      !discordUserId.trim() ||
+      !content.trim()
+    ) {
+      return NextResponse.json({ ok: false, error: "INVALID_BODY" }, { status: 400 });
+    }
 
-    const userId = userRes.rows[0]?.user_id;
+    const userId = await resolveUserId(discordUserId);
+
     if (!userId) {
       return NextResponse.json({ ok: false, error: "USER_NOT_FOUND" }, { status: 404 });
     }
 
-    const insertRes = await pool.query(
-      `INSERT INTO user_memories (user_id, content, source) VALUES ($1, $2, 'conversation') RETURNING id`,
-      [userId, content]
+    const memoryAllowed = await hasMemoryConsent(userId);
+
+    if (!memoryAllowed) {
+      return NextResponse.json({ ok: false, error: "MEMORY_CONSENT_REQUIRED" }, { status: 403 });
+    }
+
+    const insertRes = await botPool.query(
+      `
+      INSERT INTO user_memories (user_id, content, source, expires_at, updated_at)
+      VALUES ($1, $2, 'conversation', NOW() + (COALESCE((SELECT retention_days FROM memory_settings WHERE user_id = $1), 30) * INTERVAL '1 day'), NOW())
+      RETURNING id::text
+      `,
+      [userId, content.trim()],
     );
 
     return NextResponse.json({ ok: true, memoryId: insertRes.rows[0].id });
   } catch (error) {
     console.error("POST /api/bot/memory Error:", error);
+    return NextResponse.json({ ok: false, error: "SERVER_ERROR" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  if (request.headers.get("x-bot-api-key") !== process.env.BOT_SECRET_KEY) {
+    return unauthorized();
+  }
+
+  try {
+    const body = await request.json();
+    const discordUserId = typeof body?.discordUserId === "string" ? body.discordUserId.trim() : "";
+    const memoryId = typeof body?.memoryId === "string" ? body.memoryId.trim() : "";
+    const pinned = typeof body?.pinned === "boolean" ? body.pinned : null;
+
+    if (!discordUserId || !memoryId || pinned === null) {
+      return NextResponse.json({ ok: false, error: "INVALID_BODY" }, { status: 400 });
+    }
+
+    const userId = await resolveUserId(discordUserId);
+    if (!userId) return NextResponse.json({ ok: false, error: "USER_NOT_FOUND" }, { status: 404 });
+
+    const result = await botPool.query(
+      `UPDATE user_memories SET is_pinned = $3, updated_at = NOW()
+       WHERE user_id = $1 AND id = $2 AND deleted_at IS NULL`,
+      [userId, memoryId, pinned],
+    );
+
+    if (result.rowCount) {
+      await botPool.query(
+        `INSERT INTO memory_audit_events (memory_id, user_id, action)
+         VALUES ($1, $2, $3)`,
+        [memoryId, userId, pinned ? "pinned" : "unpinned"],
+      );
+    }
+
+    return NextResponse.json({ ok: Boolean(result.rowCount), pinned });
+  } catch (error) {
+    console.error("PATCH /api/bot/memory Error:", error);
     return NextResponse.json({ ok: false, error: "SERVER_ERROR" }, { status: 500 });
   }
 }

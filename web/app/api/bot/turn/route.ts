@@ -115,7 +115,7 @@ export async function POST(request: Request) {
 
     const memoryAllowed = (preferences?.memory_enabled ?? true) && await hasConsent(linkedUser.id, "memory");
     const [recentTurns, summary, memories] = await Promise.all([
-      getRecentTurns(linkedUser.id),
+      getRecentTurns(linkedUser.id, 48, turn.channelId),
       getConversationSummary(linkedUser.id),
       memoryAllowed ? listMemories(linkedUser.id) : Promise.resolve([]),
     ]);
@@ -168,7 +168,7 @@ export async function POST(request: Request) {
     });
 
     const refreshedSummary = await refreshSummaryIfNeeded(linkedUser.id);
-    const recentAfter = await getRecentTurns(linkedUser.id);
+    const recentAfter = await getRecentTurns(linkedUser.id, 48, turn.channelId);
 
     return NextResponse.json({
       ok: true,

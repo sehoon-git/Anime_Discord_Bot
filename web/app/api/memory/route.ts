@@ -61,3 +61,20 @@ export async function DELETE(request: Request) {
     );
   }
 }
+
+export async function PATCH(request: Request) {
+  const userId = await getCurrentUserId();
+
+  if (!userId) {
+    return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
+  }
+
+  const body = await request.json().catch(() => ({}));
+  if (typeof body.memoryId !== "string" || typeof body.pinned !== "boolean") {
+    return NextResponse.json({ ok: false, error: "INVALID_BODY" }, { status: 400 });
+  }
+
+  const { setMemoryPinned } = await import("@/app/lib/memory");
+  const updated = await setMemoryPinned(userId, body.memoryId, body.pinned);
+  return NextResponse.json({ ok: updated, pinned: body.pinned });
+}

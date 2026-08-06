@@ -67,6 +67,17 @@ export async function recordPerformanceEvent(input: {
   );
 }
 
+export async function incrementVoiceInterruption(userId: string) {
+  await webPool.query(
+    `INSERT INTO voice_behavior (user_id, interruption_count)
+     VALUES ($1, 1)
+     ON CONFLICT (user_id) DO UPDATE SET
+       interruption_count = voice_behavior.interruption_count + 1,
+       updated_at = NOW()`,
+    [userId],
+  );
+}
+
 export async function recordModelUsageEvent(input: {
   userId?: string | null;
   discordUserId?: string | null;

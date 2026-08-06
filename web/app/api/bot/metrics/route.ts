@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { recordModelUsageEvent, recordPerformanceEvent } from "@/app/lib/operations";
+import { incrementVoiceInterruption, recordModelUsageEvent, recordPerformanceEvent } from "@/app/lib/operations";
 
 function authorized(request: Request) {
   const bearer = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
@@ -32,6 +32,10 @@ export async function POST(request: Request) {
       vadScore: typeof body.vadScore === "number" ? body.vadScore : null,
       captureDurationMs: typeof body.captureDurationMs === "number" ? body.captureDurationMs : null,
     });
+
+    if (body.eventType === "voice_interruption" && typeof body.userId === "string") {
+      await incrementVoiceInterruption(body.userId);
+    }
 
     if (body.modelUsage) {
       await recordModelUsageEvent({

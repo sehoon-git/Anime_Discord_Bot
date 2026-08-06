@@ -159,16 +159,21 @@ export async function saveTurn(input: {
   );
 }
 
-export async function getRecentTurns(userId: string, limit = 20) {
+export async function getRecentTurns(
+  userId: string,
+  limit = 48,
+  channelId?: string | null,
+) {
   const result = await botPool.query<TurnRow>(
     `
     SELECT id::text, role, input_type, content, created_at
     FROM conversation_turns
     WHERE user_id = $1
+      AND ($3::text IS NULL OR channel_id = $3)
     ORDER BY created_at DESC
     LIMIT $2
     `,
-    [userId, limit],
+    [userId, Math.min(Math.max(limit, 1), 48), channelId ?? null],
   );
 
   return result.rows.reverse().map((row) => ({
@@ -255,19 +260,29 @@ export async function maybeStoreMemory(userId: string, text: string) {
     return null;
   }
 
-  const memoryAllowed = await hasConsent(userId, "memory");
+  const memorySetting = await webPool.query<{ enabled: boolean }>(
+    `SELECT enabled FROM memory_settings WHERE user_id = $1`,
+    [userId],
+  );
+  const memoryAllowed = (memorySetting.rows[0]?.enabled ?? true) && await hasConsent(userId, "memory");
 
   if (!memoryAllowed) {
     return null;
   }
 
+  const retentionResult = await webPool.query<{ retention_days: number }>(
+    `SELECT retention_days FROM memory_settings WHERE user_id = $1`,
+    [userId],
+  );
+  const retentionDays = Math.min(Math.max(Number(retentionResult.rows[0]?.retention_days ?? 30), 1), 3650);
+
   const result = await botPool.query<MemoryRow>(
     `
-    INSERT INTO user_memories (user_id, content, source, updated_at)
-    VALUES ($1, $2, 'conversation', NOW())
+    INSERT INTO user_memories (user_id, content, source, expires_at, updated_at)
+    VALUES ($1, $2, 'conversation', NOW() + ($3 * INTERVAL '1 day'), NOW())
     RETURNING id::text, content, source, confidence, is_pinned, created_at
     `,
-    [userId, memoryText],
+    [userId, memoryText, retentionDays],
   );
 
   const row = result.rows[0];
@@ -340,4 +355,23 @@ export async function deleteAllMemories(userId: string) {
       [userId],
     );
   }
+}
+
+export async function setMemoryPinned(userId: string, memoryId: string, pinned: boolean) {
+  const result = await botPool.query(
+    `UPDATE user_memories
+     SET is_pinned = $3, updated_at = NOW()
+     WHERE user_id = $1 AND id = $2 AND deleted_at IS NULL`,
+    [userId, memoryId, pinned],
+  );
+
+  if (result.rowCount) {
+    await botPool.query(
+      `INSERT INTO memory_audit_events (memory_id, user_id, action)
+       VALUES ($1, $2, $3)`,
+      [memoryId, userId, pinned ? "pinned" : "unpinned"],
+    );
+  }
+
+  return Boolean(result.rowCount);
 }

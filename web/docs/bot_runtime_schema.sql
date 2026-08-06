@@ -86,7 +86,8 @@ BEGIN
 
   DELETE FROM performance_events WHERE expires_at < NOW();
   DELETE FROM user_memories
-    WHERE deleted_at IS NOT NULL AND deleted_at < NOW() - INTERVAL '30 days';
+    WHERE (expires_at IS NOT NULL AND expires_at < NOW())
+       OR (deleted_at IS NOT NULL AND deleted_at < NOW() - INTERVAL '30 days');
 
   RETURN deleted_count;
 END;

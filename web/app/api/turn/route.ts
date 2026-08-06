@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     }
 
     const summary = await refreshSummaryIfNeeded(linkedUser.id);
-    const recentTurns = await getRecentTurns(linkedUser.id, 20);
+  const recentTurns = await getRecentTurns(linkedUser.id, 48);
     const memoryAllowed = await hasConsent(linkedUser.id, "memory");
     const memories = memoryAllowed ? await listMemories(linkedUser.id) : [];
 
