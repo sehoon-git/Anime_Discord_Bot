@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth";
+import { getMissingRequiredConsents } from "@/app/lib/consent";
 import { addTestCredits, getBillingStatusForUser } from "@/app/lib/billing";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,8 @@ export async function GET() {
 
   try {
     const billing = await getBillingStatusForUser(user.email, user.name);
+    const missingConsents = await getMissingRequiredConsents(billing.userId);
+    if (missingConsents.length > 0) return Response.json({ ok: false, error: "REQUIRED_CONSENT_MISSING", missingConsents }, { status: 403 });
     return Response.json({ ok: true, credits: billing.credits, usage: billing.usage });
   } catch (error) {
     console.error("[billing][credits][GET]", error);
@@ -29,6 +32,8 @@ export async function POST() {
 
   try {
     const billing = await getBillingStatusForUser(user.email, user.name);
+    const missingConsents = await getMissingRequiredConsents(billing.userId);
+    if (missingConsents.length > 0) return Response.json({ ok: false, error: "REQUIRED_CONSENT_MISSING", missingConsents }, { status: 403 });
     const balance = await addTestCredits(billing.userId, 100);
     return Response.json({ ok: true, mode: "test", added: 100, balance });
   } catch (error) {

@@ -1,8 +1,11 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 import { authOptions } from "@/app/lib/auth";
+import { getMissingRequiredConsents } from "@/app/lib/consent";
 import { type BillingStatus, getBillingStatusForUser } from "@/app/lib/billing";
+import { getUserIdByEmail } from "@/app/lib/users";
 import BillingPlans from "@/app/_components/BillingPlans";
 
 export const dynamic = "force-dynamic";
@@ -61,6 +64,8 @@ export default async function BillingPage() {
   const locale: Locale = (await cookies()).get("locale")?.value === "ko-KR" ? "ko" : "en";
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) return <LoginRequired locale={locale} />;
+  const userId = await getUserIdByEmail(session.user.email);
+  if (!userId || (await getMissingRequiredConsents(userId)).length > 0) redirect("/profile");
   let billing: BillingStatus | null = null;
   try {
     billing = await getBillingStatusForUser(session.user.email, session.user.name);

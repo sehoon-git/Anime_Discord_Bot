@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { getMissingRequiredConsents } from "@/app/lib/consent";
+
 import {
   cleanupExpiredTurns,
   findLinkedUserByDiscordId,
@@ -47,6 +49,19 @@ export async function POST(request: Request) {
           error: "DISCORD_ACCOUNT_NOT_LINKED",
           messageForBot:
             "먼저 웹사이트에서 Google 로그인 후 Discord 계정을 연동해주세요.",
+        },
+        { status: 403 },
+      );
+    }
+
+    const missingConsents = await getMissingRequiredConsents(linkedUser.id);
+    if (missingConsents.length > 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "REQUIRED_CONSENT_MISSING",
+          missingConsents,
+          messageForBot: "Required service consents are incomplete.",
         },
         { status: 403 },
       );

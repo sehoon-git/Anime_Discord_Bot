@@ -98,6 +98,7 @@ export default async function DashboardPage() {
       JOIN users ON users.id = user_consents.user_id
       WHERE users.email = $1
         AND user_consents.consent_type = ANY($2::text[])
+        AND user_consents.accepted_at IS NOT NULL
       `,
       [userEmail, REQUIRED_CONSENTS],
     );

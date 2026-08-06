@@ -61,6 +61,7 @@ export async function GET() {
       JOIN users ON users.id = user_consents.user_id
       WHERE users.email = $1
         AND user_consents.consent_type = ANY($2::text[])
+        AND user_consents.accepted_at IS NOT NULL
       `,
       [session.user.email, REQUIRED_CONSENTS],
     );

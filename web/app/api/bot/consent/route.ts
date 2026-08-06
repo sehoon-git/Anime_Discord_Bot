@@ -19,7 +19,9 @@ export async function GET(request: Request) {
       `SELECT c.consent_type 
        FROM user_consents c
        JOIN user_accounts a ON a.user_id = c.user_id
-       WHERE a.provider = 'discord' AND a.provider_user_id = $1`,
+       WHERE a.provider = 'discord'
+         AND a.provider_user_id = $1
+         AND c.accepted_at IS NOT NULL`,
       [discordUserId]
     );
 

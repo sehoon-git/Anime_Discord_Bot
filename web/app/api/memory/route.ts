@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 import { authOptions } from "@/app/lib/auth";
+import { getMissingRequiredConsents } from "@/app/lib/consent";
 import { deleteAllMemories, deleteMemory, listMemories } from "@/app/lib/memory";
 import { upsertUser } from "@/app/lib/users";
 
@@ -24,6 +25,11 @@ export async function GET() {
       { ok: false, error: "UNAUTHORIZED" },
       { status: 401 },
     );
+  }
+
+  const missingConsents = await getMissingRequiredConsents(userId);
+  if (missingConsents.length > 0) {
+    return NextResponse.json({ ok: false, error: "REQUIRED_CONSENT_MISSING", missingConsents }, { status: 403 });
   }
 
   const memories = await listMemories(userId);
@@ -67,6 +73,11 @@ export async function PATCH(request: Request) {
 
   if (!userId) {
     return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
+  }
+
+  const missingConsents = await getMissingRequiredConsents(userId);
+  if (missingConsents.length > 0) {
+    return NextResponse.json({ ok: false, error: "REQUIRED_CONSENT_MISSING", missingConsents }, { status: 403 });
   }
 
   const body = await request.json().catch(() => ({}));

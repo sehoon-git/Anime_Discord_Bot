@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/app/lib/auth";
+import { getMissingRequiredConsents } from "@/app/lib/consent";
 import { webPool } from "@/app/lib/db";
 import { upsertUser } from "@/app/lib/users";
 
@@ -21,6 +22,8 @@ async function getCurrentUser() {
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
+  const missingConsents = await getMissingRequiredConsents(user.userId);
+  if (missingConsents.length > 0) return NextResponse.json({ ok: false, error: "REQUIRED_CONSENT_MISSING", missingConsents }, { status: 403 });
 
   const result = await webPool.query(
     `SELECT
@@ -47,6 +50,8 @@ export async function GET() {
 export async function PATCH(request: Request) {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
+  const missingConsents = await getMissingRequiredConsents(user.userId);
+  if (missingConsents.length > 0) return NextResponse.json({ ok: false, error: "REQUIRED_CONSENT_MISSING", missingConsents }, { status: 403 });
 
   const body = await request.json().catch(() => null);
   const locale = allowedLocale(body?.locale);

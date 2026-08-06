@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { botPool, webPool } from "@/app/lib/db";
+import { getMissingRequiredConsents } from "@/app/lib/consent";
 
 async function resolveUserId(discordUserId: string) {
   const result = await webPool.query<{ user_id: string }>(
@@ -15,22 +16,6 @@ async function resolveUserId(discordUserId: string) {
   );
 
   return result.rows[0]?.user_id ?? null;
-}
-
-async function hasMemoryConsent(userId: string) {
-  const result = await webPool.query<{ exists: boolean }>(
-    `
-    SELECT EXISTS (
-      SELECT 1
-      FROM user_consents
-      WHERE user_id = $1
-        AND consent_type = 'memory'
-    )
-    `,
-    [userId],
-  );
-
-  return result.rows[0]?.exists ?? false;
 }
 
 function unauthorized() {
@@ -67,10 +52,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ ok: false, error: "USER_NOT_FOUND" }, { status: 404 });
     }
 
-    const memoryAllowed = await hasMemoryConsent(userId);
-
-    if (!memoryAllowed) {
-      return NextResponse.json({ ok: true, memoryAllowed: false, memories: [] });
+    const missingConsents = await getMissingRequiredConsents(userId);
+    if (missingConsents.length > 0) {
+      return NextResponse.json(
+        { ok: false, error: "REQUIRED_CONSENT_MISSING", missingConsents },
+        { status: 403 },
+      );
     }
 
     const result = await botPool.query(
@@ -118,10 +105,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, error: "USER_NOT_FOUND" }, { status: 404 });
     }
 
-    const memoryAllowed = await hasMemoryConsent(userId);
-
-    if (!memoryAllowed) {
-      return NextResponse.json({ ok: false, error: "MEMORY_CONSENT_REQUIRED" }, { status: 403 });
+    const missingConsents = await getMissingRequiredConsents(userId);
+    if (missingConsents.length > 0) {
+      return NextResponse.json(
+        { ok: false, error: "REQUIRED_CONSENT_MISSING", missingConsents },
+        { status: 403 },
+      );
     }
 
     const insertRes = await botPool.query(
@@ -157,6 +146,14 @@ export async function PATCH(request: Request) {
 
     const userId = await resolveUserId(discordUserId);
     if (!userId) return NextResponse.json({ ok: false, error: "USER_NOT_FOUND" }, { status: 404 });
+
+    const missingConsents = await getMissingRequiredConsents(userId);
+    if (missingConsents.length > 0) {
+      return NextResponse.json(
+        { ok: false, error: "REQUIRED_CONSENT_MISSING", missingConsents },
+        { status: 403 },
+      );
+    }
 
     const result = await botPool.query(
       `UPDATE user_memories SET is_pinned = $3, updated_at = NOW()

@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/app/lib/auth";
+import { getMissingRequiredConsents } from "@/app/lib/consent";
+import { getUserIdByEmail } from "@/app/lib/users";
 
 const DISCORD_AUTHORIZE_URL = "https://discord.com/oauth2/authorize";
 
@@ -17,6 +19,11 @@ export async function GET() {
 
   const clientId = process.env.DISCORD_CLIENT_ID;
   const baseUrl = getBaseUrl();
+
+  const userId = await getUserIdByEmail(session.user.email);
+  if (!userId || (await getMissingRequiredConsents(userId)).length > 0) {
+    return NextResponse.redirect(new URL("/profile", baseUrl));
+  }
 
   if (!clientId) {
     return NextResponse.json(

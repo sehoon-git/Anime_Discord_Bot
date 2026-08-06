@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth";
+import { getMissingRequiredConsents } from "@/app/lib/consent";
 import { getBillingStatusForUser } from "@/app/lib/billing";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,8 @@ export async function GET() {
       session.user.email,
       session.user.name,
     );
+    const missingConsents = await getMissingRequiredConsents(billing.userId);
+    if (missingConsents.length > 0) return Response.json({ ok: false, error: "REQUIRED_CONSENT_MISSING", missingConsents }, { status: 403 });
 
     return Response.json(billing);
   } catch (error) {

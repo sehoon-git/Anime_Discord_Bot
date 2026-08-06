@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
+import { REQUIRED_CONSENT_TYPES } from "@/app/lib/consent";
 import { db } from "@/app/lib/db";
 import { ensureUserProfilesTable } from "@/app/lib/users";
 
@@ -57,10 +58,17 @@ export async function GET(request: Request) {
         locale
       FROM user_profiles
       WHERE ($1::bigint IS NULL OR user_id = $1::bigint)
+        AND (
+          SELECT COUNT(DISTINCT c.consent_type)
+          FROM user_consents c
+          WHERE c.user_id = user_profiles.user_id
+            AND c.consent_type = ANY($3::text[])
+            AND c.accepted_at IS NOT NULL
+        ) = $4
       ORDER BY updated_at DESC
       LIMIT $2
       `,
-      [userId, limit],
+      [userId, limit, REQUIRED_CONSENT_TYPES, REQUIRED_CONSENT_TYPES.length],
     );
 
     const users = result.rows.map((row) => ({

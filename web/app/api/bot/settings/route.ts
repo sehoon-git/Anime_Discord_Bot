@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getMissingRequiredConsents } from "@/app/lib/consent";
 import { botPool, webPool } from "@/app/lib/db";
 
 function authorized(request: Request) {
@@ -17,6 +18,19 @@ export async function GET(request: Request) {
   if (!guildId && !discordUserId) return NextResponse.json({ ok: false, error: "MISSING_IDENTIFIER" }, { status: 400 });
 
   try {
+    if (discordUserId) {
+      const linked = await webPool.query<{ user_id: string }>(
+        `SELECT user_id::text FROM user_accounts WHERE provider = 'discord' AND provider_user_id = $1 LIMIT 1`,
+        [discordUserId],
+      );
+      if (linked.rows[0]) {
+        const missingConsents = await getMissingRequiredConsents(linked.rows[0].user_id);
+        if (missingConsents.length > 0) {
+          return NextResponse.json({ ok: false, error: "REQUIRED_CONSENT_MISSING", missingConsents }, { status: 403 });
+        }
+      }
+    }
+
     const [guild, channel, user] = await Promise.all([
       guildId ? botPool.query(`SELECT * FROM guild_settings WHERE guild_id = $1`, [guildId]) : Promise.resolve({ rows: [] }),
       guildId && channelId ? botPool.query(`SELECT * FROM channel_voice_permissions WHERE guild_id = $1 AND channel_id = $2`, [guildId, channelId]) : Promise.resolve({ rows: [] }),
