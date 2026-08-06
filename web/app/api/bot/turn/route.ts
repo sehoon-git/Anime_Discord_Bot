@@ -19,6 +19,7 @@ import {
 } from "@/app/lib/persona";
 import { preprocessTurnEnvelope } from "@/app/lib/preprocess";
 import { getUserProfile } from "@/app/lib/users";
+import { getAssistantPreferences, recordPerformanceEvent } from "@/app/lib/operations";
 
 export const runtime = "nodejs";
 
@@ -100,6 +101,7 @@ export async function POST(request: Request) {
     }
 
     const userProfile = await getUserProfile(linkedUser.id);
+    const preferences = await getAssistantPreferences(linkedUser.id);
     const responseLocale = userProfile?.locale ?? turn.locale;
 
     const updatedNickname = await maybeUpdatePreferredNickname(
@@ -111,7 +113,7 @@ export async function POST(request: Request) {
       linkedUser.nickname = updatedNickname;
     }
 
-    const memoryAllowed = await hasConsent(linkedUser.id, "memory");
+    const memoryAllowed = (preferences?.memory_enabled ?? true) && await hasConsent(linkedUser.id, "memory");
     const [recentTurns, summary, memories] = await Promise.all([
       getRecentTurns(linkedUser.id),
       getConversationSummary(linkedUser.id),
@@ -126,6 +128,11 @@ export async function POST(request: Request) {
       recentTurns,
       userText: turn.text,
       userNickname: linkedUser.nickname,
+      preferences: preferences ? {
+        relationshipTone: preferences.relationship_tone,
+        responseLength: preferences.response_length,
+        snsToneEnabled: preferences.sns_tone_enabled,
+      } : null,
     });
 
     await saveTurn({
@@ -140,6 +147,15 @@ export async function POST(request: Request) {
 
     const savedMemory = await maybeStoreMemory(linkedUser.id, turn.text);
     const reply = buildFallbackReply(turn.text, Boolean(savedMemory));
+
+    await recordPerformanceEvent({
+      userId: linkedUser.id,
+      discordUserId: turn.discordUserId,
+      guildId: turn.guildId,
+      channelId: turn.channelId,
+      eventType: turn.inputType === "voice" ? "stt" : "llm",
+      success: true,
+    });
 
     await saveTurn({
       userId: linkedUser.id,
@@ -173,6 +189,11 @@ export async function POST(request: Request) {
           memories,
           recentTurns,
           userNickname: linkedUser.nickname,
+          preferences: preferences ? {
+            relationshipTone: preferences.relationship_tone,
+            responseLength: preferences.response_length,
+            snsToneEnabled: preferences.sns_tone_enabled,
+          } : null,
         }),
         messages: modelMessages,
       },

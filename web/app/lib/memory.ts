@@ -23,6 +23,8 @@ export type UserMemory = {
   id: string;
   content: string;
   source: string;
+  confidence: number;
+  isPinned: boolean;
   createdAt: string;
 };
 
@@ -38,6 +40,8 @@ type MemoryRow = {
   id: string;
   content: string;
   source: string;
+  confidence: number;
+  is_pinned: boolean;
   created_at: Date;
 };
 
@@ -261,17 +265,25 @@ export async function maybeStoreMemory(userId: string, text: string) {
     `
     INSERT INTO user_memories (user_id, content, source, updated_at)
     VALUES ($1, $2, 'conversation', NOW())
-    RETURNING id::text, content, source, created_at
+    RETURNING id::text, content, source, confidence, is_pinned, created_at
     `,
     [userId, memoryText],
   );
 
   const row = result.rows[0];
 
+  await botPool.query(
+    `INSERT INTO memory_audit_events (memory_id, user_id, action)
+     VALUES ($1, $2, 'created')`,
+    [row.id, userId],
+  );
+
   return {
     id: row.id,
     content: row.content,
     source: row.source,
+    confidence: Number(row.confidence),
+    isPinned: row.is_pinned,
     createdAt: row.created_at.toISOString(),
   };
 }
@@ -279,9 +291,9 @@ export async function maybeStoreMemory(userId: string, text: string) {
 export async function listMemories(userId: string) {
   const result = await botPool.query<MemoryRow>(
     `
-    SELECT id::text, content, source, created_at
+    SELECT id::text, content, source, confidence, is_pinned, created_at
     FROM user_memories
-    WHERE user_id = $1
+    WHERE user_id = $1 AND deleted_at IS NULL
     ORDER BY created_at DESC
     `,
     [userId],
@@ -291,21 +303,41 @@ export async function listMemories(userId: string) {
     id: row.id,
     content: row.content,
     source: row.source,
+    confidence: Number(row.confidence),
+    isPinned: row.is_pinned,
     createdAt: row.created_at.toISOString(),
   }));
 }
 
 export async function deleteMemory(userId: string, memoryId: string) {
-  await botPool.query(
+  const result = await botPool.query(
     `
-    DELETE FROM user_memories
-    WHERE user_id = $1
-      AND id = $2
+    UPDATE user_memories
+    SET deleted_at = COALESCE(deleted_at, NOW()), updated_at = NOW()
+    WHERE user_id = $1 AND id = $2 AND deleted_at IS NULL
     `,
     [userId, memoryId],
   );
+  if (result.rowCount) {
+    await botPool.query(
+      `INSERT INTO memory_audit_events (memory_id, user_id, action)
+       VALUES ($1, $2, 'deleted')`,
+      [memoryId, userId],
+    );
+  }
 }
 
 export async function deleteAllMemories(userId: string) {
-  await botPool.query("DELETE FROM user_memories WHERE user_id = $1", [userId]);
+  const result = await botPool.query(
+    `UPDATE user_memories SET deleted_at = NOW(), updated_at = NOW()
+     WHERE user_id = $1 AND deleted_at IS NULL`,
+    [userId],
+  );
+  if (result.rowCount) {
+    await botPool.query(
+      `INSERT INTO memory_audit_events (user_id, action)
+       VALUES ($1, 'reset')`,
+      [userId],
+    );
+  }
 }

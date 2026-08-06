@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 
 import LanguageSettings from "@/app/_components/LanguageSettings";
+import AssistantSettings from "@/app/_components/AssistantSettings";
 import ThemeToggle from "@/app/_components/ThemeToggle";
 import { authOptions } from "@/app/lib/auth";
 import { getUserProfileByEmail } from "@/app/lib/users";
@@ -26,6 +27,8 @@ export default async function PrivacySettingsPage() {
         <p className="mt-2 text-sm text-[#92768a]">편안하게 사용할 화면 모드를 선택해주세요.</p>
         <div className="mt-4"><ThemeToggle /></div>
       </section>
+
+      <AssistantSettings />
 
       <div className="mt-6 space-y-4">
         <label className="flex items-center justify-between rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-sm"><span>음성 데이터 처리 허용</span><input type="checkbox" /></label>

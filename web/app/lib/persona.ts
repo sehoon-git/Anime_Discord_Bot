@@ -42,6 +42,11 @@ type PersonaInput = {
   summary?: string | null;
   memories: UserMemory[];
   userNickname?: string | null;
+  preferences?: {
+    relationshipTone?: string;
+    responseLength?: string;
+    snsToneEnabled?: boolean;
+  } | null;
 };
 
 function getPersona(characterId?: string) {
@@ -76,6 +81,9 @@ export function buildPersonaPrompt(input: PersonaInput) {
     `Character name: ${persona.name}`,
     `Response locale: ${input.locale || "en-US"}`,
     `User preferred nickname: ${input.userNickname || "Not set"}`,
+    `Relationship tone: ${input.preferences?.relationshipTone || "friend"}`,
+    `Response length: ${input.preferences?.responseLength || "normal"}`,
+    `SNS-style tone enabled: ${input.preferences?.snsToneEnabled !== false}`,
     "",
     "[Style rules]",
     ...persona.styleRules.map((rule) => `- ${rule}`),
