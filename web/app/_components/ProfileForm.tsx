@@ -1,112 +1,17 @@
 "use client";
-
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-
-type Gender = "female" | "male";
-type Locale = "en-US" | "ko-KR";
-
-type ProfileFormProps = {
-  initialDisplayName: string;
-  initialNickname: string;
-  initialGender?: Gender | null;
-  initialBirthDate?: string | null;
-  initialLocale?: Locale;
-};
-
-type RequiredConsentKey = "terms" | "privacy" | "overseas" | "memory";
-
-const fieldClass =
-  "mt-2 w-full rounded-2xl border border-[#efd8e5] bg-white/75 px-4 py-3 text-[#5b4054] outline-none transition placeholder:text-[#b79aaa] focus:border-[#e99abb] focus:bg-white focus:ring-4 focus:ring-[#f6bfd8]/30";
-
-function splitBirthDate(value?: string | null) {
-  const [year = "", month = "", day = ""] = value?.split("-") ?? [];
-  return { year, month, day };
-}
-
-function ConsentLink({ href }: { href: string }) {
-  return (
-    <Link href={href} target="_blank" rel="noopener noreferrer" className="shrink-0 text-sm font-semibold text-[#d45d91] hover:text-[#b94c7d]">
-      [상세보기]
-    </Link>
-  );
-}
-
-export default function ProfileForm({
-  initialDisplayName,
-  initialNickname,
-  initialGender = null,
-  initialBirthDate = null,
-  initialLocale = "en-US",
-}: ProfileFormProps) {
-  const router = useRouter();
-  const initialBirth = splitBirthDate(initialBirthDate);
-  const [displayName, setDisplayName] = useState(initialDisplayName);
-  const [nickname, setNickname] = useState(initialNickname);
-  const [gender, setGender] = useState<Gender | null>(initialGender);
-  const [birthYear, setBirthYear] = useState(initialBirth.year);
-  const [birthMonth, setBirthMonth] = useState(initialBirth.month);
-  const [birthDay, setBirthDay] = useState(initialBirth.day);
-  const [locale] = useState<Locale>(initialLocale);
-  const [terms, setTerms] = useState(false);
-  const [privacy, setPrivacy] = useState(false);
-  const [overseas, setOverseas] = useState(false);
-  const [memory, setMemory] = useState(false);
-  const [voice, setVoice] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const birthDate = useMemo(() => {
-    if (birthYear.length !== 4 || !birthMonth || !birthDay) return "";
-    return `${birthYear}-${birthMonth.padStart(2, "0")}-${birthDay.padStart(2, "0")}`;
-  }, [birthDay, birthMonth, birthYear]);
-
-  const requiredConsentsChecked = terms && privacy && overseas && memory;
-  const allConsentsChecked = requiredConsentsChecked && voice;
-  const canSave = displayName.trim().length >= 2 && nickname.trim().length >= 2 && Boolean(gender) && Boolean(birthDate) && requiredConsentsChecked;
-
-  function setAllConsents(checked: boolean) {
-    setTerms(checked); setPrivacy(checked); setOverseas(checked); setMemory(checked); setVoice(checked);
-  }
-
-  function updateRequiredConsent(key: RequiredConsentKey, checked: boolean) {
-    ({ terms: setTerms, privacy: setPrivacy, overseas: setOverseas, memory: setMemory }[key])(checked);
-  }
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!canSave || isSaving || !gender) return;
-    setIsSaving(true); setErrorMessage("");
-    try {
-      const response = await fetch("/api/profile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ displayName, nickname, gender, birthDate, locale, terms, privacy, overseas, memory, voice }) });
-      const data = await response.json().catch(() => null);
-      if (!response.ok) { setErrorMessage(data?.error ?? "프로필을 저장하지 못했습니다."); return; }
-      document.cookie = `locale=${locale}; path=/; max-age=31536000; samesite=lax`;
-      router.push("/dashboard"); router.refresh();
-    } catch { setErrorMessage("서버에 연결하지 못했습니다. 잠시 후 다시 시도해주세요."); }
-    finally { setIsSaving(false); }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="mt-8 space-y-8">
-      <div className="grid gap-5 md:grid-cols-2">
-        <label className="block"><span className="text-sm font-bold text-[#684b60]">이름</span><input type="text" value={displayName} maxLength={40} onChange={(event) => setDisplayName(event.target.value)} className={fieldClass} placeholder="내 이름" /></label>
-        <label className="block"><span className="text-sm font-bold text-[#684b60]">닉네임</span><input type="text" value={nickname} maxLength={30} onChange={(event) => setNickname(event.target.value)} className={fieldClass} placeholder="AI가 불러줄 이름" /></label>
-      </div>
-
-      <p className="rounded-2xl border border-[#f0d7e5] bg-[#fff5fa] px-4 py-3 text-sm leading-6 text-[#92768a]">AI 캐릭터가 대화 중 이 이름으로 불러줍니다. Discord에서 “나를 OO이라 불러줘”라고 말하면 이 값도 바뀔 수 있습니다.</p>
-
-      <section><h2 className="text-sm font-bold text-[#684b60]">성별</h2><div className="mt-3 grid grid-cols-2 gap-3">{([["female", "여자"], ["male", "남자"]] as const).map(([value, label]) => <button key={value} type="button" onClick={() => setGender(value)} className={`rounded-2xl px-4 py-3 text-sm font-bold transition ${gender === value ? "bg-gradient-to-r from-[#ef8fba] to-[#a895f4] text-white shadow-lg shadow-pink-200/60" : "border border-[#efd8e5] bg-white/65 text-[#806579] hover:border-[#e6a9c4] hover:bg-white"}`}>{label}</button>)}</div></section>
-
-      <section><h2 className="text-sm font-bold text-[#684b60]">생년월일</h2><div className="mt-3 grid grid-cols-3 gap-3"><input inputMode="numeric" maxLength={4} value={birthYear} onChange={(event) => setBirthYear(event.target.value.replace(/\D/g, ""))} className={fieldClass} placeholder="연도 YYYY" /><input inputMode="numeric" maxLength={2} value={birthMonth} onChange={(event) => setBirthMonth(event.target.value.replace(/\D/g, ""))} className={fieldClass} placeholder="월 MM" /><input inputMode="numeric" maxLength={2} value={birthDay} onChange={(event) => setBirthDay(event.target.value.replace(/\D/g, ""))} className={fieldClass} placeholder="일 DD" /></div></section>
-
-      <section className="rounded-3xl border border-[#f0d7e5] bg-[#fffafd]/90 p-5 shadow-xl shadow-pink-100/50"><label className="flex items-center gap-3 text-base font-extrabold text-[#684b60]"><input type="checkbox" checked={allConsentsChecked} onChange={(event) => setAllConsents(event.target.checked)} className="h-4 w-4 accent-[#e878ab]" /><span>약관 전체 동의</span></label><div className="mt-5 space-y-4 text-sm">
-        {([ ["terms", "[필수] 서비스 이용약관", "/terms"], ["privacy", "[필수] 개인정보 수집 및 이용", "/privacy"], ["overseas", "[필수] 개인정보 국외 이전", "/privacy"], ["memory", "[필수] 장기기억 저장", "/privacy"], ["voice", "[선택] 음성 데이터 처리", "/voice-policy"] ] as const).map(([key, label, href]) => <label key={key} className="flex items-center justify-between gap-3"><span className={`flex items-center gap-3 font-semibold ${key === "voice" ? "text-[#aa8e9f]" : "text-[#76566b]"}`}><input type="checkbox" checked={key === "terms" ? terms : key === "privacy" ? privacy : key === "overseas" ? overseas : key === "memory" ? memory : voice} onChange={(event) => key === "voice" ? setVoice(event.target.checked) : updateRequiredConsent(key, event.target.checked)} className="accent-[#e878ab]" />{label}</span><ConsentLink href={href} /></label>)}
-      </div></section>
-
-      <button type="submit" disabled={!canSave || isSaving} className="w-full rounded-2xl bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-6 py-4 font-extrabold text-white shadow-lg shadow-pink-200/60 transition hover:brightness-105 disabled:cursor-not-allowed disabled:from-[#d8cdd4] disabled:to-[#d8cdd4] disabled:shadow-none">{isSaving ? "가입 처리 중..." : "가입하기"}</button>
-      {errorMessage ? <p className="rounded-xl border border-red-900/50 bg-red-950/40 p-3 text-sm font-semibold text-red-200">{errorMessage}</p> : null}
-    </form>
-  );
+type Gender = "female" | "male"; type Locale = "en-US" | "ko-KR"; type RequiredConsentKey = "terms" | "privacy" | "overseas" | "memory";
+type Props = { initialDisplayName: string; initialNickname: string; initialGender?: Gender | null; initialBirthDate?: string | null; initialLocale?: Locale };
+const fieldClass = "mt-2 w-full rounded-2xl border border-[#efd8e5] bg-white/75 px-4 py-3 text-[#5b4054] outline-none transition placeholder:text-[#b79aaa] focus:border-[#e99abb] focus:bg-white focus:ring-4 focus:ring-[#f6bfd8]/30";
+function splitBirthDate(value?: string | null) { const [year = "", month = "", day = ""] = value?.split("-") ?? []; return { year, month, day }; }
+function ConsentLink({ href, ko }: { href: string; ko: boolean }) { return <Link href={href} target="_blank" rel="noopener noreferrer" className="shrink-0 text-sm font-semibold text-[#d45d91] hover:text-[#b94c7d]">[{ko ? "상세보기" : "View details"}]</Link>; }
+export default function ProfileForm({ initialDisplayName, initialNickname, initialGender = null, initialBirthDate = null, initialLocale = "en-US" }: Props) {
+  const router = useRouter(); const ko = initialLocale === "ko-KR"; const birth = splitBirthDate(initialBirthDate); const [displayName, setDisplayName] = useState(initialDisplayName); const [nickname, setNickname] = useState(initialNickname); const [gender, setGender] = useState<Gender | null>(initialGender); const [birthYear, setBirthYear] = useState(birth.year); const [birthMonth, setBirthMonth] = useState(birth.month); const [birthDay, setBirthDay] = useState(birth.day); const [terms, setTerms] = useState(false); const [privacy, setPrivacy] = useState(false); const [overseas, setOverseas] = useState(false); const [memory, setMemory] = useState(false); const [voice, setVoice] = useState(false); const [isSaving, setIsSaving] = useState(false); const [errorMessage, setErrorMessage] = useState("");
+  const birthDate = useMemo(() => birthYear.length === 4 && birthMonth && birthDay ? `${birthYear}-${birthMonth.padStart(2, "0")}-${birthDay.padStart(2, "0")}` : "", [birthDay, birthMonth, birthYear]); const required = terms && privacy && overseas && memory; const all = required && voice; const canSave = displayName.trim().length >= 2 && nickname.trim().length >= 2 && Boolean(gender) && Boolean(birthDate) && required;
+  function setAll(checked: boolean) { setTerms(checked); setPrivacy(checked); setOverseas(checked); setMemory(checked); setVoice(checked); } function setRequired(key: RequiredConsentKey, checked: boolean) { ({ terms: setTerms, privacy: setPrivacy, overseas: setOverseas, memory: setMemory }[key])(checked); }
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); if (!canSave || isSaving || !gender) return; setIsSaving(true); setErrorMessage(""); try { const response = await fetch("/api/profile", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ displayName, nickname, gender, birthDate, locale: initialLocale, terms, privacy, overseas, memory, voice }) }); const data = await response.json().catch(() => null); if (!response.ok) { setErrorMessage(data?.error ?? (ko ? "프로필을 저장하지 못했습니다." : "We could not save your profile.")); return; } document.cookie = `locale=${initialLocale}; path=/; max-age=31536000; samesite=lax`; router.push("/dashboard"); router.refresh(); } catch { setErrorMessage(ko ? "서버에 연결하지 못했습니다. 잠시 후 다시 시도해주세요." : "We could not connect to the server. Please try again."); } finally { setIsSaving(false); } }
+  const items = ko ? [["terms", "[필수] 서비스 이용약관", "/terms"], ["privacy", "[필수] 개인정보 수집 및 이용", "/privacy"], ["overseas", "[필수] 개인정보 국외 이전", "/privacy"], ["memory", "[필수] 장기기억 저장", "/privacy"], ["voice", "[선택] 음성 데이터 처리", "/voice-policy"]] as const : [["terms", "[Required] Terms of Service", "/terms"], ["privacy", "[Required] Privacy collection and use", "/privacy"], ["overseas", "[Required] Overseas transfer of personal data", "/privacy"], ["memory", "[Required] Long-term memory storage", "/privacy"], ["voice", "[Optional] Voice data processing", "/voice-policy"]] as const;
+  return <form onSubmit={handleSubmit} className="mt-8 space-y-8"><div className="grid gap-5 md:grid-cols-2"><label className="block"><span className="text-sm font-bold text-[#684b60]">{ko ? "이름" : "Name"}</span><input value={displayName} maxLength={40} onChange={(e) => setDisplayName(e.target.value)} className={fieldClass} placeholder={ko ? "서비스에서 사용할 이름" : "Name used in the service"} /></label><label className="block"><span className="text-sm font-bold text-[#684b60]">{ko ? "닉네임" : "Nickname"}</span><input value={nickname} maxLength={30} onChange={(e) => setNickname(e.target.value)} className={fieldClass} placeholder={ko ? "AI가 불러줄 이름" : "Name the AI will call you"} /></label></div><p className="rounded-2xl border border-[#f0d7e5] bg-[#fff5fa] px-4 py-3 text-sm leading-6 text-[#92768a]">{ko ? "AI 캐릭터가 대화 중 이 이름으로 불러줍니다. Discord에서 ‘나를 OO이라 불러줘’라고 말하면 이 값도 바뀔 수 있습니다." : "The AI character will call you by this name. You can also change it in Discord by saying, ‘Call me OO.’"}</p><section><h2 className="text-sm font-bold text-[#684b60]">{ko ? "성별" : "Gender"}</h2><div className="mt-3 grid grid-cols-2 gap-3">{([["female", ko ? "여자" : "Female"], ["male", ko ? "남자" : "Male"]] as const).map(([value, label]) => <button key={value} type="button" onClick={() => setGender(value)} className={`rounded-2xl px-4 py-3 text-sm font-bold transition ${gender === value ? "bg-gradient-to-r from-[#ef8fba] to-[#a895f4] text-white shadow-lg shadow-pink-200/60" : "border border-[#efd8e5] bg-white/65 text-[#806579] hover:border-[#e6a9c4] hover:bg-white"}`}>{label}</button>)}</div></section><section><h2 className="text-sm font-bold text-[#684b60]">{ko ? "생년월일" : "Date of birth"}</h2><div className="mt-3 grid grid-cols-3 gap-3"><input inputMode="numeric" maxLength={4} value={birthYear} onChange={(e) => setBirthYear(e.target.value.replace(/\D/g, ""))} className={fieldClass} placeholder={ko ? "연도 YYYY" : "Year YYYY"} /><input inputMode="numeric" maxLength={2} value={birthMonth} onChange={(e) => setBirthMonth(e.target.value.replace(/\D/g, ""))} className={fieldClass} placeholder={ko ? "월 MM" : "Month MM"} /><input inputMode="numeric" maxLength={2} value={birthDay} onChange={(e) => setBirthDay(e.target.value.replace(/\D/g, ""))} className={fieldClass} placeholder={ko ? "일 DD" : "Day DD"} /></div></section><section className="rounded-3xl border border-[#f0d7e5] bg-[#fffafd]/90 p-5 shadow-xl shadow-pink-100/50"><label className="flex items-center gap-3 text-base font-extrabold text-[#684b60]"><input type="checkbox" checked={all} onChange={(e) => setAll(e.target.checked)} className="h-4 w-4 accent-[#e878ab]" /><span>{ko ? "약관 전체 동의" : "Agree to all terms"}</span></label><div className="mt-5 space-y-4 text-sm">{items.map(([key, text, href]) => <label key={key} className="flex items-center justify-between gap-3"><span className="flex items-center gap-3 font-semibold text-[#76566b]"><input type="checkbox" checked={key === "terms" ? terms : key === "privacy" ? privacy : key === "overseas" ? overseas : key === "memory" ? memory : voice} onChange={(e) => key === "voice" ? setVoice(e.target.checked) : setRequired(key, e.target.checked)} className="accent-[#e878ab]" />{text}</span><ConsentLink href={href} ko={ko} /></label>)}</div></section><button type="submit" disabled={!canSave || isSaving} className="w-full rounded-2xl bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-6 py-4 font-extrabold text-white shadow-lg disabled:cursor-not-allowed disabled:from-[#d8cdd4] disabled:to-[#d8cdd4]">{isSaving ? (ko ? "가입 처리 중..." : "Creating account...") : (ko ? "가입하기" : "Create account")}</button>{errorMessage ? <p className="rounded-xl border border-red-900/50 bg-red-950/40 p-3 text-sm font-semibold text-red-200">{errorMessage}</p> : null}</form>;
 }
