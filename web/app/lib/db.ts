@@ -5,28 +5,30 @@ const globalForPg = globalThis as unknown as {
   botPool?: Pool;
 };
 
+const webDatabaseUrl = process.env.WEB_DATABASE_URL || process.env.DATABASE_URL;
+// 봇 데이터는 웹 DB로 대체하지 않습니다. BOT_DATABASE_URL이 없으면
+// PostgreSQL 기본 연결로 잘못 붙거나 웹 DB와 데이터가 섞일 수 있습니다.
+const botDatabaseUrl = process.env.BOT_DATABASE_URL;
+
 const getSslOption = (url?: string) => {
   if (!url || url.includes("localhost")) return undefined;
   return { rejectUnauthorized: false };
 };
 
-// 1. 웹 전용 DB (유저, 결제, 동의)
 export const webPool =
   globalForPg.webPool ??
   new Pool({
-    connectionString: process.env.WEB_DATABASE_URL || process.env.DATABASE_URL,
-    ssl: getSslOption(process.env.WEB_DATABASE_URL || process.env.DATABASE_URL),
+    connectionString: webDatabaseUrl,
+    ssl: getSslOption(webDatabaseUrl),
   });
 
-// 2. 봇 전용 DB (대화 내역, 장기기억)
 export const botPool =
   globalForPg.botPool ??
   new Pool({
-    connectionString: process.env.BOT_DATABASE_URL,
-    ssl: getSslOption(process.env.BOT_DATABASE_URL),
+    connectionString: botDatabaseUrl,
+    ssl: getSslOption(botDatabaseUrl),
   });
 
-// 기존 파일들(users.ts 등)과의 호환성을 위한 별칭 export
 export const pool = webPool;
 export const db = webPool;
 
