@@ -1,0 +1,95 @@
+# Secrets and local environment configuration
+.env
+.env.*
+!.env.example
+!.env.template
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+
+bot/apps/voice-service/.venv/
+
+# Dependencies
+/node_modules
+node_modules/
+/.pnp
+.pnp.*
+.npm/
+.pnpm-store/
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Testing
+/coverage
+coverage/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+coverage.xml
+htmlcov/
+
+# Next.js
+/.next/
+.next/
+/out/
+out/
+
+# Production
+/build
+build/
+dist/
+.turbo/
+
+# Debug and local logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+.next-dev.*.log
+*.log
+logs/
+
+# Temporary files and local databases
+tmp/
+temp/
+*.sqlite
+*.sqlite3
+*.db
+
+# Downloaded AI models and generated media
+models/
+checkpoints/
+generated/
+recordings/
+
+# Editors and operating systems
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Local FFmpeg binary used by the bot's voice service
+/bot/tools/ffmpeg/
