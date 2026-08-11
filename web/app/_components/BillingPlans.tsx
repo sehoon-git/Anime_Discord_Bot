@@ -92,8 +92,8 @@ export default function BillingPlans({ currentPlanCode, locale = "ko", showCredi
           <div className="flex items-start justify-between gap-3"><div><span className="text-sm font-bold text-[#d45d91]">{isCurrent ? (en ? "Currently using" : "현재 사용 중") : plan.badge[locale]}</span><h2 className="mt-3 text-3xl font-extrabold text-[#5b4054]">{plan.name}</h2></div>{plan.code === "more-like" ? <span className="plan-recommend">{en ? "Popular" : "추천"}</span> : null}</div>
           <p className="mt-4 min-h-12 text-sm leading-6 text-[#92768a]">{plan.description[locale]}</p>
           <div className="mt-8 min-h-[4.75rem]">{period === "yearly" ? <p className="billing-original-price">{price(plan.monthly * 12, locale)} / {en ? "year" : "년"}</p> : null}<p className="text-3xl font-extrabold text-[#684b60]">{price(displayPrice, locale)} <span className="text-sm font-bold text-[#a17f93]">/ {en ? (period === "monthly" ? "month" : "year") : (period === "monthly" ? "월" : "년")}</span></p>{period === "yearly" ? <p className="billing-discount-note">{en ? "2 months free applied" : "2개월 무료 적용"}</p> : null}</div>
-          <ul className="mt-7 space-y-4 text-sm text-[#76566b]">{plan.features.map((feature) => <li key={feature.en} className="flex items-center gap-3"><span className="check-mark">✓</span>{feature[locale]}</li>)}</ul>
           <button type="button" disabled className={`plan-action ${isCurrent ? "plan-action-current" : "plan-action-disabled"}`}>{isCurrent ? (en ? "Current plan" : "현재 요금제") : (en ? "Payment coming soon" : "결제 기능 준비 중")}</button>
+          <ul className="mt-7 space-y-4 text-sm text-[#76566b]">{plan.features.map((feature) => <li key={feature.en} className="flex items-center gap-3"><span className="check-mark">✓</span>{feature[locale]}</li>)}</ul>
         </article>;
       })}
     </div>
