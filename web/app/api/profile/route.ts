@@ -14,8 +14,7 @@ import {
 
 const MAX_DISPLAY_NAME_LENGTH = 40;
 const MAX_NICKNAME_LENGTH = 30;
-const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory"];
-const OPTIONAL_CONSENTS = ["voice"];
+const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice"];
 
 function cleanText(value: unknown, maxLength: number) {
   if (typeof value !== "string") return "";
@@ -43,12 +42,9 @@ function cleanLocale(value: unknown): UserLocale {
   return value === "ko-KR" ? "ko-KR" : "en-US";
 }
 
-async function saveConsents(userId: string, voice: boolean) {
+async function saveConsents(userId: string) {
   const now = new Date();
-  const acceptedTypes = [
-    ...REQUIRED_CONSENTS,
-    ...(voice ? ["voice"] : []),
-  ];
+  const acceptedTypes = REQUIRED_CONSENTS;
 
   await db.query(
     `
@@ -63,15 +59,6 @@ async function saveConsents(userId: string, voice: boolean) {
     [userId, now, acceptedTypes],
   );
 
-  await db.query(
-    `
-    DELETE FROM user_consents
-    WHERE user_id = $1
-      AND consent_type = ANY($2::text[])
-      AND NOT (consent_type = ANY($3::text[]))
-    `,
-    [userId, OPTIONAL_CONSENTS, acceptedTypes],
-  );
 }
 
 export async function GET() {
@@ -141,7 +128,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!terms || !privacy || !overseas || !memory) {
+  if (!terms || !privacy || !overseas || !memory || !voice) {
     return NextResponse.json(
       { ok: false, error: "필수 약관에 모두 동의해주세요." },
       { status: 400 },
@@ -159,7 +146,7 @@ export async function POST(request: Request) {
     locale,
   });
 
-  await saveConsents(userId, voice);
+  await saveConsents(userId);
 
   return NextResponse.json({ ok: true, profile });
 }

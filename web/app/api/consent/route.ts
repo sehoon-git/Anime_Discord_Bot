@@ -3,8 +3,7 @@ import { authOptions } from "@/app/lib/auth";
 import { db } from "@/app/lib/db";
 import { upsertUser } from "@/app/lib/users";
 
-const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory"];
-const OPTIONAL_CONSENTS = ["voice"];
+const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice"];
 
 type DatabaseError = {
   code?: string;
@@ -93,7 +92,7 @@ export async function POST(request: Request) {
   const voice = body.voice === true;
   const memory = body.memory === true;
 
-  if (!terms || !privacy || !overseas || !memory) {
+  if (!terms || !privacy || !overseas || !memory || !voice) {
     return Response.json(
       { error: "필수 동의 항목이 누락되었습니다." },
       { status: 400 },
@@ -103,10 +102,7 @@ export async function POST(request: Request) {
   try {
     const now = new Date();
     const userId = await upsertUser(session.user.email, session.user.name);
-    const acceptedTypes = [
-      ...REQUIRED_CONSENTS,
-      ...(voice ? ["voice"] : []),
-    ];
+    const acceptedTypes = REQUIRED_CONSENTS;
 
     await db.query(
       `
@@ -119,16 +115,6 @@ export async function POST(request: Request) {
         updated_at = NOW()
       `,
       [userId, now, acceptedTypes],
-    );
-
-    await db.query(
-      `
-      DELETE FROM user_consents
-      WHERE user_id = $1
-        AND consent_type = ANY($2::text[])
-        AND NOT (consent_type = ANY($3::text[]))
-      `,
-      [userId, OPTIONAL_CONSENTS, acceptedTypes],
     );
 
     return Response.json({ ok: true });

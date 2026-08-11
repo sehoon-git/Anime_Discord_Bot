@@ -24,7 +24,7 @@ import { getCreditBalance } from "@/app/lib/credits";
 
 export const runtime = "nodejs";
 
-const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory"] as const;
+const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice"] as const;
 
 function getBotSecretFromRequest(request: Request) {
   const authorization = request.headers.get("authorization");

@@ -5,6 +5,7 @@ export const REQUIRED_CONSENT_TYPES = [
   "privacy",
   "overseas",
   "memory",
+  "voice",
 ] as const;
 
 export async function getMissingRequiredConsents(userId: string) {
