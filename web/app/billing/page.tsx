@@ -12,39 +12,6 @@ export const dynamic = "force-dynamic";
 
 type Locale = "en" | "ko";
 
-function formatLimit(used: number, limit: number, locale: Locale) {
-  return `${used.toLocaleString(locale === "en" ? "en-US" : "ko-KR")} / ${limit.toLocaleString(locale === "en" ? "en-US" : "ko-KR")}`;
-}
-
-function formatDate(value: string | null, locale: Locale) {
-  if (!value) return locale === "en" ? "No time limit" : "기간 제한 없음";
-  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "ko-KR", { dateStyle: "medium" }).format(new Date(value));
-}
-
-function UsageBar({ label, used, limit, locale }: { label: string; used: number; limit: number; locale: Locale }) {
-  const percent = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;
-  return <div className="usage-pill"><div className="flex items-center justify-between gap-4 text-sm"><span className="font-bold text-[#684b60]">{label}</span><span className="text-[#a17f93]">{formatLimit(used, limit, locale)}</span></div><div className="mt-3 h-2 overflow-hidden rounded-full bg-[#f3dfeb]"><div className="h-full rounded-full bg-gradient-to-r from-[#ef9bc1] to-[#aa98ee] transition-all" style={{ width: `${percent}%` }} /></div></div>;
-}
-
-// Kept temporarily for compatibility with the existing dashboard layout.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function CreditSummary({ billing, locale }: { billing: BillingStatus; locale: Locale }) {
-  const en = locale === "en";
-  return <section className="billing-status mt-6">
-    <div className="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <p className="status-label">{en ? "Test credits" : "테스트 크레딧"}</p>
-        <p className="status-value">{billing.credits.balance.toLocaleString(en ? "en-US" : "ko-KR")} <span className="text-base font-semibold">{en ? "credits left" : "크레딧 남음"}</span></p>
-      </div>
-      <p className="text-sm text-[#76566b]">{en ? `Used this month: ${billing.usage.creditsUsed.toLocaleString("en-US")}` : `이번 달 사용: ${billing.usage.creditsUsed.toLocaleString("ko-KR")} 크레딧`}</p>
-    </div>
-    <div className="mt-5 flex flex-wrap items-center gap-3">
-      {null}
-      <span className="text-xs text-[#92768a]">{en ? "Temporary test top-up. No payment is charged." : "임시 테스트용 충전이며 실제 결제는 발생하지 않습니다."}</span>
-    </div>
-  </section>;
-}
-
 function LoginRequired({ locale }: { locale: Locale }) {
   const en = locale === "en";
   return <main className="site-wash min-h-screen px-6 py-16 text-[#493647]"><section className="mx-auto max-w-3xl rounded-3xl border border-[#f0d7e5] bg-white/80 p-8 shadow-[0_20px_60px_rgba(198,135,169,0.16)]"><p className="text-sm font-semibold text-[#d45d91]">Discord Anime AI</p><h1 className="mt-3 text-3xl font-semibold text-[#5b4054]">{en ? "Login required" : "로그인이 필요합니다"}</h1><p className="mt-4 text-[#92768a]">{en ? "Please log in to view your subscription and usage." : "요금제와 사용량을 확인하려면 먼저 로그인해주세요."}</p><Link href="/api/auth/signin" className="mt-8 inline-flex rounded-2xl bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-200/60">{en ? "Log in" : "로그인하기"}</Link></section></main>;
@@ -57,7 +24,7 @@ function SetupRequired({ locale }: { locale: Locale }) {
 
 function BillingDashboard({ billing, locale }: { billing: BillingStatus; locale: Locale }) {
   const en = locale === "en";
-  return <main className="site-wash min-h-screen px-6 py-12 text-[#493647]"><section className="mx-auto max-w-6xl"><div className="billing-intro text-center"><span className="billing-sparkle">✦</span><p className="text-sm font-bold text-[#d45d91]">Discord Anime AI · {en ? "plans" : "plans"}</p><h1 className="mt-4 text-5xl font-extrabold tracking-[-0.03em] text-[#5b4054]">{en ? "A plan that fits your conversations" : "나에게 맞는 대화 플랜"}</h1><p className="mx-auto mt-5 max-w-xl leading-7 text-[#92768a]">{en ? <>Start small or stay longer.<br />Choose what fits the way you talk today.</> : <>가볍게 시작하거나, 더 오래 대화하거나.<br />지금의 대화 습관에 맞춰 골라보세요.</>}</p></div><section className="billing-status mt-12"><div className="grid gap-6 md:grid-cols-3"><div><p className="status-label">{en ? "Current plan" : "현재 요금제"}</p><p className="status-value">{billing.plan.name}</p></div><div><p className="status-label">{en ? "Subscription status" : "구독 상태"}</p><p className="status-value">{billing.subscription.status}</p></div><div><p className="status-label">{en ? "Subscription period" : "구독 기간"}</p><p className="mt-2 text-sm text-[#76566b]">{formatDate(billing.subscription.currentPeriodStart, locale)} - {formatDate(billing.subscription.currentPeriodEnd, locale)}</p></div></div><div className="mt-7 grid gap-4 md:grid-cols-2"><UsageBar label={en ? "Text usage this month" : "이번 달 텍스트 사용량"} used={billing.usage.textMessages} limit={billing.plan.monthlyTextMessages} locale={locale} /><UsageBar label={en ? "Voice usage this month" : "이번 달 음성 사용량"} used={billing.usage.voiceMinutes} limit={billing.plan.monthlyVoiceMinutes} locale={locale} /></div></section><section className="mt-8"><BillingPlans currentPlanCode={billing.plan.code} locale={locale} /></section></section></main>;
+  return <main className="site-wash min-h-screen px-6 py-12 text-[#493647]"><section className="mx-auto max-w-6xl"><div className="billing-intro text-center"><span className="billing-sparkle">✦</span><p className="text-sm font-bold text-[#d45d91]">Discord Anime AI · {en ? "plans" : "plans"}</p><h1 className="mt-4 text-5xl font-extrabold tracking-[-0.03em] text-[#5b4054]">{en ? "A plan that fits your conversations" : "나에게 맞는 대화 플랜"}</h1><p className="mx-auto mt-5 max-w-xl leading-7 text-[#92768a]">{en ? <>Start small or stay longer.<br />Choose what fits the way you talk today.</> : <>가볍게 시작하거나, 더 오래 대화하거나.<br />지금의 대화 습관에 맞춰 골라보세요.</>}</p></div><section className="mt-10"><BillingPlans currentPlanCode={billing.plan.code} locale={locale} showCreditPanel={false} /></section></section></main>;
 }
 
 export default async function BillingPage() {

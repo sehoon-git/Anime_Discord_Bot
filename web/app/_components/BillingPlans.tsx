@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 type Locale = "en" | "ko";
-type BillingPlansProps = { currentPlanCode: string; locale?: Locale };
+type BillingPlansProps = { currentPlanCode: string; locale?: Locale; showCreditPanel?: boolean };
 type Plan = {
   code: string;
   name: string;
@@ -25,7 +25,7 @@ function price(value: number, locale: Locale) {
   return locale === "en" ? `₩${value.toLocaleString("en-US")}` : `${value.toLocaleString("ko-KR")}원`;
 }
 
-function CreditPanel({ locale }: { locale: Locale }) {
+export function CreditPanel({ locale }: { locale: Locale }) {
   const [credits, setCredits] = useState<CreditState>(null);
   const [pending, setPending] = useState(false);
   const en = locale === "en";
@@ -73,13 +73,13 @@ function CreditPanel({ locale }: { locale: Locale }) {
   </section>;
 }
 
-export default function BillingPlans({ currentPlanCode, locale = "ko" }: BillingPlansProps) {
+export default function BillingPlans({ currentPlanCode, locale = "ko", showCreditPanel = true }: BillingPlansProps) {
   const [period, setPeriod] = useState<"monthly" | "yearly">("monthly");
   const mappedCurrent = currentPlanCode === "free" ? "like" : currentPlanCode === "pro" ? "more-like" : currentPlanCode;
   const en = locale === "en";
 
   return <>
-    <CreditPanel locale={locale} />
+    {showCreditPanel ? <CreditPanel locale={locale} /> : null}
     <div className="billing-period" role="group" aria-label={en ? "Billing period" : "구독 주기"}>
       <button type="button" className={period === "monthly" ? "billing-period-active" : "billing-period-idle"} onClick={() => setPeriod("monthly")}>{en ? "Monthly" : "월간 구독"}</button>
       <button type="button" className={period === "yearly" ? "billing-period-active" : "billing-period-idle"} onClick={() => setPeriod("yearly")}>{en ? "Yearly" : "연간 구독"} <span>{en ? "2 months free" : "2개월 무료"}</span></button>

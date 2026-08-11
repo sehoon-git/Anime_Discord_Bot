@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/app/lib/auth";
 import { db } from "@/app/lib/db";
 import { getBillingStatusForUser } from "@/app/lib/billing";
+import { CreditPanel } from "@/app/_components/BillingPlans";
 import { listMemories } from "@/app/lib/memory";
 import { getUserProfileByEmail, hasCompleteProfile } from "@/app/lib/users";
 
@@ -165,7 +166,6 @@ export default async function DashboardPage() {
 
   let overview = {
     planName: "Free",
-    creditBalance: 0,
     textUsage: 0,
     textLimit: 0,
     voiceUsage: 0,
@@ -178,7 +178,6 @@ export default async function DashboardPage() {
     const memories = await listMemories(billing.userId);
     overview = {
       planName: billing.plan.name,
-      creditBalance: billing.credits.balance,
       textUsage: billing.usage.textMessages,
       textLimit: billing.plan.monthlyTextMessages,
       voiceUsage: billing.usage.voiceMinutes,
@@ -204,12 +203,14 @@ export default async function DashboardPage() {
             <Link href="/billing" className="rounded-full border border-[#e3bfd3] px-4 py-2 text-sm font-semibold text-[#76566b] transition hover:-translate-y-0.5 hover:bg-white hover:text-[#d45d91]">요금제 보기 →</Link>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <Link href="/billing" className="rounded-2xl border border-[#efd8e5] bg-white/60 p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg"><p className="text-xs font-semibold text-[#a4577e]">현재 요금제</p><p className="mt-2 text-xl font-extrabold">{overview.planName}</p><p className="mt-1 text-sm text-[#92768a]">크레딧 {overview.creditBalance.toLocaleString()}개</p></Link>
+            <Link href="/billing" className="rounded-2xl border border-[#efd8e5] bg-white/60 p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg"><p className="text-xs font-semibold text-[#a4577e]">현재 요금제</p><p className="mt-2 text-xl font-extrabold">{overview.planName}</p><p className="mt-1 text-sm text-[#92768a]">요금제 관리 →</p></Link>
             <Link href="/billing" className="rounded-2xl border border-[#efd8e5] bg-white/60 p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg"><p className="text-xs font-semibold text-[#a4577e]">텍스트 대화</p><p className="mt-2 text-xl font-extrabold">{overview.textUsage}<span className="text-sm font-semibold text-[#92768a]"> / {overview.textLimit}</span></p><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#f3dfeb]"><div className="h-full rounded-full bg-[#e98ab5]" style={{ width: `${overview.textLimit ? Math.min(100, (overview.textUsage / overview.textLimit) * 100) : 0}%` }} /></div></Link>
             <Link href="/billing" className="rounded-2xl border border-[#efd8e5] bg-white/60 p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg"><p className="text-xs font-semibold text-[#a4577e]">음성 대화</p><p className="mt-2 text-xl font-extrabold">{overview.voiceUsage}<span className="text-sm font-semibold text-[#92768a]"> / {overview.voiceLimit}분</span></p><div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#f3dfeb]"><div className="h-full rounded-full bg-[#a895f4]" style={{ width: `${overview.voiceLimit ? Math.min(100, (overview.voiceUsage / overview.voiceLimit) * 100) : 0}%` }} /></div></Link>
             <Link href="/memory" className="rounded-2xl border border-[#efd8e5] bg-white/60 p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg"><p className="text-xs font-semibold text-[#a4577e]">저장된 기억</p><p className="mt-2 text-xl font-extrabold">{overview.memoryCount}<span className="text-sm font-semibold text-[#92768a]">개</span></p><p className="mt-1 text-sm text-[#92768a]">기억 관리 →</p></Link>
           </div>
         </section>
+
+        <div className="mt-5"><CreditPanel locale={profile?.locale === "ko-KR" ? "ko" : "en"} /></div>
 
         <div className="mt-5 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">
           <h2 className="text-lg font-semibold">Discord 계정 연동</h2>
