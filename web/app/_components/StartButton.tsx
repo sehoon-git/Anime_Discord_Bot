@@ -14,8 +14,8 @@ export default function StartButton({ locale = "ko" }: { locale?: "en" | "ko" })
   }
 
   if (session?.user) {
-    return <Link href="/profile" className="rounded-2xl bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-6 py-3 font-semibold text-white shadow-lg shadow-pink-200/60 hover:brightness-105">{labels.profile}</Link>;
+    return <Link href="/dashboard" className="rounded-2xl bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-6 py-3 font-semibold text-white shadow-lg shadow-pink-200/60 hover:brightness-105">{labels.profile}</Link>;
   }
 
-  return <button type="button" onClick={() => signIn("google", { callbackUrl: "/profile" })} className="rounded-2xl bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-6 py-3 font-semibold text-white shadow-lg shadow-pink-200/60 hover:brightness-105">{labels.login}</button>;
+  return <button type="button" onClick={() => signIn("google", { callbackUrl: "/dashboard" })} className="rounded-2xl bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-6 py-3 font-semibold text-white shadow-lg shadow-pink-200/60 hover:brightness-105">{labels.login}</button>;
 }

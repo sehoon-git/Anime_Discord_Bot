@@ -122,11 +122,12 @@ export default async function DashboardPage() {
 
   const profile = await getUserProfileByEmail(userEmail);
 
-  if (
-    acceptedCount < REQUIRED_CONSENTS.length ||
-    !hasCompleteProfile(profile)
-  ) {
+  if (!hasCompleteProfile(profile)) {
     redirect("/profile");
+  }
+
+  if (acceptedCount < REQUIRED_CONSENTS.length) {
+    redirect("/consent");
   }
 
   let discordAccount: DiscordAccountRow | undefined;

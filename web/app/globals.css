@@ -261,8 +261,8 @@ body[data-theme="dark"] footer {
 body[data-theme="dark"] [class*="bg-white"],
 body[data-theme="dark"] [class*="bg-[#fff"],
 body[data-theme="dark"] [class*="bg-[#1b171d"],
-body[data-theme="dark"] [class*="bg-[#171217"]],
-body[data-theme="dark"] [class*="bg-[#202020"]] {
+body[data-theme="dark"] [class*="bg-[#171217"],
+body[data-theme="dark"] [class*="bg-[#202020"] {
   background-color: #3a3042 !important;
 }
 
