@@ -73,11 +73,15 @@ function DashboardError({
   );
 }
 
+function DashboardLoginRequired() {
+  return <main className="site-wash min-h-screen px-6 py-16 text-[#493647]"><section className="mx-auto max-w-3xl rounded-3xl border border-[#f0d7e5] bg-white/80 p-8 shadow-[0_20px_60px_rgba(198,135,169,0.16)]"><p className="text-sm font-semibold text-[#d45d91]">Discord Anime AI</p><h1 className="mt-3 text-3xl font-semibold text-[#5b4054]">로그인이 필요합니다</h1><p className="mt-4 leading-7 text-[#92768a]">대시보드와 내 사용 현황을 확인하려면 로그인해 주세요.</p><p className="mt-3 text-sm font-semibold text-[#a4577e]">우측 상단의 계정 아이콘을 누른 뒤 Google로 로그인을 선택할 수 있습니다.</p></section></main>;
+}
+
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
-    redirect("/api/auth/signin/google?callbackUrl=/dashboard");
+    return <DashboardLoginRequired />;
   }
 
   const userEmail = session.user.email;
