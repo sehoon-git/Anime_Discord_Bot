@@ -25,7 +25,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5">
               <div className="flex items-center gap-8">
                 <Link href="/" className="flex items-center gap-2 font-bold"><span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f58bb6] to-[#a895f4] text-sm text-white shadow-md shadow-pink-200">AI</span><span className="text-[#5b4054]">Discord Anime AI</span></Link>
-                <nav className="flex items-center gap-5 text-sm font-semibold text-[#876b7d]"><Link href="/billing" className="hover:text-[#d45d91]">{isKorean ? "요금제" : "Plans"}</Link><Link href="/dashboard" className="hover:text-[#d45d91]">{isKorean ? "대시보드" : "Dashboard"}</Link></nav>
+                <nav className="flex items-center gap-5 text-sm font-semibold text-[#876b7d]"><Link href="/billing" className="hover:text-[#d45d91]">{isKorean ? "요금제" : "Plans"}</Link><Link href="/dashboard" className="hover:text-[#d45d91]">{isKorean ? "대시보드" : "Dashboard"}</Link><a href="https://discord.gg/kvVXhdue2" target="_blank" rel="noopener noreferrer" className="hover:text-[#d45d91]">{isKorean ? "문의 게시판" : "Support"}</a></nav>
               </div>
               <div className="flex items-center gap-2"><QuickControls locale={isKorean ? "ko-KR" : "en-US"} /><HeaderMenu locale={isKorean ? "ko-KR" : "en-US"} /></div>
             </div>
