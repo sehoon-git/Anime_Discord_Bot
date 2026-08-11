@@ -3,12 +3,11 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import ProfileForm from "@/app/_components/ProfileForm";
 import { authOptions } from "@/app/lib/auth";
-import { getUserProfileByEmail, hasCompleteProfile, upsertUser } from "@/app/lib/users";
+import { getUserProfileByEmail, hasCompleteProfile } from "@/app/lib/users";
 
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) redirect("/api/auth/signin/google?callbackUrl=/profile");
-  await upsertUser(session.user.email, session.user.name);
   const profile = await getUserProfileByEmail(session.user.email);
   if (hasCompleteProfile(profile)) redirect("/dashboard");
   const locale = (await cookies()).get("locale")?.value === "ko-KR" || profile?.locale === "ko-KR" ? "ko-KR" : "en-US";

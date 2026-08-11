@@ -68,13 +68,12 @@ export async function GET() {
     return NextResponse.json({ ok: false, error: "UNAUTHORIZED" }, { status: 401 });
   }
 
-  const userId = await upsertUser(session.user.email, session.user.name);
   const profile = await getUserProfileByEmail(session.user.email);
 
   return NextResponse.json({
     ok: true,
     profile: profile ?? {
-      userId,
+      userId: "",
       displayName: session.user.name ?? "",
       nickname: "",
       gender: null,
