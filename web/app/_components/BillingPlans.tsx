@@ -84,7 +84,7 @@ export default function BillingPlans({ currentPlanCode, locale = "ko", showCredi
       <button type="button" className={period === "monthly" ? "billing-period-active" : "billing-period-idle"} onClick={() => setPeriod("monthly")}>{en ? "Monthly" : "월간 구독"}</button>
       <button type="button" className={period === "yearly" ? "billing-period-active" : "billing-period-idle"} onClick={() => setPeriod("yearly")}>{en ? "Yearly" : "연간 구독"} <span>{en ? "2 months free" : "2개월 무료"}</span></button>
     </div>
-    <div className="mt-6 grid gap-6 md:grid-cols-3">
+    <div className="mt-4 grid gap-6 md:grid-cols-3">
       {plans.map((plan) => {
         const isCurrent = plan.code === mappedCurrent;
         const displayPrice = period === "monthly" ? plan.monthly : plan.yearly;

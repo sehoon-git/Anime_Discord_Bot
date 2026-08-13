@@ -136,7 +136,9 @@ body {
 .status-label { font-size: 0.8rem; font-weight: 700; color: #ad8fa1; }
 .status-value { margin-top: 0.45rem; font-size: 1.5rem; font-weight: 800; color: #684b60; }
 .usage-pill { border: 1px solid #f0d7e5; border-radius: 1.25rem; background: #fffafd; padding: 1rem; }
-.plan-card { position: relative; overflow: hidden; min-height: 31rem; border: 1px solid #f0d7e5; border-radius: 2rem; padding: 2rem; background: rgba(255, 255, 255, 0.8); box-shadow: 0 16px 45px rgba(205, 151, 180, 0.1); transition: transform 240ms ease, box-shadow 240ms ease, border-color 240ms ease; }
+.billing-intro-compact { padding-top: 0.25rem; }
+.billing-sparkle-compact { width: 2.2rem; height: 2.2rem; border-radius: 0.8rem; font-size: 1rem; }
+.plan-card { position: relative; overflow: hidden; min-height: 36rem; border: 1px solid #f0d7e5; border-radius: 2rem; padding: 2rem; background: rgba(255, 255, 255, 0.8); box-shadow: 0 16px 45px rgba(205, 151, 180, 0.1); transition: transform 240ms ease, box-shadow 240ms ease, border-color 240ms ease; }
 .plan-card::after { content: ""; position: absolute; top: -20%; right: -18%; width: 9rem; height: 22rem; transform: rotate(28deg); background: linear-gradient(90deg, transparent, rgba(255, 218, 235, 0.38), transparent); transition: transform 300ms ease; pointer-events: none; }
 .plan-card:hover { transform: translateY(-0.55rem); border-color: #e99abb; box-shadow: 0 24px 55px rgba(205, 151, 180, 0.22); }
 .plan-card:hover::after { transform: rotate(28deg) translate(-1.5rem, 0.5rem); }
