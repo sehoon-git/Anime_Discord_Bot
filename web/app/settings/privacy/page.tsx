@@ -7,12 +7,19 @@ import AccountDeletionButton from "@/app/_components/AccountDeletionButton";
 import LanguageSettings from "@/app/_components/LanguageSettings";
 import ThemeToggle from "@/app/_components/ThemeToggle";
 import { authOptions } from "@/app/lib/auth";
+import AutoGoogleSignIn from "@/app/_components/AutoGoogleSignIn";
 import { getUserProfileByEmail } from "@/app/lib/users";
 
 export default async function PrivacySettingsPage() {
   const session = await getServerSession(authOptions);
-  const profile = session?.user?.email ? await getUserProfileByEmail(session.user.email) : null;
   const cookieLocale = (await cookies()).get("locale")?.value;
+  const guestLocale = cookieLocale === "ko-KR" ? "ko-KR" : "en-US";
+
+  if (!session?.user?.email) {
+    return <AutoGoogleSignIn callbackUrl="/settings/privacy" locale={guestLocale} />;
+  }
+
+  const profile = session?.user?.email ? await getUserProfileByEmail(session.user.email) : null;
   const locale = cookieLocale === "ko-KR" || profile?.locale === "ko-KR" ? "ko-KR" : "en-US";
   const ko = locale === "ko-KR";
   return <main className="site-wash min-h-screen px-6 py-12 text-[#493647]"><section className="mx-auto max-w-3xl">
