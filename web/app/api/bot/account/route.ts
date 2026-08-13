@@ -41,10 +41,13 @@ export async function GET(request: Request) {
       `SELECT
          a.user_id::text AS user_id,
          a.provider_user_id AS discord_user_id,
-         c.speech_recognition_allowed AS voice_consent,
-         c.updated_at::text AS voice_consent_updated_at
+         COALESCE(c.speech_recognition_allowed, uc.accepted_at IS NOT NULL, false) AS voice_consent,
+         COALESCE(c.updated_at, uc.updated_at)::text AS voice_consent_updated_at
        FROM user_accounts a
        LEFT JOIN voice_consents c ON c.user_id = a.user_id
+       LEFT JOIN user_consents uc
+         ON uc.user_id = a.user_id
+        AND uc.consent_type = 'voice'
        WHERE a.provider = 'discord'
          AND a.provider_user_id = $1
        LIMIT 1`,

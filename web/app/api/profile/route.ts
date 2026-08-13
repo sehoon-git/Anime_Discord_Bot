@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { authOptions } from "@/app/lib/auth";
 import { db } from "@/app/lib/db";
+import { upsertVoiceConsent } from "@/app/lib/operations";
 import {
   getUserProfileByEmail,
   saveUserProfile,
@@ -146,6 +147,11 @@ export async function POST(request: Request) {
   });
 
   await saveConsents(userId);
+  await upsertVoiceConsent({
+    userId,
+    speechRecognitionAllowed: true,
+    voiceStorageAllowed: false,
+  });
 
   return NextResponse.json({ ok: true, profile });
 }

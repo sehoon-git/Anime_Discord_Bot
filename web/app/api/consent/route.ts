@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/lib/auth";
 import { db } from "@/app/lib/db";
+import { upsertVoiceConsent } from "@/app/lib/operations";
 import { upsertUser } from "@/app/lib/users";
 
 const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice"];
@@ -116,6 +117,12 @@ export async function POST(request: Request) {
       `,
       [userId, now, acceptedTypes],
     );
+
+    await upsertVoiceConsent({
+      userId,
+      speechRecognitionAllowed: true,
+      voiceStorageAllowed: false,
+    });
 
     return Response.json({ ok: true });
   } catch (error) {
