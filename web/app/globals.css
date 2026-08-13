@@ -411,6 +411,17 @@ body[data-theme="dark"] main .account-delete-trigger:hover {
   background: #ef4444 !important;
 }
 
+.character-card { background: rgba(255, 255, 255, 0.8); border-color: #f0d7e5; box-shadow: 0 16px 40px rgba(198, 135, 169, 0.1); }
+.character-card-selected { border-color: #e97eab !important; box-shadow: 0 0 0 2px rgba(233, 126, 171, 0.2), 0 20px 45px rgba(198, 135, 169, 0.18); }
+.character-card-locked { opacity: 0.72; }
+.character-selected-badge { border-radius: 999px; background: #fff0f7; padding: 0.35rem 0.65rem; color: #d45d91; font-size: 0.75rem; font-weight: 800; }
+.character-select-button { background: linear-gradient(90deg, #ef8fba, #a895f4); color: #fff; box-shadow: 0 8px 18px rgba(183, 117, 183, 0.24); }
+.character-select-button:hover { filter: brightness(1.06); transform: translateY(-0.1rem); }
+.character-selected-button { background: #f7dbe8; color: #b77694; }
+body[data-theme="dark"] .character-card, body[data-theme="dark"] main .character-card { background: #3a3042 !important; border-color: #5c4a63 !important; }
+body[data-theme="dark"] .character-card-selected, body[data-theme="dark"] main .character-card-selected { border-color: #ec91bd !important; }
+body[data-theme="dark"] .character-select-button, body[data-theme="dark"] main .character-select-button { background: linear-gradient(90deg, #d879aa, #8c7de5) !important; color: #fff !important; }
+
 /* Dashboard: Discord actions must remain visibly button-like in dark mode. */
 .discord-connect-button {
   background: #5865f2 !important;
