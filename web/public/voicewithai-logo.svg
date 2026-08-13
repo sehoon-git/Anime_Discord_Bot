@@ -1,0 +1,19 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title">
+  <title id="title">Voice With AI logo</title>
+  <defs>
+    <linearGradient id="brand-gradient" x1="160" y1="144" x2="864" y2="880" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F58BB6"/>
+      <stop offset="1" stop-color="#A895F4"/>
+    </linearGradient>
+    <filter id="soft-glow" x="-35%" y="-35%" width="170%" height="170%" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="38" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0.85 0 1 0 0 0.46 0 0 1 0 0.78 0 0 0 0.45 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect x="104" y="104" width="816" height="816" rx="262" fill="url(#brand-gradient)" filter="url(#soft-glow)"/>
+  <text x="512" y="620" text-anchor="middle" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="312" font-weight="800" letter-spacing="-22">AI</text>
+</svg>
