@@ -234,7 +234,7 @@ export default async function DashboardPage() {
 
           <a
             href="/api/discord/connect"
-            className="mt-4 inline-flex rounded-2xl bg-[#e97eab] px-5 py-3 text-sm font-semibold text-white hover:bg-[#d96798]"
+            className="discord-connect-button mt-4 inline-flex items-center rounded-full px-6 py-3 text-sm font-extrabold shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
           >
             {discordName ? "Discord 계정 다시 연결하기" : "Discord 계정 연결하기"}
           </a>
@@ -242,7 +242,7 @@ export default async function DashboardPage() {
           {discordName ? (
             <a
               href="/api/discord/bot-invite"
-              className="ml-3 mt-4 inline-flex rounded-2xl border border-[#e3bfd3] bg-white/60 px-5 py-3 text-sm font-semibold text-[#76566b] hover:bg-white"
+              className="discord-invite-button ml-3 mt-4 inline-flex items-center rounded-full px-6 py-3 text-sm font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
             >
               봇 초대하기
             </a>

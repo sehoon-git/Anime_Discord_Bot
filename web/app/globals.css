@@ -406,3 +406,51 @@ body[data-theme="dark"] .account-delete-trigger:hover,
 body[data-theme="dark"] main .account-delete-trigger:hover {
   background: #ef4444 !important;
 }
+
+/* Dashboard: Discord actions must remain visibly button-like in dark mode. */
+.discord-connect-button {
+  background: #5865f2 !important;
+  border: 1px solid #7480ff !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 22px rgba(88, 101, 242, 0.34) !important;
+}
+
+.discord-connect-button:hover {
+  background: #4752c4 !important;
+  box-shadow: 0 13px 26px rgba(88, 101, 242, 0.44) !important;
+}
+
+.discord-invite-button {
+  background: #ffffff !important;
+  border: 1px solid #bfc5ff !important;
+  color: #4d58d7 !important;
+  box-shadow: 0 8px 18px rgba(88, 101, 242, 0.14) !important;
+}
+
+.discord-invite-button:hover {
+  background: #eef0ff !important;
+}
+
+body[data-theme="dark"] .discord-connect-button,
+body[data-theme="dark"] main .discord-connect-button {
+  background: #5865f2 !important;
+  border-color: #8490ff !important;
+  color: #ffffff !important;
+}
+
+body[data-theme="dark"] .discord-connect-button:hover,
+body[data-theme="dark"] main .discord-connect-button:hover {
+  background: #4752c4 !important;
+}
+
+body[data-theme="dark"] .discord-invite-button,
+body[data-theme="dark"] main .discord-invite-button {
+  background: #413651 !important;
+  border-color: #7883f8 !important;
+  color: #edf0ff !important;
+}
+
+body[data-theme="dark"] .discord-invite-button:hover,
+body[data-theme="dark"] main .discord-invite-button:hover {
+  background: #4b3d5e !important;
+}
