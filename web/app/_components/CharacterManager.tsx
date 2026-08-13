@@ -67,8 +67,7 @@ export default function CharacterManager({ initialCharacterId, locale }: Charact
       {characters.map((character) => {
         const isSelected = character.id === selected;
         return (
-          <article key={character.id} className={`character-card relative overflow-hidden rounded-3xl border p-6 ${character.id === "seline" ? "character-card-seline" : ""} ${isSelected ? "character-card-selected" : ""} ${!character.available ? "character-card-locked" : ""}`}>
-            {character.id === "seline" ? <Image src="/seline-card-banner-v1.png" alt="" fill sizes="(min-width: 768px) 33vw, 100vw" className="pointer-events-none character-card-seline-banner object-cover" /> : null}
+          <article key={character.id} className={`character-card rounded-3xl border p-6 ${isSelected ? "character-card-selected" : ""} ${!character.available ? "character-card-locked" : ""}`}>
             <div className="relative z-10 flex items-start justify-between gap-3">
               <span className="text-sm font-extrabold text-[#d45d91]">{character.number}</span>
               {isSelected ? <span className="character-selected-badge">{ko ? "선택됨" : "Selected"}</span> : null}

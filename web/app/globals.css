@@ -418,8 +418,6 @@ body[data-theme="dark"] main .account-delete-trigger:hover {
 .character-select-button { background: linear-gradient(90deg, #ef8fba, #a895f4); color: #fff; box-shadow: 0 8px 18px rgba(183, 117, 183, 0.24); }
 .character-select-button:hover { filter: brightness(1.06); transform: translateY(-0.1rem); }
 .character-selected-button { border: 1px solid #ffd3e5; background: linear-gradient(90deg, #d75d91, #a67ce6); color: #fff; box-shadow: 0 10px 22px rgba(184, 79, 137, 0.35); cursor: default; }
-.character-card-seline-banner { opacity: 0.2; object-position: 62% center; mix-blend-mode: luminosity; }
-.character-card-seline::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(58, 48, 66, 0.97) 0%, rgba(58, 48, 66, 0.74) 52%, rgba(58, 48, 66, 0.5) 100%); pointer-events: none; }
 body[data-theme="dark"] .character-card, body[data-theme="dark"] main .character-card { background: #3a3042 !important; border-color: #5c4a63 !important; }
 body[data-theme="dark"] .character-card-selected, body[data-theme="dark"] main .character-card-selected { border-color: #ec91bd !important; }
 body[data-theme="dark"] .character-select-button, body[data-theme="dark"] main .character-select-button { background: linear-gradient(90deg, #d879aa, #8c7de5) !important; color: #fff !important; }
