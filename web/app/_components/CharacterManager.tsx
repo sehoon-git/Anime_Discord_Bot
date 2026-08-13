@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 type Locale = "ko" | "en";
 
@@ -71,7 +72,7 @@ export default function CharacterManager({ initialCharacterId, locale }: Charact
               <span className="text-sm font-extrabold text-[#d45d91]">{character.number}</span>
               {isSelected ? <span className="character-selected-badge">{ko ? "선택됨" : "Selected"}</span> : null}
             </div>
-            <div className="mt-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#ef8fba] to-[#a895f4] text-xl font-extrabold text-white shadow-lg">{character.available ? "AI" : "+"}</div>
+            <div className="mt-6 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#ef8fba] to-[#a895f4] text-xl font-extrabold text-white shadow-lg">{character.available ? <Image src="/seline-icon-v2.png" alt="Seline" width={64} height={64} className="h-full w-full object-cover" /> : "+"}</div>
             <h2 className="mt-5 text-2xl font-extrabold">{character.title[locale]}</h2>
             <p className="mt-3 min-h-12 text-sm leading-6 text-[#92768a]">{character.description[locale]}</p>
             {character.available ? (
