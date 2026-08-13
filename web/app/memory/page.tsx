@@ -73,7 +73,7 @@ export default async function MemoryPage() {
   return <main className="site-wash min-h-screen px-6 py-16 text-[#493647]">
     <section className="mx-auto max-w-4xl">
       <div className="flex flex-wrap items-end justify-between gap-5">
-        <div><p className="mb-3 text-sm font-semibold text-[#d45d91]">Discord Anime AI</p><h1 className="text-4xl font-bold">{copy.title}</h1><p className="mt-4 max-w-2xl text-[#806579]">{copy.intro}</p></div>
+        <div><p className="mb-3 text-sm font-semibold text-[#d45d91]">VoiceWithAI</p><h1 className="text-4xl font-bold">{copy.title}</h1><p className="mt-4 max-w-2xl text-[#806579]">{copy.intro}</p></div>
         <div className="rounded-2xl border border-[#efd8e5] bg-white/75 px-5 py-4 text-right shadow-[0_12px_30px_rgba(198,135,169,0.1)]"><p className="text-xs font-semibold text-[#a4577e]">{copy.count}</p><p className="mt-1 text-2xl font-extrabold">{memories.length}<span className="ml-1 text-sm font-semibold text-[#92768a]">{ko ? "개" : "items"}</span></p></div>
       </div>
       <section className="mt-10 rounded-3xl border border-[#f0d7e5] bg-white/80 p-6 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">

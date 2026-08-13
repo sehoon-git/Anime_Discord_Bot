@@ -60,7 +60,7 @@ function DashboardError({
   return (
     <main className="site-wash min-h-screen px-6 py-12 text-[#493647]">
       <section className="mx-auto max-w-3xl rounded-3xl border border-[#f0d4e2] bg-white/85 p-6 shadow-[0_20px_60px_rgba(198,135,169,0.16)]">
-        <p className="text-sm font-semibold text-[#d45d91]">Discord Anime AI</p>
+        <p className="text-sm font-semibold text-[#d45d91]">VoiceWithAI</p>
         <h1 className="mt-3 text-3xl font-bold text-[#5b4054]">{title}</h1>
         <p className="mt-4 text-sm leading-6 text-[#a44b67]">{message}</p>
         <Link
@@ -192,7 +192,7 @@ export default async function DashboardPage() {
   return (
     <main className="site-wash min-h-screen px-6 py-12 text-[#493647]">
       <section className="mx-auto max-w-4xl">
-        <p className="text-sm font-semibold text-[#d45d91]">Discord Anime AI</p>
+        <p className="text-sm font-semibold text-[#d45d91]">VoiceWithAI</p>
         <h1 className="mt-3 text-4xl font-bold">대시보드</h1>
         <p className="mt-4 text-[#806579]">
           {profile?.nickname ?? session.user.name ?? userEmail} 계정으로 로그인되었습니다.

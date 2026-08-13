@@ -10,7 +10,7 @@ type Locale = "en" | "ko";
 const copy = {
   en: {
     titleLines: ["Meet Seline on Discord", "AI character voice chat"],
-    eyebrow: "Discord Anime AI / voice chat",
+    eyebrow: "VoiceWithAI / voice chat",
     description: "Talk with your favorite character, hear her voice, and keep the moments you share.\nA warm AI conversation that begins on Discord.",
     learnMore: "Learn more", sceneLabel: "A conversation with Seline, an AI character", talking: "In conversation",
     firstMessage: "What would you like to talk about today?", secondMessage: "I am a little tired. I want to hear your voice.", thirdMessage: "Then let us take it slowly. I am right here.", voiceReady: "Voice chat is getting ready",
@@ -18,7 +18,7 @@ const copy = {
   },
   ko: {
     titleLines: ["디스코드에서 만나는", "AI 캐릭터 음성 대화"],
-    eyebrow: "Discord Anime AI / voice chat",
+    eyebrow: "VoiceWithAI / voice chat",
     description: "좋아하는 캐릭터와 이야기를 나누고, 목소리를 듣고, 함께한 순간을 기억해요.\n디스코드에서 시작하는 가장 포근한 AI 대화입니다.",
     learnMore: "더 알아보기", sceneLabel: "Seline AI 캐릭터와 대화하는 화면", talking: "지금 대화 중",
     firstMessage: "오늘은 어떤 이야기부터 해볼까요?", secondMessage: "조금 지쳤는데 목소리 듣고 싶어.", thirdMessage: "그럼 천천히 이야기해요. 여기 있을게요.", voiceReady: "음성 대화 준비 중",
