@@ -67,16 +67,17 @@ export default function CharacterManager({ initialCharacterId, locale }: Charact
       {characters.map((character) => {
         const isSelected = character.id === selected;
         return (
-          <article key={character.id} className={`character-card rounded-3xl border p-6 ${isSelected ? "character-card-selected" : ""} ${!character.available ? "character-card-locked" : ""}`}>
-            <div className="flex items-start justify-between gap-3">
+          <article key={character.id} className={`character-card relative overflow-hidden rounded-3xl border p-6 ${character.id === "seline" ? "character-card-seline" : ""} ${isSelected ? "character-card-selected" : ""} ${!character.available ? "character-card-locked" : ""}`}>
+            {character.id === "seline" ? <Image src="/seline-banner-v2.png" alt="" fill sizes="(min-width: 768px) 33vw, 100vw" className="pointer-events-none character-card-seline-banner object-cover" /> : null}
+            <div className="relative z-10 flex items-start justify-between gap-3">
               <span className="text-sm font-extrabold text-[#d45d91]">{character.number}</span>
               {isSelected ? <span className="character-selected-badge">{ko ? "선택됨" : "Selected"}</span> : null}
             </div>
-            <div className="mt-6 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#ef8fba] to-[#a895f4] text-xl font-extrabold text-white shadow-lg">{character.available ? <Image src="/seline-icon-v2.png" alt="Seline" width={64} height={64} className="h-full w-full object-cover" /> : "+"}</div>
-            <h2 className="mt-5 text-2xl font-extrabold">{character.title[locale]}</h2>
-            <p className="mt-3 min-h-12 text-sm leading-6 text-[#92768a]">{character.description[locale]}</p>
+            <div className="relative z-10 mt-6 flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-[#ef8fba] to-[#a895f4] text-xl font-extrabold text-white shadow-lg">{character.available ? <Image src="/seline-icon-v2.png" alt="Seline" width={64} height={64} className="h-full w-full object-cover" /> : "+"}</div>
+            <h2 className="relative z-10 mt-5 text-2xl font-extrabold">{character.title[locale]}</h2>
+            <p className="relative z-10 mt-3 min-h-12 text-sm leading-6 text-[#92768a]">{character.description[locale]}</p>
             {character.available ? (
-              <button type="button" disabled={saving || isSelected} onClick={() => void selectCharacter(character.id)} className={`mt-7 w-full rounded-full px-5 py-3 text-sm font-extrabold transition ${isSelected ? "character-selected-button" : "character-select-button"}`}>
+              <button type="button" disabled={saving || isSelected} onClick={() => void selectCharacter(character.id)} className={`relative z-10 mt-7 w-full rounded-full px-5 py-3 text-sm font-extrabold transition ${isSelected ? "character-selected-button" : "character-select-button"}`}>
                 {isSelected ? (ko ? "현재 선택한 캐릭터" : "Current character") : (saving ? (ko ? "저장 중..." : "Saving...") : (ko ? "이 캐릭터 선택하기" : "Choose this character"))}
               </button>
             ) : (
