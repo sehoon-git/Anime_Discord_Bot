@@ -1,3 +1,5 @@
+import AccountDeletionButton from "@/app/_components/AccountDeletionButton";
+
 export default function PrivacySettingsPage() {
   return (
     <main className="min-h-screen bg-black px-6 py-12 text-white">
@@ -24,6 +26,7 @@ export default function PrivacySettingsPage() {
         <button className="mt-8 rounded-full bg-blue-500 px-6 py-3 font-semibold">
           설정 저장
         </button>
+        <AccountDeletionButton />
       </section>
     </main>
   );
