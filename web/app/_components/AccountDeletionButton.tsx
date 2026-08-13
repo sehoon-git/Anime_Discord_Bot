@@ -31,6 +31,17 @@ export default function AccountDeletionButton({ locale }: { locale: "ko-KR" | "e
       <div className="w-full max-w-md rounded-3xl bg-white p-6 text-[#493647] shadow-2xl">
         <h3 id="account-deletion-title" className="text-xl font-bold">{ko ? "정말 회원 탈퇴할까요?" : "Delete your account?"}</h3>
         <p className="mt-3 text-sm leading-6 text-[#806579]">{ko ? "이 작업은 취소하거나 복구할 수 없습니다." : "This action cannot be undone."}</p>
+        <div className="mt-4 rounded-2xl border border-[#efd4e2] bg-[#fff8fc] p-4 text-sm leading-6 text-[#76566b]">
+          <p className="font-bold text-[#684b60]">{ko ? "탈퇴 및 법정 보관 안내" : "Deletion and legal retention notice"}</p>
+          <p className="mt-2">{ko ? "회원 탈퇴 시 프로필, Discord 연동 정보, 설정, 대화·기억 데이터는 즉시 삭제됩니다." : "Your profile, Discord connection, settings, conversation data, and memories are deleted immediately."}</p>
+          <p className="mt-2">{ko ? "단, 관계 법령에 따라 결제·계약 관련 기록은 법정 보관기간 동안 별도 보관 후 안전하게 삭제됩니다. 보관된 정보는 법적 의무 이행 외 목적으로 이용하지 않습니다." : "Payment and contract records may be retained separately for legally required periods and are used only to meet legal obligations."}</p>
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-xs">
+            <li>{ko ? "표시·광고 기록: 6개월" : "Advertising records: 6 months"}</li>
+            <li>{ko ? "계약·청약철회 기록: 5년" : "Contract and withdrawal records: 5 years"}</li>
+            <li>{ko ? "결제·서비스 제공 기록: 5년" : "Payment and service records: 5 years"}</li>
+            <li>{ko ? "소비자 불만·분쟁 처리 기록: 3년" : "Consumer complaints and dispute records: 3 years"}</li>
+          </ul>
+        </div>
         {error ? <p className="mt-4 rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p> : null}
         <div className="mt-6 flex justify-end gap-3">
           <button type="button" disabled={deleting} onClick={() => setOpen(false)} className="rounded-full border border-[#d9b7c9] px-5 py-2.5 text-sm font-semibold text-[#684b60] hover:bg-[#fdf6fa] disabled:opacity-50">{ko ? "취소" : "Cancel"}</button>
