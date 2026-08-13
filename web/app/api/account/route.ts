@@ -23,6 +23,8 @@ export async function DELETE() {
     // 없다는 이유로 전체 회원 탈퇴가 실패하지 않게 합니다.
     const botTables = [
       "memory_audit_events",
+      "memory_sources",
+      "memory_items",
       "user_memories",
       "conversation_summaries",
       "conversation_turns",

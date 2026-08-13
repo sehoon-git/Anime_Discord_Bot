@@ -1,5 +1,11 @@
 import { botPool, webPool } from "@/app/lib/db";
 import { ensureUserProfilesTable, updateUserNickname } from "@/app/lib/users";
+import {
+  deleteAllLongTermMemories,
+  deleteLongTermMemory,
+  listLongTermMemories,
+  setLongTermMemoryPinned,
+} from "@/app/lib/long-term-memory";
 
 export type TurnRole = "user" | "assistant";
 export type TurnInputType = "text" | "voice";
@@ -36,15 +42,6 @@ type TurnRow = {
   created_at: Date;
 };
 
-type MemoryRow = {
-  id: string;
-  content: string;
-  source: string;
-  confidence: number;
-  is_pinned: boolean;
-  created_at: Date;
-};
-
 export async function findLinkedUserByDiscordId(
   discordUserId: string,
 ): Promise<LinkedUser | null> {
@@ -72,24 +69,17 @@ export async function findLinkedUserByDiscordId(
 
 export function extractPreferredNickname(text: string) {
   const patterns = [
-    /(?:나를|나는|저를|전)\s*([가-힣A-Za-z0-9_ -]{2,30}?)(?:라고|이라|라|으로|로)\s*불러\s*줘/i,
-    /(?:앞으로|이제부터)\s*(?:나를|저를)?\s*([가-힣A-Za-z0-9_ -]{2,30}?)(?:라고|이라|라|으로|로)\s*불러\s*줘/i,
-    /(?:내\s*닉네임|닉네임)\s*(?:은|을|를|:)?\s*([가-힣A-Za-z0-9_ -]{2,30})/i,
+    /(?:call\s+me|my\s+name\s+is)\s+([\p{L}\p{N}_ -]{2,30})/iu,
+    /(?:\ub0b4\s*\uc774\ub984\uc740|\uc81c\s*\uc774\ub984\uc740|\uc55e\uc73c\ub85c\s*\ub098\ub97c)\s*([\p{L}\p{N}_ -]{2,30})/iu,
   ];
 
   for (const pattern of patterns) {
-    const match = text.match(pattern);
-    const nickname = match?.[1]?.replace(/\s+/g, " ").trim();
-
-    if (nickname) {
-      return nickname;
-    }
+    const nickname = pattern.exec(text)?.[1]?.replace(/\s+/g, " ").trim();
+    if (nickname) return nickname;
   }
 
   return null;
-}
-
-export async function maybeUpdatePreferredNickname(userId: string, text: string) {
+}export async function maybeUpdatePreferredNickname(userId: string, text: string) {
   const nickname = extractPreferredNickname(text);
 
   if (!nickname) {
@@ -206,10 +196,10 @@ function buildSimpleSummary(turns: ConversationTurn[]) {
     .filter(Boolean);
 
   if (userLines.length === 0) {
-    return "아직 요약할 대화가 충분하지 않습니다.";
+    return "?袁⑹춦 ?遺용튋?????遺? ?겸뫖???? ??녿뮸??덈뼄.";
   }
 
-  return `최근 사용자는 다음 주제로 대화했습니다: ${userLines.join(" / ")}`;
+  return `筌ㅼ뮄??????癒?뮉 ??쇱벉 雅뚯눘?ｆ에????酉六??щ빍?? ${userLines.join(" / ")}`;
 }
 
 export async function refreshSummaryIfNeeded(userId: string) {
@@ -248,130 +238,18 @@ export async function refreshSummaryIfNeeded(userId: string) {
   return summary;
 }
 
-function extractMemoryText(text: string) {
-  const match = text.match(/(?:기억해줘|기억해|remember)\s*[:：-]?\s*(.+)/i);
-  return match?.[1]?.trim() ?? null;
-}
-
-export async function maybeStoreMemory(userId: string, text: string) {
-  const memoryText = extractMemoryText(text);
-
-  if (!memoryText) {
-    return null;
-  }
-
-  const memorySetting = await webPool.query<{ enabled: boolean }>(
-    `SELECT enabled FROM memory_settings WHERE user_id = $1`,
-    [userId],
-  );
-  const memoryAllowed = (memorySetting.rows[0]?.enabled ?? true) && await hasConsent(userId, "memory");
-
-  if (!memoryAllowed) {
-    return null;
-  }
-
-  const retentionResult = await webPool.query<{ retention_days: number }>(
-    `SELECT retention_days FROM memory_settings WHERE user_id = $1`,
-    [userId],
-  );
-  const retentionDays = Math.min(Math.max(Number(retentionResult.rows[0]?.retention_days ?? 30), 1), 3650);
-
-  const result = await botPool.query<MemoryRow>(
-    `
-    INSERT INTO user_memories (user_id, content, source, expires_at, updated_at)
-    VALUES ($1, $2, 'conversation', NOW() + ($3 * INTERVAL '1 day'), NOW())
-    RETURNING id::text, content, source, confidence, is_pinned, created_at
-    `,
-    [userId, memoryText, retentionDays],
-  );
-
-  const row = result.rows[0];
-
-  await botPool.query(
-    `INSERT INTO memory_audit_events (memory_id, user_id, action)
-     VALUES ($1, $2, 'created')`,
-    [row.id, userId],
-  );
-
-  return {
-    id: row.id,
-    content: row.content,
-    source: row.source,
-    confidence: Number(row.confidence),
-    isPinned: row.is_pinned,
-    createdAt: row.created_at.toISOString(),
-  };
-}
-
 export async function listMemories(userId: string) {
-  const result = await botPool.query<MemoryRow>(
-    `
-    SELECT id::text, content, source, confidence, is_pinned, created_at
-    FROM user_memories
-    WHERE user_id = $1 AND deleted_at IS NULL
-    ORDER BY created_at DESC
-    `,
-    [userId],
-  );
-
-  return result.rows.map((row) => ({
-    id: row.id,
-    content: row.content,
-    source: row.source,
-    confidence: Number(row.confidence),
-    isPinned: row.is_pinned,
-    createdAt: row.created_at.toISOString(),
-  }));
+  return listLongTermMemories(userId);
 }
 
 export async function deleteMemory(userId: string, memoryId: string) {
-  const result = await botPool.query(
-    `
-    UPDATE user_memories
-    SET deleted_at = COALESCE(deleted_at, NOW()), updated_at = NOW()
-    WHERE user_id = $1 AND id = $2 AND deleted_at IS NULL
-    `,
-    [userId, memoryId],
-  );
-  if (result.rowCount) {
-    await botPool.query(
-      `INSERT INTO memory_audit_events (memory_id, user_id, action)
-       VALUES ($1, $2, 'deleted')`,
-      [memoryId, userId],
-    );
-  }
+  await deleteLongTermMemory(userId, memoryId);
 }
 
 export async function deleteAllMemories(userId: string) {
-  const result = await botPool.query(
-    `UPDATE user_memories SET deleted_at = NOW(), updated_at = NOW()
-     WHERE user_id = $1 AND deleted_at IS NULL`,
-    [userId],
-  );
-  if (result.rowCount) {
-    await botPool.query(
-      `INSERT INTO memory_audit_events (user_id, action)
-       VALUES ($1, 'reset')`,
-      [userId],
-    );
-  }
+  await deleteAllLongTermMemories(userId);
 }
 
 export async function setMemoryPinned(userId: string, memoryId: string, pinned: boolean) {
-  const result = await botPool.query(
-    `UPDATE user_memories
-     SET is_pinned = $3, updated_at = NOW()
-     WHERE user_id = $1 AND id = $2 AND deleted_at IS NULL`,
-    [userId, memoryId, pinned],
-  );
-
-  if (result.rowCount) {
-    await botPool.query(
-      `INSERT INTO memory_audit_events (memory_id, user_id, action)
-       VALUES ($1, $2, $3)`,
-      [memoryId, userId, pinned ? "pinned" : "unpinned"],
-    );
-  }
-
-  return Boolean(result.rowCount);
+  return setLongTermMemoryPinned(userId, memoryId, pinned);
 }

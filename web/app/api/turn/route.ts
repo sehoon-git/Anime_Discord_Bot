@@ -7,13 +7,13 @@ import {
   findLinkedUserByDiscordId,
   getRecentTurns,
   hasConsent,
-  listMemories,
-  maybeStoreMemory,
   maybeUpdatePreferredNickname,
   refreshSummaryIfNeeded,
   saveTurn,
   type TurnInputType,
 } from "@/app/lib/memory";
+import { processLongTermMemory, searchLongTermMemories } from "@/app/lib/long-term-memory";
+import { getAssistantPreferences } from "@/app/lib/operations";
 
 function isInputType(value: unknown): value is TurnInputType {
   return value === "text" || value === "voice";
@@ -30,6 +30,7 @@ export async function POST(request: Request) {
     const text = optionalString(body.text);
     const assistantText = optionalString(body.assistantText);
     const inputType = isInputType(body.inputType) ? body.inputType : "text";
+    const characterId = optionalString(body.characterId) ?? "seline";
 
     if (!discordUserId || !text) {
       return NextResponse.json(
@@ -83,8 +84,6 @@ export async function POST(request: Request) {
       linkedUser.nickname = updatedNickname;
     }
 
-    const savedMemory = await maybeStoreMemory(linkedUser.id, text);
-
     if (assistantText) {
       await saveTurn({
         userId: linkedUser.id,
@@ -98,9 +97,21 @@ export async function POST(request: Request) {
     }
 
     const summary = await refreshSummaryIfNeeded(linkedUser.id);
-  const recentTurns = await getRecentTurns(linkedUser.id, 48);
-    const memoryAllowed = await hasConsent(linkedUser.id, "memory");
-    const memories = memoryAllowed ? await listMemories(linkedUser.id) : [];
+    const recentTurns = await getRecentTurns(linkedUser.id, 48);
+    const preferences = await getAssistantPreferences(linkedUser.id);
+    const memoryAllowed =
+      (preferences?.memory_enabled ?? true) && await hasConsent(linkedUser.id, "memory");
+    const memories = memoryAllowed
+      ? await searchLongTermMemories(linkedUser.id, characterId, text, 10)
+      : [];
+    const memory = await processLongTermMemory({
+      userId: linkedUser.id,
+      characterId,
+      text,
+      inputType,
+      sourceEventId: optionalString(body.messageId),
+      occurredAt: optionalString(body.occurredAt) ?? new Date().toISOString(),
+    });
 
     return NextResponse.json({
       ok: true,
@@ -108,7 +119,7 @@ export async function POST(request: Request) {
       recentTurns,
       summary,
       memories,
-      savedMemory,
+      memory,
     });
   } catch (error) {
     console.error("[turn-api]", error);

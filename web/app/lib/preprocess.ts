@@ -31,14 +31,7 @@ export type PreprocessedTurn = {
 
 type PreprocessResult =
   | { ok: true; turn: PreprocessedTurn }
-  | {
-      ok: false;
-      error:
-        | "INVALID_BODY"
-        | "MISSING_DISCORD_USER_ID"
-        | "MISSING_TEXT"
-        | "EMPTY_TEXT";
-    };
+  | { ok: false; error: "INVALID_BODY" | "MISSING_DISCORD_USER_ID" | "MISSING_TEXT" | "EMPTY_TEXT" };
 
 function optionalString(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : null;
@@ -60,19 +53,16 @@ export function normalizeDiscordText(text: string) {
 }
 
 export function extractMemoryCandidate(text: string) {
-  const match = text.match(/^(?:기억해줘|기억해|remember)\s*[:：-]?\s*(.+)$/i);
+  const match = text.match(/^(?:remember(?:\s+this)?|\uae30\uc5b5\ud574\s*(?:\uc918|\uc8fc\uc138\uc694)?|\uae30\uc5b5\ud574)\s*[:,-]?\s*(.+)$/iu);
   return match?.[1]?.trim() || null;
 }
 
 export function preprocessTurnEnvelope(body: unknown): PreprocessResult {
-  if (!body || typeof body !== "object") {
-    return { ok: false, error: "INVALID_BODY" };
-  }
+  if (!body || typeof body !== "object") return { ok: false, error: "INVALID_BODY" };
 
   const input = body as Record<string, unknown>;
   const discordUserId = optionalString(input.discordUserId);
   const rawText = optionalString(input.text);
-
   if (!discordUserId) return { ok: false, error: "MISSING_DISCORD_USER_ID" };
   if (!rawText) return { ok: false, error: "MISSING_TEXT" };
 
@@ -80,10 +70,9 @@ export function preprocessTurnEnvelope(body: unknown): PreprocessResult {
   if (!text) return { ok: false, error: "EMPTY_TEXT" };
 
   const occurredAtInput = optionalString(input.occurredAt);
-  const occurredAt =
-    occurredAtInput && !Number.isNaN(Date.parse(occurredAtInput))
-      ? new Date(occurredAtInput).toISOString()
-      : new Date().toISOString();
+  const occurredAt = occurredAtInput && !Number.isNaN(Date.parse(occurredAtInput))
+    ? new Date(occurredAtInput).toISOString()
+    : new Date().toISOString();
 
   return {
     ok: true,

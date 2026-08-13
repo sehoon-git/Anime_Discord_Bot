@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { botPool, webPool } from "@/app/lib/db";
+import { webPool } from "@/app/lib/db";
 import { getMissingRequiredConsents } from "@/app/lib/consent";
+import { listLongTermMemories, setLongTermMemoryPinned } from "@/app/lib/long-term-memory";
 
 async function resolveUserId(discordUserId: string) {
   const result = await webPool.query<{ user_id: string }>(
@@ -60,21 +61,13 @@ export async function GET(request: Request) {
       );
     }
 
-    const result = await botPool.query(
-      `
-      SELECT id::text, content, source, confidence, is_pinned, created_at, expires_at
-      FROM user_memories
-      WHERE user_id = $1 AND deleted_at IS NULL
-      ORDER BY is_pinned DESC, created_at DESC
-      LIMIT 10
-      `,
-      [userId],
-    );
+    const characterId = searchParams.get("characterId") || undefined;
+    const memories = await listLongTermMemories(userId, characterId);
 
     return NextResponse.json({
       ok: true,
       memoryAllowed: true,
-      memories: result.rows,
+      memories: memories.slice(0, 10),
     });
   } catch (error) {
     console.error("GET /api/bot/memory Error:", error);
@@ -86,47 +79,14 @@ export async function POST(request: Request) {
   if (!isAuthorizedBot(request)) {
     return unauthorized();
   }
-
-  try {
-    const { discordUserId, content } = await request.json();
-
-    if (
-      typeof discordUserId !== "string" ||
-      typeof content !== "string" ||
-      !discordUserId.trim() ||
-      !content.trim()
-    ) {
-      return NextResponse.json({ ok: false, error: "INVALID_BODY" }, { status: 400 });
-    }
-
-    const userId = await resolveUserId(discordUserId);
-
-    if (!userId) {
-      return NextResponse.json({ ok: false, error: "USER_NOT_FOUND" }, { status: 404 });
-    }
-
-    const missingConsents = await getMissingRequiredConsents(userId);
-    if (missingConsents.length > 0) {
-      return NextResponse.json(
-        { ok: false, error: "REQUIRED_CONSENT_MISSING", missingConsents },
-        { status: 403 },
-      );
-    }
-
-    const insertRes = await botPool.query(
-      `
-      INSERT INTO user_memories (user_id, content, source, expires_at, updated_at)
-      VALUES ($1, $2, 'conversation', NOW() + (COALESCE((SELECT retention_days FROM memory_settings WHERE user_id = $1), 30) * INTERVAL '1 day'), NOW())
-      RETURNING id::text
-      `,
-      [userId, content.trim()],
-    );
-
-    return NextResponse.json({ ok: true, memoryId: insertRes.rows[0].id });
-  } catch (error) {
-    console.error("POST /api/bot/memory Error:", error);
-    return NextResponse.json({ ok: false, error: "SERVER_ERROR" }, { status: 500 });
-  }
+  return NextResponse.json(
+    {
+      ok: false,
+      error: "MEMORY_WRITE_OWNED_BY_CONVERSATION_API",
+      message: "Send TurnEnvelope to POST /api/bot/turn. The API decides whether a memory is stored.",
+    },
+    { status: 405 },
+  );
 }
 
 export async function PATCH(request: Request) {
@@ -155,21 +115,8 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const result = await botPool.query(
-      `UPDATE user_memories SET is_pinned = $3, updated_at = NOW()
-       WHERE user_id = $1 AND id = $2 AND deleted_at IS NULL`,
-      [userId, memoryId, pinned],
-    );
-
-    if (result.rowCount) {
-      await botPool.query(
-        `INSERT INTO memory_audit_events (memory_id, user_id, action)
-         VALUES ($1, $2, $3)`,
-        [memoryId, userId, pinned ? "pinned" : "unpinned"],
-      );
-    }
-
-    return NextResponse.json({ ok: Boolean(result.rowCount), pinned });
+    const updated = await setLongTermMemoryPinned(userId, memoryId, pinned);
+    return NextResponse.json({ ok: updated, pinned });
   } catch (error) {
     console.error("PATCH /api/bot/memory Error:", error);
     return NextResponse.json({ ok: false, error: "SERVER_ERROR" }, { status: 500 });

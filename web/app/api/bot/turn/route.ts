@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 
 import {
   cleanupExpiredTurns,
@@ -6,12 +6,11 @@ import {
   getConversationSummary,
   getRecentTurns,
   hasConsent,
-  listMemories,
-  maybeStoreMemory,
   maybeUpdatePreferredNickname,
   refreshSummaryIfNeeded,
   saveTurn,
 } from "@/app/lib/memory";
+import { processLongTermMemory, searchLongTermMemories } from "@/app/lib/long-term-memory";
 import {
   buildFallbackReply,
   buildModelMessages,
@@ -131,7 +130,9 @@ export async function POST(request: Request) {
     const [recentTurns, summary, memories] = await Promise.all([
       getRecentTurns(linkedUser.id, 48, turn.channelId),
       getConversationSummary(linkedUser.id),
-      memoryAllowed ? listMemories(linkedUser.id) : Promise.resolve([]),
+      memoryAllowed
+        ? searchLongTermMemories(linkedUser.id, turn.characterId, turn.text, 10)
+        : Promise.resolve([]),
     ]);
 
     const modelMessages = buildModelMessages({
@@ -159,8 +160,7 @@ export async function POST(request: Request) {
       content: turn.text,
     });
 
-    const savedMemory = await maybeStoreMemory(linkedUser.id, turn.text);
-    const reply = buildFallbackReply(turn.text, Boolean(savedMemory));
+    const reply = buildFallbackReply(turn.text, false);
 
     await recordPerformanceEvent({
       userId: linkedUser.id,
@@ -183,6 +183,21 @@ export async function POST(request: Request) {
 
     const refreshedSummary = await refreshSummaryIfNeeded(linkedUser.id);
     const recentAfter = await getRecentTurns(linkedUser.id, 48, turn.channelId);
+
+    after(async () => {
+      try {
+        await processLongTermMemory({
+          userId: linkedUser.id,
+          characterId: turn.characterId,
+          text: turn.text,
+          inputType: turn.inputType,
+          sourceEventId: turn.messageId,
+          occurredAt: turn.occurredAt,
+        });
+      } catch (memoryError) {
+        console.error("POST /api/bot/turn memory pipeline Error:", memoryError);
+      }
+    });
 
     return NextResponse.json({
       ok: true,
@@ -212,7 +227,10 @@ export async function POST(request: Request) {
         }),
         messages: modelMessages,
       },
-      savedMemory,
+      memory: {
+        acceptedForAsyncProcessing: memoryAllowed,
+        owner: "conversation-api",
+      },
     });
   } catch (error) {
     console.error("POST /api/bot/turn Error:", error);
