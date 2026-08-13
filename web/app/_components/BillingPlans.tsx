@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { signIn } from "next-auth/react";
 
 type Locale = "en" | "ko";
-type BillingPlansProps = { currentPlanCode: string; locale?: Locale; showCreditPanel?: boolean };
+type BillingPlansProps = { currentPlanCode: string; locale?: Locale; showCreditPanel?: boolean; requireLoginForAction?: boolean };
 type Plan = {
   code: string;
   name: string;
@@ -73,7 +74,7 @@ export function CreditPanel({ locale }: { locale: Locale }) {
   </section>;
 }
 
-export default function BillingPlans({ currentPlanCode, locale = "ko", showCreditPanel = true }: BillingPlansProps) {
+export default function BillingPlans({ currentPlanCode, locale = "ko", showCreditPanel = true, requireLoginForAction = false }: BillingPlansProps) {
   const [period, setPeriod] = useState<"monthly" | "yearly">("monthly");
   const mappedCurrent = currentPlanCode === "free" ? "like" : currentPlanCode === "pro" ? "more-like" : currentPlanCode;
   const en = locale === "en";
@@ -93,7 +94,7 @@ export default function BillingPlans({ currentPlanCode, locale = "ko", showCredi
           <p className="mt-4 min-h-12 text-sm leading-6 text-[#92768a]">{plan.description[locale]}</p>
           <div className="mt-8 min-h-[4.75rem]">{period === "yearly" ? <p className="billing-original-price">{price(plan.monthly * 12, locale)} / {en ? "year" : "년"}</p> : null}<p className="text-3xl font-extrabold text-[#684b60]">{price(displayPrice, locale)} <span className="text-sm font-bold text-[#a17f93]">/ {en ? (period === "monthly" ? "month" : "year") : (period === "monthly" ? "월" : "년")}</span></p>{period === "yearly" ? <p className="billing-discount-note">{en ? "2 months free applied" : "2개월 무료 적용"}</p> : null}</div>
           <ul className="mt-7 space-y-4 text-sm text-[#76566b]">{plan.features.map((feature) => <li key={feature.en} className="flex items-center gap-3"><span className="check-mark">✓</span>{feature[locale]}</li>)}</ul>
-          <button type="button" disabled className={`plan-action ${isCurrent ? "plan-action-current" : "plan-action-disabled"}`}>{isCurrent ? (en ? "Current plan" : "현재 요금제") : (en ? "Payment coming soon" : "결제 기능 준비 중")}</button>
+          <button type="button" disabled={!requireLoginForAction} onClick={() => void signIn("google", { callbackUrl: "/billing" })} className={`plan-action ${requireLoginForAction ? "plan-action-login" : isCurrent ? "plan-action-current" : "plan-action-disabled"}`}>{requireLoginForAction ? (en ? "Sign in to choose this plan" : "로그인 후 플랜 선택하기") : isCurrent ? (en ? "Current plan" : "현재 요금제") : (en ? "Payment coming soon" : "결제 기능 준비 중")}</button>
         </article>;
       })}
     </div>
