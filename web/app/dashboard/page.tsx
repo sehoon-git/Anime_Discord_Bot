@@ -251,22 +251,12 @@ export default async function DashboardPage() {
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           <a
-            href="/billing"
+            href="/profile"
             className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
           >
-            <h2 className="text-lg font-semibold">요금제</h2>
+            <h2 className="text-lg font-semibold">내 프로필</h2>
             <p className="mt-3 text-sm text-zinc-400">
-              구독 플랜과 결제 수단을 확인합니다.
-            </p>
-          </a>
-
-          <a
-            href="/memory"
-            className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
-          >
-            <h2 className="text-lg font-semibold">기억 관리</h2>
-            <p className="mt-3 text-sm text-zinc-400">
-              저장된 장기기억을 조회하고 삭제합니다.
+              닉네임, 언어, 기본 프로필 정보를 관리합니다.
             </p>
           </a>
 
@@ -274,9 +264,19 @@ export default async function DashboardPage() {
             href="/settings/privacy"
             className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
           >
-            <h2 className="text-lg font-semibold">개인정보 설정</h2>
+            <h2 className="text-lg font-semibold">음성 대화 설정</h2>
             <p className="mt-3 text-sm text-zinc-400">
-              음성 처리와 국외 이전 동의를 관리합니다.
+              음성 처리 동의와 대화 응답 설정을 확인합니다.
+            </p>
+          </a>
+
+          <a
+            href="/support"
+            className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
+          >
+            <h2 className="text-lg font-semibold">문의 게시판</h2>
+            <p className="mt-3 text-sm text-zinc-400">
+              Discord 문의 게시판에서 도움을 받을 수 있습니다.
             </p>
           </a>
         </div>
