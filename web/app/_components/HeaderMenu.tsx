@@ -42,6 +42,7 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
         <div className="theme-menu absolute right-0 top-12 z-50 w-44 overflow-hidden rounded-2xl border border-[#efd4e2] bg-white py-2 shadow-xl shadow-pink-200/30">
           <Link href="/memory" onClick={() => setIsOpen(false)} className="theme-menu-item block px-4 py-3 text-sm font-semibold text-[#76566b] hover:bg-[#fff0f7]">{ko ? "기억 관리" : "Memory"}</Link>
           <Link href="/settings/privacy" onClick={() => setIsOpen(false)} className="theme-menu-item block px-4 py-3 text-sm font-semibold text-[#76566b] hover:bg-[#fff0f7]">{ko ? "설정" : "Settings"}</Link>
+          <Link href="/notice" onClick={() => setIsOpen(false)} className="theme-menu-item block px-4 py-3 text-sm font-semibold text-[#76566b] hover:bg-[#fff0f7]">{ko ? "공지사항" : "Notices"}</Link>
           <div className="my-2 border-t border-[#efd4e2]" />
           <button type="button" disabled={status === "loading"} onClick={authenticate} className="theme-menu-item flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-[#76566b] hover:bg-[#fff0f7] disabled:cursor-wait">
             {session?.user ? null : <span aria-hidden="true" className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-extrabold text-[#4285f4] shadow-sm">G</span>}{status === "loading" ? (ko ? "확인 중..." : "Checking...") : session?.user ? (ko ? "로그아웃" : "Log out") : (ko ? "Google로 로그인" : "Continue with Google")}
