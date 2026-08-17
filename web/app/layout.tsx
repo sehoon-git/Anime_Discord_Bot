@@ -36,8 +36,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 <Link
                   href="/notice"
                   aria-label={isKorean ? "공지사항 보기" : "View notices"}
-                  title={isKorean ? "공지사항" : "Notices"}
-                  className="flex h-10 w-10 items-center justify-center rounded-full text-[#806579] transition hover:bg-[#fff0f7] hover:text-[#d45d91]"
+                  className="group relative flex h-10 w-10 items-center justify-center rounded-full text-[#806579] transition hover:bg-[#fff0f7] hover:text-[#d45d91]"
                 >
                   <svg
                     aria-hidden="true"
@@ -52,6 +51,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                     <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
                     <path d="M10 21h4" />
                   </svg>
+                  <span className="pointer-events-none absolute top-full left-1/2 z-50 mt-1 -translate-x-1/2 whitespace-nowrap rounded-md border border-[#efcfdf] bg-[#fff8fc] px-2 py-1 text-xs font-semibold text-[#76566b] opacity-0 shadow-lg shadow-pink-200/20 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                    {isKorean ? "공지사항" : "Notices"}
+                  </span>
                 </Link>
                 <HeaderMenu locale={isKorean ? "ko-KR" : "en-US"} />
               </div>
