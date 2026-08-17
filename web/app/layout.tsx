@@ -69,7 +69,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <div className="mx-auto max-w-7xl">
               <p className="font-semibold text-[#6b4d61]">Voice With AI</p>
               <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2">{footerLinks.map(([href, label]) => <Link key={href} href={href} className="hover:text-[#d45d91]">{label}</Link>)}</div>
-              <div className="mt-6 space-y-1">{isKorean ? <><p>상호명: Voice With AI</p><p>대표자명: 준비 중 | 사업자등록번호: 준비 중</p><p>이메일: help@example.com</p></> : isJapanese ? <><p>事業者名: Voice With AI</p><p>代表者名: 準備中 | 事業者登録番号: 準備中</p><p>メール: help@example.com</p></> : <><p>Business name: Voice With AI</p><p>Representative: Coming soon | Business registration: Coming soon</p><p>Email: help@example.com</p></>}</div>
+              <div className="mt-6 space-y-1">{isKorean ? <><p>상호명: Voice With AI</p><p>대표자명: 김세훈, 강창묵 | 사업자등록번호: 준비 중</p><p>이메일: help@example.com</p></> : isJapanese ? <><p>事業者名: Voice With AI</p><p>代表者名: キム・セフン、カン・チャンムク | 事業者登録番号: 準備中</p><p>メール: help@example.com</p></> : <><p>Business name: Voice With AI</p><p>Representatives: Kim Se-hoon, Kang Chang-mook | Business registration: Coming soon</p><p>Email: help@example.com</p></>}</div>
             </div>
           </footer>
         </Providers>
