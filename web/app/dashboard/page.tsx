@@ -125,7 +125,7 @@ export default async function DashboardPage() {
 
   const profile = await getUserProfileByEmail(userEmail);
 
-  if (!hasCompleteProfile(profile)) {
+  if (!profile || !hasCompleteProfile(profile)) {
     redirect("/profile");
   }
 

@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 type SupportedLocale = "en-US" | "ko-KR" | "ja-JP";
 
 type DashboardOnboardingProps = {
-  userId: number;
+  userId: string | number;
   locale: SupportedLocale;
   discordLinked: boolean;
 };
