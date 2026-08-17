@@ -13,7 +13,7 @@ export default async function NoticePage() {
 
       <div className="mt-8 overflow-hidden rounded-3xl border border-[#f0d7e5] bg-white/80 shadow-[0_18px_50px_rgba(198,135,169,0.13)]">
         {notices.map((notice) => <Link key={notice.slug} href={`/notice/${notice.slug}`} className="group flex items-center gap-4 border-b border-[#f0dce8] px-6 py-5 transition last:border-b-0 hover:bg-[#fff6fa]">
-          <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#fff0f7] to-[#f2efff] text-lg sm:flex" aria-hidden="true">{notice.category === "event" ? "✦" : notice.category === "update" ? "↑" : "!"}</span>
+          <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-[1.15rem] bg-gradient-to-br from-[#f5a4c6] via-[#d889c4] to-[#a895f4] text-xl font-extrabold text-white shadow-[0_8px_18px_rgba(205,117,173,0.28)] sm:flex" aria-hidden="true">!</span>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2"><span className="rounded-full bg-[#fff0f7] px-2.5 py-1 text-xs font-extrabold text-[#d45d91]">{noticeCategoryLabel[notice.category][ko ? "ko" : "en"]}</span><time className="text-xs font-semibold text-[#ad8fa1]">{notice.publishedAt}</time></div>
             <h2 className="mt-2 text-base font-extrabold text-[#5b4054] group-hover:text-[#d45d91]">{notice.title[ko ? "ko" : "en"]}</h2>
