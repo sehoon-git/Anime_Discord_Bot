@@ -418,23 +418,24 @@ body[data-theme="dark"] .header-icon-control:hover {
 
   .site-header-primary {
     flex: 1 1 auto;
-    gap: 0.55rem;
-  }
-
-  .site-brand-label {
-    display: none;
+    gap: clamp(0.25rem, 1.4vw, 0.55rem);
   }
 
   .site-brand-logo {
-    height: 2rem;
-    width: 2rem;
+    height: clamp(1.55rem, 5.5vw, 2rem);
+    width: clamp(1.55rem, 5.5vw, 2rem);
+  }
+
+  .site-brand-label {
+    display: inline;
+    font-size: clamp(0.55rem, 2vw, 0.875rem);
   }
 
   .site-primary-nav {
     flex: 1 1 auto;
     justify-content: space-between;
-    gap: 0.35rem;
-    font-size: clamp(0.625rem, 2.15vw, 0.75rem);
+    gap: clamp(0.15rem, 0.9vw, 0.35rem);
+    font-size: clamp(0.5rem, 2.15vw, 0.75rem);
   }
 
   .site-header-controls {
@@ -442,13 +443,13 @@ body[data-theme="dark"] .header-icon-control:hover {
   }
 
   .header-icon-control {
-    height: 1.9rem;
-    width: 1.9rem;
+    height: clamp(1.55rem, 5.5vw, 1.9rem);
+    width: clamp(1.55rem, 5.5vw, 1.9rem);
   }
 
   .header-icon-control svg {
-    height: 1rem;
-    width: 1rem;
+    height: clamp(0.8rem, 3vw, 1rem);
+    width: clamp(0.8rem, 3vw, 1rem);
   }
 }
 
