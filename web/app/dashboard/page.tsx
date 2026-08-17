@@ -6,6 +6,7 @@ import { db } from "@/app/lib/db";
 import { getBillingStatusForUser } from "@/app/lib/billing";
 import { CreditPanel } from "@/app/_components/BillingPlans";
 import AutoGoogleSignIn from "@/app/_components/AutoGoogleSignIn";
+import DashboardOnboarding from "@/app/_components/DashboardOnboarding";
 import { listMemories } from "@/app/lib/memory";
 import { getUserProfileByEmail, hasCompleteProfile } from "@/app/lib/users";
 
@@ -197,6 +198,11 @@ export default async function DashboardPage() {
         <p className="mt-4 text-[#806579]">
           {profile?.nickname ?? session.user.name ?? userEmail} 계정으로 로그인되었습니다.
         </p>
+        <DashboardOnboarding
+          userId={profile.userId}
+          locale={profile.locale}
+          discordLinked={Boolean(discordName)}
+        />
 
         <div className="mt-8 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">
           <h2 className="text-lg font-semibold">Discord 계정 연동</h2>
