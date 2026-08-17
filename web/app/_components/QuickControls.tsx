@@ -10,6 +10,8 @@ export default function QuickControls({ locale }: { locale: Locale }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const ko = locale === "ko-KR";
+  const themeLabel = theme === "dark" ? (ko ? "라이트 모드" : "Light mode") : (ko ? "다크 모드" : "Dark mode");
+  const languageLabel = ko ? "국가 설정" : "Country settings";
 
   useEffect(() => {
     const close = (event: PointerEvent) => {
@@ -46,24 +48,24 @@ export default function QuickControls({ locale }: { locale: Locale }) {
         type="button"
         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
         aria-label={theme === "dark" ? (ko ? "라이트 모드로 전환" : "Switch to light mode") : (ko ? "다크 모드로 전환" : "Switch to dark mode")}
-        title={theme === "dark" ? (ko ? "라이트 모드" : "Light mode") : (ko ? "다크 모드" : "Dark mode")}
-        className="flex h-10 w-10 items-center justify-center rounded-full text-[#806579] transition hover:bg-[#fff0f7] hover:text-[#d45d91]"
+        className="group relative flex h-10 w-10 items-center justify-center rounded-full text-[#806579] transition hover:scale-105 hover:bg-[#fff0f7] hover:text-[#d45d91] hover:shadow-[0_6px_16px_rgba(212,93,145,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d45d91]/50"
       >
         {theme === "dark" ? (
           <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></svg>
         ) : (
           <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" /></svg>
         )}
+        <span className="pointer-events-none absolute top-full left-1/2 z-50 mt-1 -translate-x-1/2 whitespace-nowrap rounded-md border border-[#efcfdf] bg-[#fff8fc] px-2 py-1 text-xs font-semibold text-[#76566b] opacity-0 shadow-lg shadow-pink-200/20 transition group-hover:opacity-100 group-focus-visible:opacity-100">{themeLabel}</span>
       </button>
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
         aria-label={ko ? "언어 선택" : "Choose language"}
         aria-expanded={open}
-        title={ko ? "언어" : "Language"}
-        className="flex h-10 w-10 items-center justify-center rounded-full text-[#806579] transition hover:bg-[#fff0f7] hover:text-[#d45d91]"
+        className="group relative flex h-10 w-10 items-center justify-center rounded-full text-[#806579] transition hover:scale-105 hover:bg-[#fff0f7] hover:text-[#d45d91] hover:shadow-[0_6px_16px_rgba(212,93,145,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d45d91]/50"
       >
         <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9S9.5 5.5 12 3Z" /></svg>
+        <span className="pointer-events-none absolute top-full left-1/2 z-50 mt-1 -translate-x-1/2 whitespace-nowrap rounded-md border border-[#efcfdf] bg-[#fff8fc] px-2 py-1 text-xs font-semibold text-[#76566b] opacity-0 shadow-lg shadow-pink-200/20 transition group-hover:opacity-100 group-focus-visible:opacity-100">{languageLabel}</span>
       </button>
       {open ? (
         <div className="theme-menu absolute right-0 top-14 z-50 w-40 overflow-hidden rounded-2xl border border-[#efd4e2] bg-white p-2 shadow-xl shadow-pink-200/30">

@@ -36,7 +36,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 <Link
                   href="/notice"
                   aria-label={isKorean ? "공지사항 보기" : "View notices"}
-                  className="group relative flex h-10 w-10 items-center justify-center rounded-full text-[#806579] transition hover:bg-[#fff0f7] hover:text-[#d45d91]"
+                  className="group relative flex h-10 w-10 items-center justify-center rounded-full text-[#806579] transition hover:scale-105 hover:bg-[#fff0f7] hover:text-[#d45d91] hover:shadow-[0_6px_16px_rgba(212,93,145,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d45d91]/50"
                 >
                   <svg
                     aria-hidden="true"
