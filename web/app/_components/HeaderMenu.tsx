@@ -35,7 +35,7 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
 
   return (
     <div ref={menuRef} className="relative">
-      <button type="button" aria-label={ko ? "계정 메뉴 열기" : "Open account menu"} aria-expanded={isOpen} onClick={() => setIsOpen((current) => !current)} className="group relative flex h-10 w-10 items-center justify-center rounded-full text-[#806579] transition hover:scale-105 hover:bg-[#fff0f7] hover:text-[#d45d91] hover:shadow-[0_6px_16px_rgba(212,93,145,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d45d91]/50">
+      <button type="button" aria-label={ko ? "계정 메뉴 열기" : "Open account menu"} aria-expanded={isOpen} onClick={() => setIsOpen((current) => !current)} className="header-icon-control group relative flex h-10 w-10 items-center justify-center rounded-full text-[#806579] transition hover:scale-105 hover:bg-[#fff0f7] hover:text-[#d45d91] hover:shadow-[0_6px_16px_rgba(212,93,145,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d45d91]/50">
         <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"><path d="M20 21a8 8 0 0 0-16 0" /><circle cx="12" cy="7" r="4" /></svg>
         <span className="pointer-events-none absolute top-full left-1/2 z-50 mt-1 -translate-x-1/2 whitespace-nowrap rounded-md border border-[#efcfdf] bg-[#fff8fc] px-2 py-1 text-xs font-semibold text-[#76566b] opacity-0 shadow-lg shadow-pink-200/20 transition group-hover:opacity-100 group-focus-visible:opacity-100">{ko ? "계정" : "Account"}</span>
       </button>

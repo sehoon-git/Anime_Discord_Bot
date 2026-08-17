@@ -379,6 +379,17 @@ body[data-theme="dark"] .theme-menu-divider {
   border-color: #63516b !important;
 }
 
+/* Header utilities share one hover surface, including the notice link. */
+.header-icon-control:hover {
+  background-color: #fff0f7;
+}
+
+body[data-theme="dark"] .header-icon-control:hover {
+  background-color: #5a4664 !important;
+  border-color: #b987aa !important;
+  color: #ffffff !important;
+}
+
 /* Dangerous actions must remain visually distinct from normal controls. */
 .account-delete-card {
   border-color: #fecaca !important;
