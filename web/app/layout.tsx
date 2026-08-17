@@ -31,7 +31,30 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 <Link href="/" className="flex items-center gap-2 font-bold"><Image src="/voicewithai-logo.svg" alt="Voice With AI" width={36} height={36} className="h-9 w-9" priority /><span className="text-[#5b4054]">Voice With AI</span></Link>
                 <nav className="flex items-center gap-5 text-sm font-semibold text-[#876b7d]"><Link href="/billing" className="hover:text-[#d45d91]">{isKorean ? "요금제" : "Plans"}</Link><Link href="/dashboard" className="hover:text-[#d45d91]">{isKorean ? "대시보드" : "Dashboard"}</Link><Link href="/support" className="hover:text-[#d45d91]">{isKorean ? "문의 게시판" : "Support"}</Link><Link href="/characters" className="hover:text-[#d45d91]">{isKorean ? "캐릭터 설정" : "Characters"}</Link></nav>
               </div>
-              <div className="flex items-center gap-2"><QuickControls locale={isKorean ? "ko-KR" : "en-US"} /><HeaderMenu locale={isKorean ? "ko-KR" : "en-US"} /></div>
+              <div className="flex items-center gap-2">
+                <QuickControls locale={isKorean ? "ko-KR" : "en-US"} />
+                <Link
+                  href="/notice"
+                  aria-label={isKorean ? "공지사항 보기" : "View notices"}
+                  title={isKorean ? "공지사항" : "Notices"}
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-[#806579] transition hover:bg-[#fff0f7] hover:text-[#d45d91]"
+                >
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-5 w-5"
+                  >
+                    <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+                    <path d="M10 21h4" />
+                  </svg>
+                </Link>
+                <HeaderMenu locale={isKorean ? "ko-KR" : "en-US"} />
+              </div>
             </div>
           </header>
           {children}
