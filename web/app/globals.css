@@ -390,6 +390,84 @@ body[data-theme="dark"] .header-icon-control:hover {
   color: #ffffff !important;
 }
 
+/* Keep header labels horizontal. Controls, spacing, and text scale down together
+   on smaller screens instead of breaking Korean/Japanese labels into vertical text. */
+.site-header-primary {
+  min-width: 0;
+}
+
+.site-primary-nav {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.site-nav-link,
+.site-brand {
+  white-space: nowrap;
+}
+
+.site-header-controls {
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .site-header-content {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+  }
+
+  .site-header-primary {
+    flex: 1 1 auto;
+    gap: 0.55rem;
+  }
+
+  .site-brand-label {
+    display: none;
+  }
+
+  .site-brand-logo {
+    height: 2rem;
+    width: 2rem;
+  }
+
+  .site-primary-nav {
+    flex: 1 1 auto;
+    justify-content: space-between;
+    gap: 0.35rem;
+    font-size: clamp(0.625rem, 2.15vw, 0.75rem);
+  }
+
+  .site-header-controls {
+    gap: 0;
+  }
+
+  .header-icon-control {
+    height: 1.9rem;
+    width: 1.9rem;
+  }
+
+  .header-icon-control svg {
+    height: 1rem;
+    width: 1rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 900px) {
+  .site-header-content {
+    padding-right: 0.875rem;
+    padding-left: 0.875rem;
+  }
+
+  .site-header-primary {
+    gap: 1rem;
+  }
+
+  .site-primary-nav {
+    gap: 0.75rem;
+    font-size: 0.8125rem;
+  }
+}
+
 /* Dangerous actions must remain visually distinct from normal controls. */
 .account-delete-card {
   border-color: #fecaca !important;

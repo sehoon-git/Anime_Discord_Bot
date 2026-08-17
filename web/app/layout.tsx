@@ -31,12 +31,12 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body data-theme="dark" className="bg-[#fff8fc] text-[#493647]">
         <Providers>
           <header className="sticky top-0 z-40 border-b border-[#f0dce8] bg-white/85 shadow-[0_8px_30px_rgba(205,151,180,0.08)] backdrop-blur-xl">
-            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5">
-              <div className="flex items-center gap-8">
-                <Link href="/" className="flex items-center gap-2 font-bold"><Image src="/voicewithai-logo.svg" alt="Voice With AI" width={36} height={36} className="h-9 w-9" priority /><span className="text-[#5b4054]">Voice With AI</span></Link>
-                <nav className="flex items-center gap-5 text-sm font-semibold text-[#876b7d]"><Link href="/billing" className="hover:text-[#d45d91]">{isKorean ? "요금제" : isJapanese ? "料金プラン" : "Plans"}</Link><Link href="/dashboard" className="hover:text-[#d45d91]">{isKorean ? "대시보드" : isJapanese ? "ダッシュボード" : "Dashboard"}</Link><Link href="/support" className="hover:text-[#d45d91]">{isKorean ? "문의 게시판" : isJapanese ? "お問い合わせ" : "Support"}</Link><Link href="/characters" className="hover:text-[#d45d91]">{isKorean ? "캐릭터 설정" : isJapanese ? "キャラクター設定" : "Characters"}</Link></nav>
+            <div className="site-header-content mx-auto flex h-16 max-w-7xl items-center justify-between px-5">
+              <div className="site-header-primary flex items-center gap-8">
+                <Link href="/" className="site-brand flex items-center gap-2 font-bold"><Image src="/voicewithai-logo.svg" alt="Voice With AI" width={36} height={36} className="site-brand-logo h-9 w-9" priority /><span className="site-brand-label text-[#5b4054]">Voice With AI</span></Link>
+                <nav className="site-primary-nav flex items-center gap-5 text-sm font-semibold text-[#876b7d]"><Link href="/billing" className="site-nav-link hover:text-[#d45d91]">{isKorean ? "요금제" : isJapanese ? "料金プラン" : "Plans"}</Link><Link href="/dashboard" className="site-nav-link hover:text-[#d45d91]">{isKorean ? "대시보드" : isJapanese ? "ダッシュボード" : "Dashboard"}</Link><Link href="/support" className="site-nav-link hover:text-[#d45d91]">{isKorean ? "문의 게시판" : isJapanese ? "お問い合わせ" : "Support"}</Link><Link href="/characters" className="site-nav-link hover:text-[#d45d91]">{isKorean ? "캐릭터 설정" : isJapanese ? "キャラクター設定" : "Characters"}</Link></nav>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="site-header-controls flex items-center gap-2">
                 <QuickControls locale={locale} />
                 <Link
                   href="/notice"
