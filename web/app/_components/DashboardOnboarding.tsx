@@ -17,8 +17,7 @@ type GuideCopy = {
   title: string;
   description: string;
   note: string;
-  later: string;
-  complete: string;
+  close: string;
   linked: string;
   connect: string;
   invite: string;
@@ -33,8 +32,7 @@ const copy: Record<SupportedLocale, GuideCopy> = {
     title: "Voice With AI 시작하기",
     description: "아래 2단계만 완료하면 Discord에서 AI 캐릭터와 음성 대화를 시작할 수 있어요.",
     note: "이 안내는 언제든 대시보드에서 다시 열 수 있습니다.",
-    later: "나중에 보기",
-    complete: "이해했어요",
+    close: "닫기",
     linked: "연결 완료",
     connect: "Discord 계정 연동하기",
     invite: "봇 초대하기",
@@ -50,8 +48,7 @@ const copy: Record<SupportedLocale, GuideCopy> = {
     title: "Voice With AI をはじめよう",
     description: "次の2ステップを完了すると、Discord で AI キャラクターとの音声会話を始められます。",
     note: "このガイドはいつでもダッシュボードから開けます。",
-    later: "あとで見る",
-    complete: "わかりました",
+    close: "閉じる",
     linked: "連携済み",
     connect: "Discord アカウントを連携",
     invite: "ボットを招待",
@@ -67,8 +64,7 @@ const copy: Record<SupportedLocale, GuideCopy> = {
     title: "Get started with Voice With AI",
     description: "Complete these two steps to start voice conversations with AI characters on Discord.",
     note: "You can reopen this guide anytime from the dashboard.",
-    later: "Maybe later",
-    complete: "Got it",
+    close: "Close",
     linked: "Connected",
     connect: "Connect Discord account",
     invite: "Invite the bot",
@@ -89,24 +85,15 @@ export default function DashboardOnboarding({
   const [open, setOpen] = useState(false);
   const guide = copy[locale] ?? copy["en-US"];
   const storageKey = `voice-with-ai-dashboard-guide-v1:${userId}`;
-  const sessionKey = `${storageKey}:later`;
 
   useEffect(() => {
-    if (
-      window.localStorage.getItem(storageKey) !== "complete" &&
-      window.sessionStorage.getItem(sessionKey) !== "dismissed"
-    ) {
+    if (window.localStorage.getItem(storageKey) !== "complete") {
       const timer = window.setTimeout(() => setOpen(true), 0);
       return () => window.clearTimeout(timer);
     }
-  }, [sessionKey, storageKey]);
+  }, [storageKey]);
 
-  const closeForLater = () => {
-    window.sessionStorage.setItem(sessionKey, "dismissed");
-    setOpen(false);
-  };
-
-  const completeGuide = () => {
+  const closeGuide = () => {
     window.localStorage.setItem(storageKey, "complete");
     setOpen(false);
   };
@@ -185,12 +172,9 @@ export default function DashboardOnboarding({
             </ol>
 
             <p className="mt-5 text-xs text-[#92768a]">{guide.note}</p>
-            <div className="mt-5 flex flex-wrap justify-end gap-3">
-              <button type="button" onClick={closeForLater} className="rounded-full border border-[#e3bfd3] px-4 py-2.5 text-sm font-bold text-[#76566b] transition hover:bg-white">
-                {guide.later}
-              </button>
-              <button type="button" onClick={completeGuide} className="rounded-full bg-gradient-to-r from-[#e97eab] to-[#9a7cf0] px-5 py-2.5 text-sm font-bold text-white shadow-[0_8px_22px_rgba(191,105,160,0.28)] transition hover:-translate-y-0.5">
-                {guide.complete}
+            <div className="mt-5 flex justify-end">
+              <button type="button" onClick={closeGuide} className="rounded-full bg-gradient-to-r from-[#e97eab] to-[#9a7cf0] px-5 py-2.5 text-sm font-bold text-white shadow-[0_8px_22px_rgba(191,105,160,0.28)] transition hover:-translate-y-0.5">
+                {guide.close}
               </button>
             </div>
           </section>
