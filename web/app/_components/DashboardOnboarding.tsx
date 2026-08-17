@@ -8,6 +8,7 @@ type DashboardOnboardingProps = {
   userId: string | number;
   locale: SupportedLocale;
   discordLinked: boolean;
+  className?: string;
 };
 
 type GuideCopy = {
@@ -83,6 +84,7 @@ export default function DashboardOnboarding({
   userId,
   locale,
   discordLinked,
+  className = "mt-3",
 }: DashboardOnboardingProps) {
   const [open, setOpen] = useState(false);
   const guide = copy[locale] ?? copy["en-US"];
@@ -114,7 +116,7 @@ export default function DashboardOnboarding({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-3 rounded-full border border-[#e3bfd3] bg-white/70 px-4 py-2 text-sm font-semibold text-[#76566b] transition hover:-translate-y-0.5 hover:bg-white hover:text-[#d45d91]"
+        className={`${className} rounded-full border border-[#e3bfd3] bg-white/70 px-4 py-2 text-sm font-semibold text-[#76566b] transition hover:-translate-y-0.5 hover:bg-white hover:text-[#d45d91]`}
       >
         {guide.trigger} →
       </button>

@@ -191,20 +191,27 @@ export default async function DashboardPage() {
   }
 
   return (
-    <main className="site-wash min-h-screen px-6 py-12 text-[#493647]">
+    <main className="site-wash min-h-screen px-6 py-7 text-[#493647] sm:py-8">
       <section className="mx-auto max-w-4xl">
-        <p className="text-sm font-semibold text-[#d45d91]">Voice With AI</p>
-        <h1 className="mt-3 text-4xl font-bold">대시보드</h1>
-        <p className="mt-4 text-[#806579]">
-          {profile?.nickname ?? session.user.name ?? userEmail} 계정으로 로그인되었습니다.
-        </p>
-        <DashboardOnboarding
-          userId={profile.userId}
-          locale={profile.locale}
-          discordLinked={Boolean(discordName)}
-        />
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-[#d45d91]">Voice With AI</p>
+            <h1 className="mt-2 text-4xl font-bold">대시보드</h1>
+          </div>
+          <div className="flex flex-wrap items-center justify-end gap-3 sm:gap-4">
+            <p className="text-sm text-[#806579]">
+              {profile?.nickname ?? session.user.name ?? userEmail} 계정으로 로그인되었습니다.
+            </p>
+            <DashboardOnboarding
+              userId={profile.userId}
+              locale={profile.locale}
+              discordLinked={Boolean(discordName)}
+              className="shrink-0"
+            />
+          </div>
+        </div>
 
-        <div className="mt-8 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">
+        <div className="mt-5 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">
           <h2 className="text-lg font-semibold">Discord 계정 연동</h2>
 
           {discordName ? (
@@ -240,7 +247,7 @@ export default async function DashboardPage() {
           ) : null}
         </div>
 
-        <section className="mt-5 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">
+        <section className="mt-4 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div><h2 className="text-lg font-semibold">내 활동 한눈에 보기</h2><p className="mt-1 text-sm text-[#92768a]">이번 달 사용량과 대화 준비 상태를 확인하세요.</p></div>
             <Link href="/billing" className="rounded-full border border-[#e3bfd3] px-4 py-2 text-sm font-semibold text-[#76566b] transition hover:-translate-y-0.5 hover:bg-white hover:text-[#d45d91]">요금제 보기 →</Link>
@@ -251,9 +258,9 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        <div className="mt-5"><CreditPanel locale={profile?.locale === "ko-KR" ? "ko" : "en"} /></div>
+        <div className="mt-4"><CreditPanel locale={profile?.locale === "ko-KR" ? "ko" : "en"} /></div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
           <a
             href="/profile"
             className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
