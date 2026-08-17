@@ -67,7 +67,7 @@ export function CreditPanel({ locale }: { locale: Locale }) {
     </div>
     <div className="mt-4 flex flex-wrap items-center gap-3">
       <button type="button" onClick={addTestCredits} disabled={pending} className="rounded-2xl bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60">
-        {pending ? (en ? "Adding..." : "추가 중...") : (en ? "+100 test credits" : "테스트 크레딧 +100")}
+        {pending ? (en ? "Adding..." : "추가 중...") : (en ? "+1,000 test credits" : "테스트 크레딧 +1000")}
       </button>
       <span className="text-xs text-[#92768a]">{en ? "Temporary test top-up. No payment is charged." : "임시 테스트용 충전이며 실제 결제는 발생하지 않습니다."}</span>
     </div>

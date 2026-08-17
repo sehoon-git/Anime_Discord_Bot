@@ -34,8 +34,8 @@ export async function POST() {
     const billing = await getBillingStatusForUser(user.email, user.name);
     const missingConsents = await getMissingRequiredConsents(billing.userId);
     if (missingConsents.length > 0) return Response.json({ ok: false, error: "REQUIRED_CONSENT_MISSING", missingConsents }, { status: 403 });
-    const balance = await addTestCredits(billing.userId, 100);
-    return Response.json({ ok: true, mode: "test", added: 100, balance });
+    const balance = await addTestCredits(billing.userId, 1000);
+    return Response.json({ ok: true, mode: "test", added: 1000, balance });
   } catch (error) {
     console.error("[billing][credits][POST]", error);
     return Response.json({ error: "Credit top-up failed" }, { status: 500 });
