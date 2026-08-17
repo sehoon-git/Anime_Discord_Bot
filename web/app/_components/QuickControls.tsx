@@ -3,15 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../providers";
 
-type Locale = "en-US" | "ko-KR";
+type Locale = "en-US" | "ko-KR" | "ja-JP";
 
 export default function QuickControls({ locale }: { locale: Locale }) {
   const { theme, setTheme } = useTheme();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const ko = locale === "ko-KR";
-  const themeLabel = theme === "dark" ? (ko ? "라이트 모드" : "Light mode") : (ko ? "다크 모드" : "Dark mode");
-  const languageLabel = ko ? "국가 설정" : "Country settings";
+  const ja = locale === "ja-JP";
+  const themeLabel = theme === "dark" ? (ko ? "라이트 모드" : ja ? "ライトモード" : "Light mode") : (ko ? "다크 모드" : ja ? "ダークモード" : "Dark mode");
+  const languageLabel = ko ? "국가 설정" : ja ? "国・言語設定" : "Country settings";
 
   useEffect(() => {
     const close = (event: PointerEvent) => {
@@ -47,7 +48,7 @@ export default function QuickControls({ locale }: { locale: Locale }) {
       <button
         type="button"
         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        aria-label={theme === "dark" ? (ko ? "라이트 모드로 전환" : "Switch to light mode") : (ko ? "다크 모드로 전환" : "Switch to dark mode")}
+        aria-label={theme === "dark" ? (ko ? "라이트 모드로 전환" : ja ? "ライトモードに切り替える" : "Switch to light mode") : (ko ? "다크 모드로 전환" : ja ? "ダークモードに切り替える" : "Switch to dark mode")}
         className="header-icon-control group relative flex h-10 w-10 items-center justify-center rounded-full text-[#806579] transition hover:scale-105 hover:bg-[#fff0f7] hover:text-[#d45d91] hover:shadow-[0_6px_16px_rgba(212,93,145,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d45d91]/50"
       >
         {theme === "dark" ? (
@@ -60,7 +61,7 @@ export default function QuickControls({ locale }: { locale: Locale }) {
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        aria-label={ko ? "언어 선택" : "Choose language"}
+        aria-label={ko ? "언어 선택" : ja ? "言語を選択" : "Choose language"}
         aria-expanded={open}
         className="header-icon-control group relative flex h-10 w-10 items-center justify-center rounded-full text-[#806579] transition hover:scale-105 hover:bg-[#fff0f7] hover:text-[#d45d91] hover:shadow-[0_6px_16px_rgba(212,93,145,0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d45d91]/50"
       >
@@ -69,9 +70,10 @@ export default function QuickControls({ locale }: { locale: Locale }) {
       </button>
       {open ? (
         <div className="theme-menu absolute right-0 top-14 z-50 w-40 overflow-hidden rounded-2xl border border-[#efd4e2] bg-white p-2 shadow-xl shadow-pink-200/30">
-          <p className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#aa8e9f]">{ko ? "언어" : "Language"}</p>
+          <p className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-[#aa8e9f]">{ko ? "언어" : ja ? "言語" : "Language"}</p>
           <button type="button" aria-current={locale === "en-US" ? "true" : undefined} onClick={() => changeLocale("en-US")} className={`theme-menu-item block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold ${locale === "en-US" ? "bg-[#fff0f7] text-[#d45d91]" : "text-[#76566b] hover:bg-[#fff0f7]"}`}>English</button>
           <button type="button" aria-current={locale === "ko-KR" ? "true" : undefined} onClick={() => changeLocale("ko-KR")} className={`theme-menu-item block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold ${locale === "ko-KR" ? "bg-[#fff0f7] text-[#d45d91]" : "text-[#76566b] hover:bg-[#fff0f7]"}`}>한국어</button>
+          <button type="button" aria-current={locale === "ja-JP" ? "true" : undefined} onClick={() => changeLocale("ja-JP")} className={`theme-menu-item block w-full rounded-xl px-3 py-2 text-left text-sm font-semibold ${locale === "ja-JP" ? "bg-[#fff0f7] text-[#d45d91]" : "text-[#76566b] hover:bg-[#fff0f7]"}`}>日本語</button>
         </div>
       ) : null}
     </div>

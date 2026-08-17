@@ -2,7 +2,8 @@ import { cookies } from "next/headers";
 import HomeHero from "./_components/HomeHero";
 
 export default async function Home() {
-  const locale = (await cookies()).get("locale")?.value === "ko-KR" ? "ko" : "en";
+  const storedLocale = (await cookies()).get("locale")?.value;
+  const locale = storedLocale === "ko-KR" ? "ko" : storedLocale === "ja-JP" ? "ja" : "en";
 
   return (
     <main className="site-wash min-h-screen text-[#493647]">

@@ -12,7 +12,7 @@ type UserRow = {
   nickname: string | null;
   gender: "female" | "male" | null;
   birth_date: Date | string | null;
-  locale: "en-US" | "ko-KR";
+  locale: "en-US" | "ko-KR" | "ja-JP";
 };
 
 function isValidApiKey(request: Request) {

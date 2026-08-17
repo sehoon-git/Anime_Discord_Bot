@@ -1,7 +1,7 @@
 import { db } from "@/app/lib/db";
 
 export type UserGender = "female" | "male";
-export type UserLocale = "en-US" | "ko-KR";
+export type UserLocale = "en-US" | "ko-KR" | "ja-JP";
 
 export type UserProfile = {
   userId: string;

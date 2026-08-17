@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import StartButton from "./StartButton";
 
-type Locale = "en" | "ko";
+type Locale = "en" | "ko" | "ja";
 
 const copy = {
   en: {
@@ -23,6 +23,14 @@ const copy = {
     learnMore: "더 알아보기", sceneLabel: "Seline AI 캐릭터와 대화하는 화면", talking: "지금 대화 중",
     firstMessage: "오늘은 어떤 이야기부터 해볼까요?", secondMessage: "조금 지쳤는데 목소리 듣고 싶어.", thirdMessage: "그럼 천천히 이야기해요. 여기 있을게요.", voiceReady: "음성 대화 준비 중",
     features: [["캐릭터 선택", "서버마다 좋아하는 AI 캐릭터를 골라 말투와 목소리를 설정해요."], ["음성 채팅", "디스코드 음성 채널에서 캐릭터와 자연스럽게 대화해요."], ["기억 관리", "나눈 이야기를 기억하고, 원할 때 직접 확인하고 지울 수 있어요."]],
+  },
+  ja: {
+    titleLines: ["Discordで出会う", "AIキャラクター音声チャット"],
+    eyebrow: "Voice With AI / voice chat",
+    description: "好きなキャラクターと会話し、声を聞き、一緒に過ごした瞬間を覚えていきます。\nDiscordから始まる、やさしいAIとの会話です。",
+    learnMore: "詳しく見る", sceneLabel: "AIキャラクターSelineとの会話画面", talking: "会話中",
+    firstMessage: "今日はどんな話から始めましょうか？", secondMessage: "少し疲れたから、声を聞きたい。", thirdMessage: "では、ゆっくり話しましょう。ここにいますよ。", voiceReady: "音声会話を準備中",
+    features: [["キャラクター選択", "サーバーごとに好きなAIキャラクターを選び、話し方と声を設定できます。"], ["音声チャット", "Discordのボイスチャンネルでキャラクターと自然に会話できます。"], ["記憶管理", "交わした会話を記憶し、必要なときに確認・削除できます。"]],
   },
 } as const;
 
@@ -75,7 +83,7 @@ export default function HomeHero({ locale = "ko" }: { locale?: Locale }) {
       </div>
     </section>
     <section id="features" className="mx-auto grid max-w-6xl gap-5 px-6 pb-24 md:grid-cols-3">{text.features.map(([title, description], index) => {
-      const card = <article className="feature-reveal rounded-3xl border border-[#f0d7e5] bg-white/75 p-7 text-left shadow-[0_12px_35px_rgba(205,151,180,0.12)] transition hover:-translate-y-1 hover:bg-white" style={{ animationDelay: `${index * 120}ms` }}><span className="mb-5 inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-[#fff0f7] text-sm font-bold text-[#d45d91]">0{index + 1}</span><h2 className="text-xl font-bold text-[#684b60]">{title}</h2><p className="mt-3 leading-7 text-[#92768a]">{description}</p>{index === 0 ? <span className="mt-5 inline-flex text-sm font-bold text-[#d45d91]">{locale === "ko" ? "캐릭터 관리하기 →" : "Manage characters →"}</span> : null}</article>;
+      const card = <article className="feature-reveal rounded-3xl border border-[#f0d7e5] bg-white/75 p-7 text-left shadow-[0_12px_35px_rgba(205,151,180,0.12)] transition hover:-translate-y-1 hover:bg-white" style={{ animationDelay: `${index * 120}ms` }}><span className="mb-5 inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-[#fff0f7] text-sm font-bold text-[#d45d91]">0{index + 1}</span><h2 className="text-xl font-bold text-[#684b60]">{title}</h2><p className="mt-3 leading-7 text-[#92768a]">{description}</p>{index === 0 ? <span className="mt-5 inline-flex text-sm font-bold text-[#d45d91]">{locale === "ko" ? "캐릭터 관리하기 →" : locale === "ja" ? "キャラクターを管理 →" : "Manage characters →"}</span> : null}</article>;
       return index === 0 ? <Link key={title} href="/characters">{card}</Link> : <div key={title}>{card}</div>;
     })}</section>
   </>;

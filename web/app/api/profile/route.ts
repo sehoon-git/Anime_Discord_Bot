@@ -40,7 +40,7 @@ function cleanBirthDate(value: unknown) {
 }
 
 function cleanLocale(value: unknown): UserLocale {
-  return value === "ko-KR" ? "ko-KR" : "en-US";
+  return value === "ko-KR" || value === "ja-JP" ? value : "en-US";
 }
 
 async function saveConsents(userId: string) {
@@ -164,7 +164,7 @@ export async function PATCH(request: Request) {
   }
 
   const body = await request.json().catch(() => null);
-  const locale = body?.locale === "ko-KR" || body?.locale === "en-US" ? body.locale : null;
+  const locale = body?.locale === "ko-KR" || body?.locale === "en-US" || body?.locale === "ja-JP" ? body.locale : null;
   if (!locale) {
     return NextResponse.json({ ok: false, error: "지원하지 않는 언어입니다." }, { status: 400 });
   }

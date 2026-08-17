@@ -3,11 +3,13 @@
 import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 
-export default function StartButton({ locale = "ko" }: { locale?: "en" | "ko" }) {
+export default function StartButton({ locale = "ko" }: { locale?: "en" | "ko" | "ja" }) {
   const { data: session, status } = useSession();
   const labels = locale === "en"
     ? { loading: "Checking...", profile: "Start the service", login: "Start with Google" }
-    : { loading: "확인 중...", profile: "서비스 시작하기", login: "Google로 시작하기" };
+    : locale === "ja"
+      ? { loading: "確認中...", profile: "サービスを始める", login: "Googleで始める" }
+      : { loading: "확인 중...", profile: "서비스 시작하기", login: "Google로 시작하기" };
 
   if (status === "loading") {
     return <span className="rounded-2xl bg-[#e9b5cb] px-6 py-3 font-semibold text-white">{labels.loading}</span>;

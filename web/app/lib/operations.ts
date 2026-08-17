@@ -1,7 +1,7 @@
 import { botPool, webPool } from "@/app/lib/db";
 
 export type AssistantPreferences = {
-  locale: "en-US" | "ko-KR";
+  locale: "en-US" | "ko-KR" | "ja-JP";
   timezone: string;
   memory_enabled: boolean;
   relationship_tone: "friend" | "flirty" | "romantic";

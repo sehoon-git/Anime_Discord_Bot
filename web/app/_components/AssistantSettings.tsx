@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type Locale = "en-US" | "ko-KR";
+type Locale = "en-US" | "ko-KR" | "ja-JP";
 type Preferences = { locale: Locale; timezone: string; memory_enabled: boolean; retention_days: number; sns_tone_enabled: boolean; relationship_tone: "friend" | "flirty" | "romantic"; response_length: "short" | "normal" | "long"; voice_response_enabled: boolean; voice_summary_enabled: boolean; voice_style: "expressive" | "fast"; voice_speed: number; voice_volume: number; silent_notification_enabled: boolean; silent_notification_frequency: number; barge_in_mode: "immediate" | "stop_command" };
 const defaults: Preferences = { locale: "en-US", timezone: "Asia/Seoul", memory_enabled: true, retention_days: 30, sns_tone_enabled: true, relationship_tone: "friend", response_length: "normal", voice_response_enabled: true, voice_summary_enabled: false, voice_style: "expressive", voice_speed: 1, voice_volume: 1, silent_notification_enabled: true, silent_notification_frequency: 3, barge_in_mode: "immediate" };
 

@@ -5,7 +5,7 @@ import { getMissingRequiredConsents } from "@/app/lib/consent";
 import { webPool } from "@/app/lib/db";
 import { upsertUser } from "@/app/lib/users";
 
-const allowedLocale = (value: unknown) => value === "ko-KR" ? "ko-KR" : "en-US";
+const allowedLocale = (value: unknown) => value === "ko-KR" || value === "ja-JP" ? value : "en-US";
 const allowedTone = (value: unknown) => ["friend", "flirty", "romantic"].includes(value as string) ? value : "friend";
 const allowedLength = (value: unknown) => ["short", "normal", "long"].includes(value as string) ? value : "normal";
 const allowedStyle = (value: unknown) => ["expressive", "fast"].includes(value as string) ? value : "expressive";
