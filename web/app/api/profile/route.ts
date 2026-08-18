@@ -10,6 +10,7 @@ import {
   type UserGender,
   type UserLocale,
   updateUserLocale,
+  updateUserNickname,
   upsertUser,
 } from "@/app/lib/users";
 
@@ -164,12 +165,18 @@ export async function PATCH(request: Request) {
   }
 
   const body = await request.json().catch(() => null);
+  const nickname = cleanText(body?.nickname, MAX_NICKNAME_LENGTH);
   const locale = body?.locale === "ko-KR" || body?.locale === "en-US" || body?.locale === "ja-JP" ? body.locale : null;
-  if (!locale) {
+  if (!locale && !nickname) {
     return NextResponse.json({ ok: false, error: "지원하지 않는 언어입니다." }, { status: 400 });
   }
 
+  if (nickname && nickname.length < 2) {
+    return NextResponse.json({ ok: false, error: "닉네임은 2글자 이상 입력해주세요." }, { status: 400 });
+  }
+
   const userId = await upsertUser(session.user.email, session.user.name);
-  await updateUserLocale(userId, locale);
-  return NextResponse.json({ ok: true, locale });
+  if (locale) await updateUserLocale(userId, locale);
+  if (nickname) await updateUserNickname({ userId, nickname, source: "character-settings" });
+  return NextResponse.json({ ok: true, locale, nickname });
 }
