@@ -146,6 +146,13 @@ body {
 .home-story-float { position: absolute; z-index: 3; display: grid; width: 3rem; height: 3rem; place-items: center; border: 1px solid rgba(255, 237, 248, 0.35); border-radius: 1.1rem; background: rgba(255, 245, 251, 0.88); box-shadow: 0 14px 28px rgba(18, 10, 28, 0.2); color: #e78bb8; font-size: 1.25rem; animation: story-sticker-float 4s ease-in-out infinite; }
 .home-story-float-heart { right: 7%; top: 12%; transform: rotate(12deg); }
 .home-story-float-star { left: 8%; bottom: 11%; color: #a18ce8; transform: rotate(-12deg); animation-delay: -1.4s; }
+body:not([data-theme="dark"]) .home-story-intro h2,
+body:not([data-theme="dark"]) .home-story-copy h3 { color: #3f2e46 !important; }
+body:not([data-theme="dark"]) .home-story-intro > p:last-child,
+body:not([data-theme="dark"]) .home-story-copy > p { color: #70596e !important; }
+body:not([data-theme="dark"]) .home-story-intro > p:first-child,
+body:not([data-theme="dark"]) .home-story-copy > p.text-\[\#ee9fc3\] { color: #be5789 !important; }
+body:not([data-theme="dark"]) .home-story-copy > span:not(.home-story-index) { border-color: #dfbad0; background: rgba(255, 255, 255, 0.72); color: #684b60; }
 @keyframes caret-blink { 50% { opacity: 0; } }
 @keyframes scene-float { 50% { transform: translateY(-0.7rem) rotate(0.5deg); } }
 @keyframes bubble-in { from { opacity: 0; transform: translateY(0.5rem); } to { opacity: 1; transform: translateY(0); } }
