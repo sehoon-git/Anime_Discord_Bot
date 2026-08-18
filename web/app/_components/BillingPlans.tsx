@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
+import { getMessages, type AppLocale } from "@/app/i18n/messages";
 
 type Locale = "en" | "ko";
 type BillingPlansProps = { currentPlanCode: string; locale?: Locale; showCreditPanel?: boolean; requireLoginForAction?: boolean };
@@ -26,10 +27,10 @@ function price(value: number, locale: Locale) {
   return locale === "en" ? `₩${value.toLocaleString("en-US")}` : `${value.toLocaleString("ko-KR")}원`;
 }
 
-export function CreditPanel({ locale }: { locale: Locale }) {
+export function CreditPanel({ locale }: { locale: AppLocale }) {
   const [credits, setCredits] = useState<CreditState>(null);
   const [pending, setPending] = useState(false);
-  const en = locale === "en";
+  const copy = getMessages(locale).credits;
 
   const refresh = useCallback(async () => {
     const response = await fetch("/api/billing/credits", { cache: "no-store" });
@@ -60,16 +61,16 @@ export function CreditPanel({ locale }: { locale: Locale }) {
   return <section className="billing-status mb-6">
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p className="status-label">{en ? "Test credits" : "테스트 크레딧"}</p>
-        <p className="status-value">{credits ? credits.balance.toLocaleString() : "-"} <span className="text-base font-semibold">{en ? "credits left" : "크레딧 남음"}</span></p>
+        <p className="status-label">{copy.label}</p>
+        <p className="status-value">{credits ? credits.balance.toLocaleString() : "-"} <span className="text-base font-semibold">{copy.remaining}</span></p>
       </div>
-      <p className="text-sm text-[#76566b]">{en ? `Used this month: ${credits?.usage.toLocaleString() ?? "-"}` : `이번 달 사용: ${credits?.usage.toLocaleString() ?? "-"} 크레딧`}</p>
+      <p className="text-sm text-[#76566b]">{copy.used(credits?.usage.toLocaleString() ?? "-")}</p>
     </div>
     <div className="mt-4 flex flex-wrap items-center gap-3">
       <button type="button" onClick={addTestCredits} disabled={pending} className="rounded-2xl bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60">
-        {pending ? (en ? "Adding..." : "추가 중...") : (en ? "+1,000 test credits" : "테스트 크레딧 +1000")}
+        {pending ? copy.adding : copy.add}
       </button>
-      <span className="text-xs text-[#92768a]">{en ? "Temporary test top-up. No payment is charged." : "임시 테스트용 충전이며 실제 결제는 발생하지 않습니다."}</span>
+      <span className="text-xs text-[#92768a]">{copy.note}</span>
     </div>
   </section>;
 }
@@ -80,7 +81,7 @@ export default function BillingPlans({ currentPlanCode, locale = "ko", showCredi
   const en = locale === "en";
 
   return <>
-    {showCreditPanel ? <CreditPanel locale={locale} /> : null}
+    {showCreditPanel ? <CreditPanel locale={locale === "en" ? "en-US" : "ko-KR"} /> : null}
     <div className="billing-period" role="group" aria-label={en ? "Billing period" : "구독 주기"}>
       <button type="button" className={period === "monthly" ? "billing-period-active" : "billing-period-idle"} onClick={() => setPeriod("monthly")}>{en ? "Monthly" : "월간 구독"}</button>
       <button type="button" className={period === "yearly" ? "billing-period-active" : "billing-period-idle"} onClick={() => setPeriod("yearly")}>{en ? "Yearly" : "연간 구독"} <span>{en ? "2 months free" : "2개월 무료"}</span></button>

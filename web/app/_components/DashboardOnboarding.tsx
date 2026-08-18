@@ -1,79 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-type SupportedLocale = "en-US" | "ko-KR" | "ja-JP";
+import { getMessages, type AppLocale } from "@/app/i18n/messages";
 
 type DashboardOnboardingProps = {
   userId: string | number;
-  locale: SupportedLocale;
+  locale: AppLocale;
   discordLinked: boolean;
   className?: string;
-};
-
-type GuideCopy = {
-  trigger: string;
-  eyebrow: string;
-  title: string;
-  description: string;
-  note: string;
-  close: string;
-  linked: string;
-  connect: string;
-  invite: string;
-  inviteLocked: string;
-  steps: Array<{ title: string; description: string }>;
-};
-
-const copy: Record<SupportedLocale, GuideCopy> = {
-  "ko-KR": {
-    trigger: "이용방법 다시 보기",
-    eyebrow: "처음 오셨나요?",
-    title: "Voice With AI 시작하기",
-    description: "아래 2단계만 완료하면 Discord에서 AI 캐릭터와 음성 대화를 시작할 수 있어요.",
-    note: "이 안내는 언제든 대시보드에서 다시 열 수 있습니다.",
-    close: "닫기",
-    linked: "연결 완료",
-    connect: "Discord 계정 연동하기",
-    invite: "봇 초대하기",
-    inviteLocked: "계정 연동 후 가능",
-    steps: [
-      { title: "Discord 계정 연동", description: "웹 계정과 Discord 계정을 연결해 봇 사용 권한을 확인하세요." },
-      { title: "봇 초대", description: "연동한 뒤 AI 캐릭터를 사용할 Discord 서버로 봇을 초대하세요." },
-    ],
-  },
-  "ja-JP": {
-    trigger: "使い方をもう一度見る",
-    eyebrow: "はじめての方へ",
-    title: "Voice With AI をはじめよう",
-    description: "次の2ステップを完了すると、Discord で AI キャラクターとの音声会話を始められます。",
-    note: "このガイドはいつでもダッシュボードから開けます。",
-    close: "閉じる",
-    linked: "連携済み",
-    connect: "Discord アカウントを連携",
-    invite: "ボットを招待",
-    inviteLocked: "連携後に利用可能",
-    steps: [
-      { title: "Discord アカウントを連携", description: "Web アカウントと Discord を連携して、ボットの利用権限を確認します。" },
-      { title: "ボットを招待", description: "連携後、AI キャラクターを使う Discord サーバーにボットを招待します。" },
-    ],
-  },
-  "en-US": {
-    trigger: "View getting started guide",
-    eyebrow: "New here?",
-    title: "Get started with Voice With AI",
-    description: "Complete these two steps to start voice conversations with AI characters on Discord.",
-    note: "You can reopen this guide anytime from the dashboard.",
-    close: "Close",
-    linked: "Connected",
-    connect: "Connect Discord account",
-    invite: "Invite the bot",
-    inviteLocked: "Connect your account first",
-    steps: [
-      { title: "Connect Discord", description: "Connect your web and Discord accounts to verify bot access." },
-      { title: "Invite the bot", description: "After connecting, invite the bot to the Discord server where you want to use it." },
-    ],
-  },
 };
 
 export default function DashboardOnboarding({
@@ -83,7 +17,7 @@ export default function DashboardOnboarding({
   className = "mt-3",
 }: DashboardOnboardingProps) {
   const [open, setOpen] = useState(false);
-  const guide = copy[locale] ?? copy["en-US"];
+  const guide = getMessages(locale).onboarding;
   const storageKey = `voice-with-ai-dashboard-guide-v1:${userId}`;
 
   useEffect(() => {

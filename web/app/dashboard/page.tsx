@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { authOptions } from "@/app/lib/auth";
 import { db } from "@/app/lib/db";
 import { getBillingStatusForUser } from "@/app/lib/billing";
@@ -9,6 +10,7 @@ import AutoGoogleSignIn from "@/app/_components/AutoGoogleSignIn";
 import DashboardOnboarding from "@/app/_components/DashboardOnboarding";
 import { listMemories } from "@/app/lib/memory";
 import { getUserProfileByEmail, hasCompleteProfile } from "@/app/lib/users";
+import { getMessages, toAppLocale } from "@/app/i18n/messages";
 
 type DiscordAccountRow = {
   discord_user_id: string;
@@ -54,9 +56,11 @@ function dashboardErrorMessage(error: unknown, fallback: string) {
 function DashboardError({
   title,
   message,
+  backHome = "Back to home",
 }: {
   title: string;
   message: string;
+  backHome?: string;
 }) {
   return (
     <main className="site-wash min-h-screen px-6 py-12 text-[#493647]">
@@ -68,7 +72,7 @@ function DashboardError({
           href="/"
           className="mt-6 inline-flex rounded-2xl bg-[#e97eab] px-5 py-3 text-sm font-semibold text-white hover:bg-[#d96798]"
         >
-          처음으로 돌아가기
+          {backHome}
         </Link>
       </section>
     </main>
@@ -76,10 +80,12 @@ function DashboardError({
 }
 
 export default async function DashboardPage() {
+  const locale = toAppLocale((await cookies()).get("locale")?.value);
+  const initialMessages = getMessages(locale);
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
-    return <AutoGoogleSignIn callbackUrl="/dashboard" />;
+    return <AutoGoogleSignIn callbackUrl="/dashboard" locale={locale} />;
   }
 
   const userEmail = session.user.email;
@@ -89,6 +95,7 @@ export default async function DashboardPage() {
       <DashboardError
         title="이메일 확인 필요"
         message="Google 계정에서 이메일 정보를 읽지 못했습니다. 다른 Google 계정으로 다시 로그인해보세요."
+        backHome={initialMessages.dashboard.backHome}
       />
     );
   }
@@ -119,6 +126,7 @@ export default async function DashboardPage() {
           error,
           "동의 정보를 확인하는 중 서버 오류가 발생했습니다. Vercel Logs에서 dashboard 오류를 확인해주세요.",
         )}
+        backHome={initialMessages.dashboard.backHome}
       />
     );
   }
@@ -165,6 +173,7 @@ export default async function DashboardPage() {
     discordAccount?.discord_global_name ??
     discordAccount?.discord_username ??
     null;
+  const t = getMessages(profile.locale);
 
   let overview = {
     planName: "Free",
@@ -196,11 +205,11 @@ export default async function DashboardPage() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm font-semibold text-[#d45d91]">Voice With AI</p>
-            <h1 className="mt-2 text-4xl font-bold">대시보드</h1>
+            <h1 className="mt-2 text-4xl font-bold">{t.dashboard.title}</h1>
           </div>
           <div className="flex flex-wrap items-center justify-end gap-3 sm:gap-4">
             <p className="text-sm text-[#806579]">
-              {profile?.nickname ?? session.user.name ?? userEmail} 계정으로 로그인되었습니다.
+              {t.dashboard.signedIn(profile.nickname ?? session.user.name ?? userEmail)}
             </p>
             <DashboardOnboarding
               userId={profile.userId}
@@ -212,15 +221,15 @@ export default async function DashboardPage() {
         </div>
 
         <div className="mt-5 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">
-          <h2 className="text-lg font-semibold">Discord 계정 연동</h2>
+          <h2 className="text-lg font-semibold">{t.dashboard.discordTitle}</h2>
 
           {discordName ? (
             <p className="mt-2 text-sm text-[#92768a]">
-              {discordName} 계정과 연결되었습니다.
+              {t.dashboard.linked(discordName)}
             </p>
           ) : (
             <p className="mt-2 text-sm text-[#92768a]">
-              봇 사용 권한을 확인하려면 Discord 계정을 연결해야 합니다.
+              {t.dashboard.unlinked}
             </p>
           )}
 
@@ -234,7 +243,7 @@ export default async function DashboardPage() {
             href="/api/discord/connect"
             className="discord-connect-button mt-4 inline-flex items-center rounded-full px-6 py-3 text-sm font-extrabold shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
           >
-            {discordName ? "Discord 계정 다시 연결하기" : "Discord 계정 연결하기"}
+            {discordName ? t.dashboard.reconnect : t.dashboard.connect}
           </a>
 
           {discordName ? (
@@ -242,32 +251,32 @@ export default async function DashboardPage() {
               href="/api/discord/bot-invite"
               className="discord-invite-button ml-3 mt-4 inline-flex items-center rounded-full px-6 py-3 text-sm font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
             >
-              봇 초대하기
+              {t.dashboard.invite}
             </a>
           ) : null}
         </div>
 
         <section className="mt-4 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div><h2 className="text-lg font-semibold">내 활동 한눈에 보기</h2><p className="mt-1 text-sm text-[#92768a]">이번 달 사용량과 대화 준비 상태를 확인하세요.</p></div>
-            <Link href="/billing" className="rounded-full border border-[#e3bfd3] px-4 py-2 text-sm font-semibold text-[#76566b] transition hover:-translate-y-0.5 hover:bg-white hover:text-[#d45d91]">요금제 보기 →</Link>
+            <div><h2 className="text-lg font-semibold">{t.dashboard.overviewTitle}</h2><p className="mt-1 text-sm text-[#92768a]">{t.dashboard.overviewDescription}</p></div>
+            <Link href="/billing" className="rounded-full border border-[#e3bfd3] px-4 py-2 text-sm font-semibold text-[#76566b] transition hover:-translate-y-0.5 hover:bg-white hover:text-[#d45d91]">{t.dashboard.viewPlans} →</Link>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <Link href="/billing" className="rounded-2xl border border-[#efd8e5] bg-white/60 p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg"><p className="text-xs font-semibold text-[#a4577e]">현재 요금제</p><p className="mt-2 text-xl font-extrabold">{overview.planName}</p><p className="mt-1 text-sm text-[#92768a]">요금제 관리 →</p></Link>
-            <Link href="/memory" className="rounded-2xl border border-[#efd8e5] bg-white/60 p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg"><p className="text-xs font-semibold text-[#a4577e]">저장된 기억</p><p className="mt-2 text-xl font-extrabold">{overview.memoryCount}<span className="text-sm font-semibold text-[#92768a]">개</span></p><p className="mt-1 text-sm text-[#92768a]">기억 관리 →</p></Link>
+            <Link href="/billing" className="rounded-2xl border border-[#efd8e5] bg-white/60 p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg"><p className="text-xs font-semibold text-[#a4577e]">{t.dashboard.currentPlan}</p><p className="mt-2 text-xl font-extrabold">{overview.planName}</p><p className="mt-1 text-sm text-[#92768a]">{t.dashboard.managePlan} →</p></Link>
+            <Link href="/memory" className="rounded-2xl border border-[#efd8e5] bg-white/60 p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg"><p className="text-xs font-semibold text-[#a4577e]">{t.dashboard.savedMemories}</p><p className="mt-2 text-xl font-extrabold">{t.dashboard.count(overview.memoryCount)}</p><p className="mt-1 text-sm text-[#92768a]">{t.dashboard.manageMemories} →</p></Link>
           </div>
         </section>
 
-        <div className="mt-4"><CreditPanel locale={profile?.locale === "ko-KR" ? "ko" : "en"} /></div>
+        <div className="mt-4"><CreditPanel locale={profile.locale} /></div>
 
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           <a
             href="/profile"
             className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
           >
-            <h2 className="text-lg font-semibold">내 프로필</h2>
+            <h2 className="text-lg font-semibold">{t.dashboard.profile}</h2>
             <p className="mt-3 text-sm text-zinc-400">
-              닉네임, 언어, 기본 프로필 정보를 관리합니다.
+              {t.dashboard.profileDescription}
             </p>
           </a>
 
@@ -275,9 +284,9 @@ export default async function DashboardPage() {
             href="/settings/privacy"
             className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
           >
-            <h2 className="text-lg font-semibold">음성 대화 설정</h2>
+            <h2 className="text-lg font-semibold">{t.dashboard.voiceSettings}</h2>
             <p className="mt-3 text-sm text-zinc-400">
-              음성 처리 동의와 대화 응답 설정을 확인합니다.
+              {t.dashboard.voiceSettingsDescription}
             </p>
           </a>
 
@@ -285,9 +294,9 @@ export default async function DashboardPage() {
             href="/support"
             className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
           >
-            <h2 className="text-lg font-semibold">문의 게시판</h2>
+            <h2 className="text-lg font-semibold">{t.dashboard.support}</h2>
             <p className="mt-3 text-sm text-zinc-400">
-              Discord 문의 게시판에서 도움을 받을 수 있습니다.
+              {t.dashboard.supportDescription}
             </p>
           </a>
         </div>
