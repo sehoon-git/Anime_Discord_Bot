@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getMessages } from "@/app/i18n/messages";
 
 type Locale = "en-US" | "ko-KR" | "ja-JP";
 type Preferences = { locale: Locale; timezone: string; memory_enabled: boolean; retention_days: number; sns_tone_enabled: boolean; relationship_tone: "friend" | "flirty" | "romantic"; response_length: "short" | "normal" | "long"; voice_response_enabled: boolean; voice_summary_enabled: boolean; voice_style: "expressive" | "fast"; voice_speed: number; voice_volume: number; silent_notification_enabled: boolean; silent_notification_frequency: number; barge_in_mode: "immediate" | "stop_command" };
 const defaults: Preferences = { locale: "en-US", timezone: "Asia/Seoul", memory_enabled: true, retention_days: 30, sns_tone_enabled: true, relationship_tone: "friend", response_length: "normal", voice_response_enabled: true, voice_summary_enabled: false, voice_style: "expressive", voice_speed: 1, voice_volume: 1, silent_notification_enabled: true, silent_notification_frequency: 3, barge_in_mode: "immediate" };
 
 export default function AssistantSettings({ locale = "en-US", title }: { locale?: Locale; title?: string }) {
-  const isKorean = locale === "ko-KR";
+  const t = getMessages(locale).assistantSettings;
   const [value, setValue] = useState<Preferences>(defaults);
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
@@ -18,26 +19,13 @@ export default function AssistantSettings({ locale = "en-US", title }: { locale?
     setSaving(true); setStatus("");
     try {
       const response = await fetch("/api/settings/preferences", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ locale: value.locale, timezone: value.timezone, memoryEnabled: value.memory_enabled, retentionDays: value.retention_days, snsToneEnabled: value.sns_tone_enabled, relationshipTone: value.relationship_tone, responseLength: value.response_length, voiceResponseEnabled: value.voice_response_enabled, voiceSummaryEnabled: value.voice_summary_enabled, voiceStyle: value.voice_style, voiceSpeed: value.voice_speed, voiceVolume: value.voice_volume, silentNotificationEnabled: value.silent_notification_enabled, silentNotificationFrequency: value.silent_notification_frequency, bargeInMode: value.barge_in_mode }) });
-      if (!response.ok) throw new Error(isKorean ? "설정을 저장하지 못했습니다." : "We could not save your settings.");
-      setStatus(isKorean ? "설정을 저장했습니다." : "Settings saved.");
-    } catch (error) { setStatus(error instanceof Error ? error.message : (isKorean ? "설정을 저장하지 못했습니다." : "We could not save your settings.")); }
+      if (!response.ok) throw new Error(t.saveFailed);
+      setStatus(t.saved);
+    } catch (error) { setStatus(error instanceof Error ? error.message : t.saveFailed); }
     finally { setSaving(false); }
   }
-  const t = isKorean ? { title: "샐린 대화 설정", relationship: "관계 톤", friend: "친구", flirty: "썸", romantic: "연인", length: "답변 길이", short: "짧게", normal: "보통", long: "길게", style: "음성 스타일", expressive: "표현형", fast: "빠른 응답", barge: "끼어들기 방식", immediate: "말하면 즉시 중단", stop: "stop 명령일 때만 중단", memory: "장기기억 저장", sns: "SNS 말투", voice: "음성 응답", summary: "채팅 음성 요약", silent: "무음 알림", details: "상세 보기", closeDetails: "닫기", save: "설정 저장", saving: "저장 중..." } : { title: "Seline conversation settings", relationship: "Relationship tone", friend: "Friend", flirty: "Flirty", romantic: "Romantic", length: "Response length", short: "Short", normal: "Normal", long: "Long", style: "Voice style", expressive: "Expressive", fast: "Fast", barge: "Barge-in mode", immediate: "Stop when you start speaking", stop: "Stop only on a stop command", memory: "Save long-term memories", sns: "Social tone", voice: "Voice responses", summary: "Read chat summaries aloud", silent: "Quiet-time notifications", details: "Details", closeDetails: "Close", save: "Save settings", saving: "Saving..." };
   const toggles = [["memory_enabled", t.memory], ["sns_tone_enabled", t.sns], ["voice_response_enabled", t.voice], ["voice_summary_enabled", t.summary], ["silent_notification_enabled", t.silent]] as const;
-  const settingDescriptions: Record<string, string> = isKorean ? {
-    memory_enabled: "호칭·취향을 기억해 다음 대화에 반영해요.",
-    sns_tone_enabled: "짧고 편한 SNS 말투로 답해요.",
-    voice_response_enabled: "음성 채널에서 답변을 읽어줘요.",
-    voice_summary_enabled: "대화 핵심을 음성으로 요약해요. (준비 중)",
-    silent_notification_enabled: "조용한 시간대의 알림을 조절해요.",
-  } : {
-    memory_enabled: "Saves useful preferences such as names and interests to make future conversations more personal.",
-    sns_tone_enabled: "Uses a more relaxed, short social-message style when it fits the conversation.",
-    voice_response_enabled: "Lets Seline speak replies in a voice channel. Turn it off for text-only replies.",
-    voice_summary_enabled: "Reads a short spoken summary of the conversation. This feature is still being prepared.",
-    silent_notification_enabled: "Controls helpful notifications during quiet periods and limits how often they appear.",
-  };
+  const settingDescriptions: Record<string, string> = t.descriptions;
   return <section className="mt-6 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)]"><h2 className="text-lg font-bold text-[#684b60]">{title ?? t.title}</h2><div className="mt-5 grid gap-4 sm:grid-cols-2">
     <label className="text-sm font-semibold">{t.relationship}<select value={value.relationship_tone} onChange={(e) => set("relationship_tone", e.target.value as Preferences["relationship_tone"])} className="mt-2 w-full rounded-xl border p-3"><option value="friend">{t.friend}</option><option value="flirty">{t.flirty}</option><option value="romantic">{t.romantic}</option></select></label>
     <label className="text-sm font-semibold">{t.length}<select value={value.response_length} onChange={(e) => set("response_length", e.target.value as Preferences["response_length"])} className="mt-2 w-full rounded-xl border p-3"><option value="short">{t.short}</option><option value="normal">{t.normal}</option><option value="long">{t.long}</option></select></label>
