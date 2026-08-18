@@ -95,7 +95,7 @@ export default function HomeHero({ locale = "ko" }: { locale?: Locale }) {
       </div>
       <div className="relative z-10 max-w-3xl">
         <p className="mb-6 text-sm font-bold tracking-wide text-[#d45d91]">{text.eyebrow}</p>
-        <h1 className="min-h-[8.5rem] whitespace-pre-line text-5xl font-extrabold leading-[1.18] tracking-[-0.03em] text-[#5b4054] md:text-7xl">{text.titleLines[lineIndex].slice(0, visibleCount)}<span className="type-caret" aria-hidden="true" /></h1>
+        <h1 className="min-h-[4.5rem] whitespace-pre-line text-5xl font-extrabold leading-[1.18] tracking-[-0.03em] text-[#5b4054] md:min-h-[6.25rem] md:text-7xl">{text.titleLines[lineIndex].slice(0, visibleCount)}<span className="type-caret" aria-hidden="true" /></h1>
         <p className="mx-auto mt-7 max-w-xl whitespace-pre-line text-lg leading-8 text-[#806579]">{text.description}</p>
         <div className="mt-14 flex flex-col justify-center gap-3 sm:flex-row"><StartButton locale={locale} /><a href="#features" className="rounded-2xl border border-[#e3bfd3] bg-white/70 px-6 py-3 font-semibold text-[#76566b] shadow-sm transition hover:-translate-y-0.5 hover:bg-white">{text.learnMore}</a></div>
       </div>
