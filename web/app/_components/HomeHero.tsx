@@ -151,10 +151,19 @@ export default function HomeHero({ locale = "ko" }: { locale?: Locale }) {
             </div>
             <div className={`home-story-scene home-story-scene-${index + 1}`} aria-hidden="true">
               <span className="home-story-orb home-story-orb-one" /><span className="home-story-orb home-story-orb-two" /><span className="home-story-orb home-story-orb-three" />
-              <div className="home-story-panel">
-                <div className="flex items-center gap-3 border-b border-white/10 px-5 py-4"><span className="grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-br from-[#f58bb6] to-[#a895f4] text-xs font-bold text-white">AI</span><span className="text-sm font-bold text-white">Seline</span><span className="ml-auto h-2.5 w-2.5 rounded-full bg-[#6fd3b0] shadow-[0_0_0_5px_rgba(111,211,176,0.12)]" /></div>
-                <div className="space-y-4 px-5 py-7"><p className="home-story-bubble home-story-bubble-ai">{story.bubble}</p><p className="home-story-bubble home-story-bubble-user">♥</p></div>
-              </div>
+              {index === 1 ? (
+                <div className="home-voice-panel">
+                  <div className="flex items-center justify-between"><span className="text-xs font-bold tracking-[0.12em] text-[#eeb2cf]">VOICE CHAT</span><span className="rounded-full bg-[#6fd3b0]/15 px-2 py-1 text-[0.65rem] font-bold text-[#a8f0d1]">LIVE</span></div>
+                  <div className="mt-6 flex items-center gap-4"><span className="grid h-16 w-16 place-items-center rounded-3xl bg-gradient-to-br from-[#f58bb6] to-[#a895f4] text-lg font-extrabold text-white shadow-[0_12px_26px_rgba(211,123,177,0.3)]">AI</span><div><p className="font-extrabold text-white">Seline</p><p className="mt-1 text-sm text-[#d7bfd3]">{story.bubble}</p></div></div>
+                  <div className="home-voice-wave mt-8" aria-hidden="true">{Array.from({ length: 25 }, (_, waveIndex) => <i key={waveIndex} style={{ height: `${22 + ((waveIndex * 17) % 42)}%`, animationDelay: `${waveIndex * -0.12}s` }} />)}</div>
+                  <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4 text-xs font-bold text-[#d7bfd3]"><span>● {locale === "ko" ? "음성 대화 중" : locale === "ja" ? "音声会話中" : "Voice chat active"}</span><span>02:14</span></div>
+                </div>
+              ) : (
+                <div className="home-story-panel">
+                  <div className="flex items-center gap-3 border-b border-white/10 px-5 py-4"><span className="grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-br from-[#f58bb6] to-[#a895f4] text-xs font-bold text-white">AI</span><span className="text-sm font-bold text-white">Seline</span><span className="ml-auto h-2.5 w-2.5 rounded-full bg-[#6fd3b0] shadow-[0_0_0_5px_rgba(111,211,176,0.12)]" /></div>
+                  <div className="space-y-4 px-5 py-7"><p className="home-story-bubble home-story-bubble-ai">{story.bubble}</p><p className="home-story-bubble home-story-bubble-user">♥</p></div>
+                </div>
+              )}
               <span className="home-story-float home-story-float-heart">♥</span><span className="home-story-float home-story-float-star">✦</span>
             </div>
           </article>
