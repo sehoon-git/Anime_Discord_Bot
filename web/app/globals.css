@@ -403,7 +403,60 @@ body[data-theme="dark"] .header-icon-control:hover {
 
 .site-nav-link,
 .site-brand {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid transparent;
+  border-radius: 0.9rem;
+  padding: 0.3rem 0.55rem 0.3rem 0.35rem;
+  color: #5b4054;
+  letter-spacing: -0.035em;
+  line-height: 1;
   white-space: nowrap;
+  transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.site-brand::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(120deg, rgba(245, 139, 182, 0.16), rgba(168, 149, 244, 0.12));
+  content: "";
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+
+.site-brand:hover {
+  border-color: rgba(239, 159, 194, 0.72);
+  transform: translateY(-1px);
+}
+
+.site-brand:hover::before {
+  opacity: 1;
+}
+
+.site-brand-logo {
+  filter: drop-shadow(0 4px 8px rgba(188, 103, 167, 0.28));
+  transition: filter 160ms ease, transform 160ms ease;
+}
+
+.site-brand:hover .site-brand-logo {
+  filter: drop-shadow(0 6px 12px rgba(202, 120, 184, 0.44));
+  transform: rotate(-4deg) scale(1.04);
+}
+
+.site-brand-label {
+  font-size: 0.975rem;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+}
+
+body[data-theme="dark"] .site-brand {
+  color: #fff5fa;
+}
+
+body[data-theme="dark"] .site-brand:hover {
+  border-color: rgba(240, 159, 201, 0.7);
 }
 
 .site-header-controls {
