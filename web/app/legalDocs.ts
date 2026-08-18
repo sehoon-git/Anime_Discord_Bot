@@ -1,6 +1,7 @@
-export type LegalLocale = "en-US" | "ko-KR";
-type BilingualSection = { ko: { title: string; body: string[] }; en: { title: string; body: string[] } };
-export type LegalDoc = { title: { ko: string; en: string }; effectiveDate: string; sections: BilingualSection[] };
+export type LegalLocale = "en-US" | "ko-KR" | "ja-JP";
+type LegalContent = { title: string; body: string[] };
+type BilingualSection = { ko: LegalContent; en: LegalContent; ja?: LegalContent };
+export type LegalDoc = { title: { ko: string; en: string; ja?: string }; effectiveDate: string; sections: BilingualSection[] };
 
 const section = (koTitle: string, koBody: string[], enTitle: string, enBody: string[]): BilingualSection => ({ ko: { title: koTitle, body: koBody }, en: { title: enTitle, body: enBody } });
 const date = "2026-08-06";
