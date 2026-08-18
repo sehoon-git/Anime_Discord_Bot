@@ -241,6 +241,8 @@ export default async function DashboardPage() {
 
           <a
             href="/api/discord/connect"
+            target="_blank"
+            rel="noopener noreferrer"
             className="discord-connect-button mt-4 inline-flex items-center rounded-full px-6 py-3 text-sm font-extrabold shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
           >
             {discordName ? t.dashboard.reconnect : t.dashboard.connect}

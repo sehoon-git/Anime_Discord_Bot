@@ -67,6 +67,8 @@ export default function DashboardOnboarding({
                     ) : (
                       <a
                         href="/api/discord/connect"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="inline-flex min-h-10 min-w-40 items-center justify-center rounded-full border border-[#9ea8ff] bg-[#596cf5] px-4 py-2 text-xs font-bold text-white shadow-[0_8px_20px_rgba(89,108,245,0.28)] transition hover:-translate-y-0.5 hover:bg-[#485be4] hover:shadow-[0_10px_24px_rgba(89,108,245,0.38)]"
                       >
                         {guide.connect} <span aria-hidden="true">→</span>
