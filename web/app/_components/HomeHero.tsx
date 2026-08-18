@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import StartButton from "./StartButton";
 
@@ -24,6 +23,11 @@ const copy = {
         ["Invite the bot and start talking", "Invite the bot from your dashboard, then begin chatting in your server.", "Open bot invite", "/dashboard"],
       ],
     },
+    story: [
+      { eyebrow: "A LITTLE CLOSER", title: "A character who remembers your rhythm", description: "Small details from your conversations can stay with Seline, so the next hello feels a little more familiar.", note: "Long-term memory", bubble: "You said you liked quiet nights, right?" },
+      { eyebrow: "HEAR THE MOMENT", title: "Warm replies, in a voice that reaches you", description: "When you want to hear a voice instead of reading a long message, start a gentle voice conversation right in Discord.", note: "Voice conversation", bubble: "Take your time. I am listening." },
+      { eyebrow: "RIGHT WHERE YOU ARE", title: "Your conversations continue in Discord", description: "Connect once, invite the bot to your server, and begin a private, cozy conversation without changing your usual space.", note: "Discord connection", bubble: "Ready when you are ✦" },
+    ],
   },
   ko: {
     titleLines: ["디스코드에서 만나는", "AI 캐릭터 음성 대화"],
@@ -41,6 +45,11 @@ const copy = {
         ["봇 초대 후 대화 시작", "대시보드에서 봇을 Discord 서버에 초대하면 음성 채팅을 시작할 수 있어요.", "대시보드에서 봇 초대하기", "/dashboard"],
       ],
     },
+    story: [
+      { eyebrow: "기억하는 대화", title: "당신의 리듬을 기억하는 캐릭터", description: "대화 속 작은 취향과 이야기를 기억해 다음 인사가 조금 더 익숙하고 자연스럽게 이어집니다.", note: "장기기억", bubble: "조용한 밤을 좋아한다고 했었죠?" },
+      { eyebrow: "목소리로 전하는 순간", title: "글보다 목소리가 필요한 날에도", description: "긴 문장을 읽기보다 목소리를 듣고 싶은 날, Discord 안에서 포근한 음성 대화를 바로 시작할 수 있어요.", note: "음성 대화", bubble: "천천히 말해도 괜찮아요. 듣고 있을게요." },
+      { eyebrow: "늘 쓰던 공간에서", title: "대화는 Discord 안에서 자연스럽게 이어져요", description: "한 번만 연결하고 서버에 봇을 초대하면, 익숙한 Discord 공간에서 나만의 대화를 이어갈 수 있어요.", note: "Discord 연동", bubble: "준비되면 언제든 불러주세요 ✦" },
+    ],
   },
   ja: {
     titleLines: ["Discordで出会う", "AIキャラクター音声チャット"],
@@ -58,6 +67,11 @@ const copy = {
         ["ボットを招待して会話開始", "ダッシュボードからボットをサーバーへ招待して会話を始めます。", "ボットを招待", "/dashboard"],
       ],
     },
+    story: [
+      { eyebrow: "記憶する会話", title: "あなたのペースを覚えるキャラクター", description: "会話の中の小さな好みや出来事を覚えて、次のあいさつがもっと自然で親しみやすくなります。", note: "長期記憶", bubble: "静かな夜が好きだと話していましたよね？" },
+      { eyebrow: "声で届くひととき", title: "文字より声がほしい日にも", description: "長い文章を読むより声を聞きたいときは、Discordからやさしい音声会話をすぐに始められます。", note: "音声会話", bubble: "ゆっくりで大丈夫です。聞いていますよ。" },
+      { eyebrow: "いつもの場所で", title: "会話はDiscordの中で自然に続きます", description: "一度連携してボットをサーバーに招待すれば、いつものDiscordで自分だけの会話を続けられます。", note: "Discord連携", bubble: "準備ができたら、いつでも呼んでくださいね ✦" },
+    ],
   },
 } as const;
 
@@ -75,6 +89,16 @@ export default function HomeHero({ locale = "ko" }: { locale?: Locale }) {
     const timer = window.setTimeout(() => { setVisibleCount(0); setLineIndex((index) => (index + 1) % text.titleLines.length); }, 2600);
     return () => window.clearTimeout(timer);
   }, [lineIndex, text.titleLines, visibleCount]);
+
+  useEffect(() => {
+    const sections = document.querySelectorAll<HTMLElement>("[data-scroll-reveal]");
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((entry) => entry.isIntersecting && entry.target.classList.add("is-visible")),
+      { threshold: 0.18 },
+    );
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
 
   return <>
     <section className="relative isolate mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl flex-col items-center justify-center overflow-hidden px-6 pb-16 pt-16 text-center">
@@ -109,32 +133,34 @@ export default function HomeHero({ locale = "ko" }: { locale?: Locale }) {
         <span className="hero-sticker hero-sticker-heart" aria-hidden="true">♥</span><span className="hero-sticker hero-sticker-star" aria-hidden="true">✦</span>
       </div>
     </section>
-    <section id="features" className="mx-auto max-w-6xl px-6 pb-24">
-      <div className="relative overflow-hidden rounded-[2rem] border border-white/15 bg-[#352a3e]/80 px-6 py-8 shadow-[0_20px_50px_rgba(12,7,20,0.24)] backdrop-blur-sm md:px-9 md:py-10">
-        <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-[#d77aaa]/20 blur-3xl" />
-        <div aria-hidden="true" className="pointer-events-none absolute -bottom-32 left-1/3 h-52 w-52 rounded-full bg-[#9b8cff]/15 blur-3xl" />
-        <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-2xl">
-            <p className="text-xs font-bold tracking-[0.18em] text-[#e99cc1]">{text.journey.eyebrow}</p>
-            <h2 className="mt-3 text-3xl font-extrabold tracking-[-0.03em] text-white md:text-4xl">{text.journey.title}</h2>
-            <p className="mt-3 max-w-xl leading-7 text-[#dbcbdc]">{text.journey.description}</p>
-          </div>
-          <span className="inline-flex w-fit rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold tracking-[0.14em] text-[#f7e8f0]">3 STEPS</span>
-        </div>
-        <div className="relative mt-8 grid gap-3 md:grid-cols-3 md:gap-4">
-          {text.journey.steps.map(([title, description, action, href], index) => (
-            <Link key={title} href={href} className="group rounded-3xl border border-white/10 bg-[#2b2232]/70 p-5 text-left transition hover:-translate-y-1 hover:border-[#e88fbd]/60 hover:bg-[#413048] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#f2a3c6]">
-              <div className="flex items-center justify-between">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f08abb] to-[#a58bf2] text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(208,109,164,0.3)]">0{index + 1}</span>
-                <span className="text-lg text-[#cbb1c5] transition group-hover:translate-x-1 group-hover:text-white">→</span>
-              </div>
-              <h3 className="mt-6 text-xl font-bold text-white">{title}</h3>
-              <p className="mt-3 min-h-20 leading-7 text-[#d1bfd0]">{description}</p>
-              <span className="mt-6 inline-flex items-center gap-1 text-sm font-bold text-[#f2a3c6]">{action}<span className="transition group-hover:translate-x-1">→</span></span>
-            </Link>
-          ))}
-        </div>
+    <section id="features" className="home-story mx-auto max-w-6xl px-6 pb-28 pt-4 md:pb-40">
+      <div className="home-story-intro scroll-reveal text-center" data-scroll-reveal>
+        <p className="text-xs font-bold tracking-[0.18em] text-[#e99cc1]">{text.journey.eyebrow}</p>
+        <h2 className="mx-auto mt-4 max-w-2xl text-3xl font-extrabold tracking-[-0.04em] text-white md:text-5xl">{text.journey.title}</h2>
+        <p className="mx-auto mt-5 max-w-xl leading-7 text-[#d9cadb]">{text.journey.description}</p>
       </div>
+      <div className="mt-16 space-y-20 md:mt-24 md:space-y-32">
+        {text.story.map((story, index) => (
+          <article key={story.title} data-scroll-reveal className={`scroll-reveal home-story-row ${index % 2 ? "home-story-row-reverse" : ""}`}>
+            <div className="home-story-copy">
+              <span className="home-story-index">0{index + 1}</span>
+              <p className="mt-6 text-xs font-bold tracking-[0.18em] text-[#ee9fc3]">{story.eyebrow}</p>
+              <h3 className="mt-4 text-3xl font-extrabold leading-tight tracking-[-0.04em] text-white md:text-5xl">{story.title}</h3>
+              <p className="mt-5 max-w-xl text-base leading-8 text-[#d9cadb] md:text-lg">{story.description}</p>
+              <span className="mt-7 inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-bold text-[#f8eaf2]">{story.note}</span>
+            </div>
+            <div className={`home-story-scene home-story-scene-${index + 1}`} aria-hidden="true">
+              <span className="home-story-orb home-story-orb-one" /><span className="home-story-orb home-story-orb-two" /><span className="home-story-orb home-story-orb-three" />
+              <div className="home-story-panel">
+                <div className="flex items-center gap-3 border-b border-white/10 px-5 py-4"><span className="grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-br from-[#f58bb6] to-[#a895f4] text-xs font-bold text-white">AI</span><span className="text-sm font-bold text-white">Seline</span><span className="ml-auto h-2.5 w-2.5 rounded-full bg-[#6fd3b0] shadow-[0_0_0_5px_rgba(111,211,176,0.12)]" /></div>
+                <div className="space-y-4 px-5 py-7"><p className="home-story-bubble home-story-bubble-ai">{story.bubble}</p><p className="home-story-bubble home-story-bubble-user">♥</p></div>
+              </div>
+              <span className="home-story-float home-story-float-heart">♥</span><span className="home-story-float home-story-float-star">✦</span>
+            </div>
+          </article>
+        ))}
+      </div>
+      <div className="scroll-reveal mt-24 text-center" data-scroll-reveal><StartButton locale={locale} /></div>
     </section>
   </>;
 }

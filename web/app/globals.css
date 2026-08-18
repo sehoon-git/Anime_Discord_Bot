@@ -119,6 +119,30 @@ body {
 .hero-sticker-heart { right: -1rem; top: 17%; transform: rotate(10deg); }
 .hero-sticker-star { bottom: -1rem; left: 8%; transform: rotate(-12deg); color: #a895f4; }
 .feature-reveal { animation: feature-rise 0.8s ease-out both; }
+.home-story { position: relative; }
+.home-story::before { content: ""; position: absolute; left: 50%; top: 12rem; bottom: 7rem; width: min(72vw, 62rem); transform: translateX(-50%); background: radial-gradient(ellipse at center, rgba(215, 122, 170, 0.14), transparent 68%); filter: blur(2rem); pointer-events: none; }
+.home-story-intro, .home-story-row { position: relative; z-index: 1; }
+.scroll-reveal { opacity: 0; transform: translateY(2.5rem) scale(0.985); transition: opacity 800ms cubic-bezier(.2,.65,.25,1), transform 800ms cubic-bezier(.2,.65,.25,1); }
+.scroll-reveal.is-visible { opacity: 1; transform: translateY(0) scale(1); }
+.home-story-row { display: grid; align-items: center; gap: 3rem; grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr); }
+.home-story-row-reverse .home-story-copy { order: 2; }
+.home-story-row-reverse .home-story-scene { order: 1; }
+.home-story-index { display: inline-grid; width: 3.35rem; height: 3.35rem; place-items: center; border: 1px solid rgba(255, 216, 238, 0.32); border-radius: 1.15rem; background: linear-gradient(135deg, rgba(244, 137, 185, 0.92), rgba(162, 139, 240, 0.92)); box-shadow: 0 14px 30px rgba(217, 110, 171, 0.23); color: #fff; font-size: 0.85rem; font-weight: 900; }
+.home-story-scene { position: relative; min-height: 25rem; display: grid; place-items: center; overflow: hidden; border: 1px solid rgba(255, 235, 247, 0.14); border-radius: 2.5rem; background: radial-gradient(circle at 30% 20%, rgba(232, 145, 190, 0.3), transparent 27%), linear-gradient(140deg, rgba(71, 53, 81, 0.98), rgba(42, 34, 54, 0.96)); box-shadow: 0 28px 70px rgba(12, 7, 20, 0.25); }
+.home-story-scene::after { content: ""; position: absolute; inset: 0; background: linear-gradient(125deg, rgba(255,255,255,0.1), transparent 35%, rgba(164, 139, 242, 0.1)); pointer-events: none; }
+.home-story-scene-2 { background: radial-gradient(circle at 73% 18%, rgba(159, 141, 241, 0.33), transparent 28%), linear-gradient(140deg, rgba(59, 47, 76, 0.98), rgba(42, 34, 54, 0.96)); }
+.home-story-scene-3 { background: radial-gradient(circle at 36% 72%, rgba(230, 138, 185, 0.3), transparent 25%), linear-gradient(140deg, rgba(62, 48, 75, 0.98), rgba(42, 34, 54, 0.96)); }
+.home-story-panel { position: relative; z-index: 2; width: min(78%, 24rem); overflow: hidden; border: 1px solid rgba(255, 231, 246, 0.25); border-radius: 1.75rem; background: rgba(48, 38, 60, 0.84); box-shadow: 0 22px 45px rgba(13, 8, 20, 0.32); backdrop-filter: blur(16px); animation: story-panel-float 5.5s ease-in-out infinite; }
+.home-story-bubble { width: fit-content; max-width: 87%; border-radius: 1.1rem; padding: 0.7rem 0.85rem; font-size: 0.85rem; font-weight: 650; line-height: 1.55; }
+.home-story-bubble-ai { background: rgba(255, 230, 244, 0.16); color: #fff2f8; }
+.home-story-bubble-user { margin-left: auto; min-width: 3rem; background: linear-gradient(110deg, #e78bb8, #a18ce8); color: #fff; text-align: center; }
+.home-story-orb { position: absolute; z-index: 0; border-radius: 999px; filter: blur(0.1px); animation: story-orb-float 7s ease-in-out infinite; }
+.home-story-orb-one { width: 10rem; height: 10rem; left: -2.8rem; top: -3rem; background: rgba(244, 160, 201, 0.2); box-shadow: inset 0 0 0 1px rgba(255, 230, 244, 0.16); }
+.home-story-orb-two { width: 5rem; height: 5rem; right: 2rem; bottom: 1.5rem; border: 1px solid rgba(185, 174, 247, 0.48); background: rgba(185, 174, 247, 0.09); animation-delay: -2.4s; }
+.home-story-orb-three { width: 1rem; height: 1rem; right: 17%; top: 20%; background: #f3b4d3; box-shadow: 0 0 0 0.55rem rgba(243, 180, 211, 0.12); animation-delay: -4s; }
+.home-story-float { position: absolute; z-index: 3; display: grid; width: 3rem; height: 3rem; place-items: center; border: 1px solid rgba(255, 237, 248, 0.35); border-radius: 1.1rem; background: rgba(255, 245, 251, 0.88); box-shadow: 0 14px 28px rgba(18, 10, 28, 0.2); color: #e78bb8; font-size: 1.25rem; animation: story-sticker-float 4s ease-in-out infinite; }
+.home-story-float-heart { right: 7%; top: 12%; transform: rotate(12deg); }
+.home-story-float-star { left: 8%; bottom: 11%; color: #a18ce8; transform: rotate(-12deg); animation-delay: -1.4s; }
 @keyframes caret-blink { 50% { opacity: 0; } }
 @keyframes scene-float { 50% { transform: translateY(-0.7rem) rotate(0.5deg); } }
 @keyframes bubble-in { from { opacity: 0; transform: translateY(0.5rem); } to { opacity: 1; transform: translateY(0); } }
@@ -127,8 +151,12 @@ body {
 @keyframes side-cluster-left { 50% { transform: translate(-0.25rem, -0.5rem); } }
 @keyframes side-cluster-right { 50% { transform: translate(0.25rem, -0.7rem); } }
 @keyframes side-wave { to { transform: scaleY(0.45); } }
+@keyframes story-panel-float { 50% { transform: translateY(-0.75rem) rotate(-0.7deg); } }
+@keyframes story-orb-float { 50% { transform: translate(0.75rem, -0.85rem) scale(1.06); } }
+@keyframes story-sticker-float { 50% { translate: 0 -0.65rem; } }
+@media (max-width: 767px) { .home-story-row { grid-template-columns: 1fr; gap: 2.2rem; } .home-story-row-reverse .home-story-copy, .home-story-row-reverse .home-story-scene { order: initial; } .home-story-scene { min-height: 20rem; border-radius: 2rem; } .home-story-panel { width: 82%; } }
 @media (max-width: 1023px) { .hero-character { top: -2rem; right: 50%; width: min(70vw, 22rem); height: min(70vw, 22rem); opacity: 0.96; } .hero-character-glow { right: 50%; transform: translateX(50%); } .hero-window { margin-top: 12rem; } }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; } .scroll-reveal { opacity: 1; transform: none; } }
 
 .billing-intro { position: relative; }
 .billing-sparkle { display: inline-grid; width: 2.75rem; height: 2.75rem; place-items: center; border-radius: 1rem; background: #fff0f7; color: #e98ab5; font-size: 1.25rem; box-shadow: 0 10px 25px rgba(205, 151, 180, 0.16); animation: sparkle-breathe 2.4s ease-in-out infinite; }
