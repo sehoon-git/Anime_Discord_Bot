@@ -1,4 +1,5 @@
 import { botPool, webPool } from "@/app/lib/db";
+import { getLongTermMemoryLimit } from "@/app/lib/billing";
 
 export type MemoryKind = "preference" | "profile" | "goal" | "fact";
 
@@ -195,6 +196,35 @@ async function retentionDays(userId: string) {
   return Math.min(Math.max(Number(result.rows[0]?.retention_days ?? 30), 1), 3650);
 }
 
+async function makeRoomForNewMemory(userId: string, limit: number) {
+  if (limit < 1) return false;
+
+  const countResult = await botPool.query<{ count: number }>(
+    `SELECT COUNT(*)::int AS count
+     FROM memory_items
+     WHERE user_id = $1 AND status = 'active' AND deleted_at IS NULL AND expires_at > NOW()`,
+    [userId],
+  );
+  const toRemove = (countResult.rows[0]?.count ?? 0) - limit + 1;
+  if (toRemove <= 0) return true;
+
+  const removed = await botPool.query(
+    `WITH candidates AS (
+       SELECT id
+       FROM memory_items
+       WHERE user_id = $1 AND status = 'active' AND deleted_at IS NULL
+         AND expires_at > NOW() AND is_pinned = FALSE
+       ORDER BY updated_at ASC
+       LIMIT $2
+     )
+     UPDATE memory_items
+     SET status = 'deleted', deleted_at = NOW(), updated_at = NOW()
+     WHERE id IN (SELECT id FROM candidates)`,
+    [userId, toRemove],
+  );
+  return (removed.rowCount ?? 0) === toRemove;
+}
+
 export async function processLongTermMemory(input: {
   userId: string;
   characterId: string;
@@ -244,6 +274,10 @@ export async function processLongTermMemory(input: {
     );
     memoryId = result.rows[0].id;
   } else {
+    const memoryLimit = await getLongTermMemoryLimit(input.userId);
+    if (!(await makeRoomForNewMemory(input.userId, memoryLimit))) {
+      return { stored: false, reason: "LIMIT_REACHED" as const };
+    }
     evidenceCount = 1;
     confirmed = candidate.explicit;
     const result = await botPool.query<{ id: string }>(

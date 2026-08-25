@@ -15,6 +15,7 @@ type Plan = {
 type CreditState = { balance: number; usage: number } | null;
 
 const plans: Plan[] = [
+  { code: "free", name: "Free", monthly: 0, yearly: 0 },
   { code: "like", name: "Like♥", monthly: 5900, yearly: 59000 },
   { code: "more-like", name: "More♥Like", monthly: 15900, yearly: 159000 },
   { code: "love", name: "Love♥", monthly: 35900, yearly: 359000 },
@@ -74,7 +75,7 @@ export function CreditPanel({ locale }: { locale: AppLocale }) {
 
 export default function BillingPlans({ currentPlanCode, locale = "ko-KR", showCreditPanel = true, requireLoginForAction = false }: BillingPlansProps) {
   const [period, setPeriod] = useState<"monthly" | "yearly">("monthly");
-  const mappedCurrent = currentPlanCode === "free" ? "like" : currentPlanCode === "pro" ? "more-like" : currentPlanCode;
+  const mappedCurrent = currentPlanCode === "pro" ? "more-like" : currentPlanCode;
   const copy = getMessages(locale).billing;
 
   return <>
@@ -83,7 +84,7 @@ export default function BillingPlans({ currentPlanCode, locale = "ko-KR", showCr
       <button type="button" className={period === "monthly" ? "billing-period-active" : "billing-period-idle"} onClick={() => setPeriod("monthly")}>{copy.monthly}</button>
       <button type="button" className={period === "yearly" ? "billing-period-active" : "billing-period-idle"} onClick={() => setPeriod("yearly")}>{copy.yearly} <span>{copy.twoMonthsFree}</span></button>
     </div>
-    <div className="mt-4 grid gap-6 md:grid-cols-3">
+    <div className="mt-4 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
       {plans.map((plan, index) => {
         const planCopy = copy.plans[index];
         const isCurrent = plan.code === mappedCurrent;

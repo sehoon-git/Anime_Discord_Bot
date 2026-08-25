@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS plans (
   monthly_text_messages INTEGER NOT NULL DEFAULT 0,
   monthly_voice_minutes INTEGER NOT NULL DEFAULT 0,
   memory_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+  long_term_memory_limit INTEGER NOT NULL DEFAULT 5 CHECK (long_term_memory_limit >= 0),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -16,11 +17,14 @@ INSERT INTO plans (
   monthly_price_krw,
   monthly_text_messages,
   monthly_voice_minutes,
-  memory_enabled
+  memory_enabled,
+  long_term_memory_limit
 )
 VALUES
-  ('free', 'Free', 0, 100, 10, FALSE),
-  ('pro', 'Pro', 9900, 3000, 300, TRUE)
+  ('free', 'Free', 0, 100, 10, TRUE, 5),
+  ('like', 'Like♥', 5900, 500, 30, TRUE, 20),
+  ('more-like', 'More♥Like', 15900, 3000, 300, TRUE, 100),
+  ('love', 'Love♥', 35900, 10000, 1000, TRUE, 500)
 ON CONFLICT (code)
 DO UPDATE SET
   name = EXCLUDED.name,
@@ -28,6 +32,7 @@ DO UPDATE SET
   monthly_text_messages = EXCLUDED.monthly_text_messages,
   monthly_voice_minutes = EXCLUDED.monthly_voice_minutes,
   memory_enabled = EXCLUDED.memory_enabled,
+  long_term_memory_limit = EXCLUDED.long_term_memory_limit,
   updated_at = NOW();
 
 CREATE TABLE IF NOT EXISTS subscriptions (

@@ -14,6 +14,7 @@ export type BillingStatus = {
     monthlyTextMessages: number;
     monthlyVoiceMinutes: number;
     memoryEnabled: boolean;
+    longTermMemoryLimit: number;
   };
   subscription: {
     status: string;
@@ -37,6 +38,7 @@ type BillingRow = {
   monthly_text_messages: number;
   monthly_voice_minutes: number;
   memory_enabled: boolean;
+  long_term_memory_limit: number;
   status: string;
   current_period_start: Date | string | null;
   current_period_end: Date | string | null;
@@ -61,6 +63,33 @@ function toIsoString(value: Date | string | null) {
   }
 
   return value instanceof Date ? value.toISOString() : new Date(value).toISOString();
+}
+
+export async function ensureBillingPlanCatalog() {
+  await db.query(`
+    ALTER TABLE plans
+      ADD COLUMN IF NOT EXISTS long_term_memory_limit INTEGER NOT NULL DEFAULT 5
+      CHECK (long_term_memory_limit >= 0);
+    INSERT INTO plans (
+      code, name, monthly_price_krw, monthly_text_messages,
+      monthly_voice_minutes, memory_enabled, long_term_memory_limit
+    ) VALUES
+      ('free', 'Free', 0, 100, 10, TRUE, 5),
+      ('like', 'Like♥', 5900, 500, 30, TRUE, 20),
+      ('more-like', 'More♥Like', 15900, 3000, 300, TRUE, 100),
+      ('love', 'Love♥', 35900, 10000, 1000, TRUE, 500)
+    ON CONFLICT (code) DO UPDATE SET
+      name = EXCLUDED.name,
+      monthly_price_krw = EXCLUDED.monthly_price_krw,
+      monthly_text_messages = EXCLUDED.monthly_text_messages,
+      monthly_voice_minutes = EXCLUDED.monthly_voice_minutes,
+      memory_enabled = EXCLUDED.memory_enabled,
+      long_term_memory_limit = EXCLUDED.long_term_memory_limit,
+      updated_at = NOW();
+    UPDATE subscriptions
+    SET plan_id = (SELECT id FROM plans WHERE code = 'more-like'), updated_at = NOW()
+    WHERE plan_id = (SELECT id FROM plans WHERE code = 'pro');
+  `);
 }
 
 async function ensureFreeSubscription(userId: string) {
@@ -91,6 +120,7 @@ export async function getBillingStatusForUser(
   name?: string | null,
 ): Promise<BillingStatus> {
   const userId = await upsertUser(email, name);
+  await ensureBillingPlanCatalog();
   await ensureFreeSubscription(userId);
 
   const billingResult = await db.query<BillingRow>(
@@ -102,6 +132,7 @@ export async function getBillingStatusForUser(
       plans.monthly_text_messages,
       plans.monthly_voice_minutes,
       plans.memory_enabled,
+      plans.long_term_memory_limit,
       subscriptions.status,
       subscriptions.current_period_start,
       subscriptions.current_period_end
@@ -171,6 +202,7 @@ export async function getBillingStatusForUser(
       monthlyTextMessages: billing.monthly_text_messages,
       monthlyVoiceMinutes: billing.monthly_voice_minutes,
       memoryEnabled: billing.memory_enabled,
+      longTermMemoryLimit: billing.long_term_memory_limit,
     },
     subscription: {
       status: billing.status,
@@ -180,6 +212,19 @@ export async function getBillingStatusForUser(
     usage,
     credits: { balance: credit.balance },
   };
+}
+
+export async function getLongTermMemoryLimit(userId: string) {
+  await ensureBillingPlanCatalog();
+  const result = await db.query<{ long_term_memory_limit: number }>(
+    `SELECT plans.long_term_memory_limit
+     FROM subscriptions
+     JOIN plans ON plans.id = subscriptions.plan_id
+     WHERE subscriptions.user_id = $1 AND subscriptions.status = 'active'
+     LIMIT 1`,
+    [userId],
+  );
+  return Math.max(0, Number(result.rows[0]?.long_term_memory_limit ?? 5));
 }
 
 export async function addTestCredits(userId: string, amount = 100) {
