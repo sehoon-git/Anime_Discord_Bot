@@ -33,7 +33,7 @@ export default function AdminModerationConsole({ adminEmail }: { adminEmail: str
       const response = await fetch("/api/admin/moderation", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subjectType, subjectValue, reason, expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "제재 저장에 실패했습니다.");
-      setSubjectValue(""); setReason(""); setExpiresAt(""); setStatus("제재를 적용했습니다."); await load(query.trim());
+      setSubjectValue(""); setReason(""); setExpiresAt(""); setStatus("제재를 적용했습니다. 대상 사용자는 이용 제한 안내에서 문의 게시판으로 이동할 수 있습니다."); await load(query.trim());
     } catch (error) { setStatus(error instanceof Error ? error.message : "제재 저장에 실패했습니다."); } finally { setBusy(false); }
   }
   async function revoke(banId: string) {
