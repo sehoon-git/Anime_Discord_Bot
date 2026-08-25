@@ -20,6 +20,7 @@ import { preprocessTurnEnvelope } from "@/app/lib/preprocess";
 import { getUserProfile } from "@/app/lib/users";
 import { getAssistantPreferences, recordPerformanceEvent } from "@/app/lib/operations";
 import { getCreditBalance } from "@/app/lib/credits";
+import { isDiscordUserBanned, isEmailBanned } from "@/app/lib/moderation";
 
 export const runtime = "nodejs";
 
@@ -70,6 +71,13 @@ export async function POST(request: Request) {
 
     const turn = parsed.turn;
 
+    if (await isDiscordUserBanned(turn.discordUserId)) {
+      return NextResponse.json(
+        { ok: false, error: "DISCORD_USER_BANNED", messageForBot: "이 계정은 서비스를 사용할 수 없습니다." },
+        { status: 403 },
+      );
+    }
+
     await cleanupExpiredTurns();
 
     const linkedUser = await findLinkedUserByDiscordId(turn.discordUserId);
@@ -82,6 +90,13 @@ export async function POST(request: Request) {
           messageForBot:
             "웹사이트에서 Google 로그인 후 Discord 계정을 먼저 연동해주세요.",
         },
+        { status: 403 },
+      );
+    }
+
+    if (await isEmailBanned(linkedUser.email)) {
+      return NextResponse.json(
+        { ok: false, error: "ACCOUNT_BANNED", messageForBot: "이 계정은 서비스를 사용할 수 없습니다." },
         { status: 403 },
       );
     }

@@ -5,6 +5,7 @@ import { authOptions } from "@/app/lib/auth";
 import { db } from "@/app/lib/db";
 import { getDiscordBotInviteUrl } from "@/app/lib/discord";
 import { upsertUser } from "@/app/lib/users";
+import { isDiscordUserBanned } from "@/app/lib/moderation";
 
 const DISCORD_TOKEN_URL = "https://discord.com/api/oauth2/token";
 const DISCORD_ME_URL = "https://discord.com/api/users/@me";
@@ -86,6 +87,10 @@ export async function GET(request: NextRequest) {
   if (!userResponse.ok || !discordUser.id) {
     console.error("Discord user fetch failed", discordUser);
     return NextResponse.redirect(new URL("/dashboard?discord=user_error", baseUrl));
+  }
+
+  if (await isDiscordUserBanned(discordUser.id)) {
+    return NextResponse.redirect(new URL("/dashboard?discord=banned", baseUrl));
   }
 
   try {
