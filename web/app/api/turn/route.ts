@@ -12,7 +12,7 @@ import {
   saveTurn,
   type TurnInputType,
 } from "@/app/lib/memory";
-import { processLongTermMemory, searchLongTermMemories } from "@/app/lib/long-term-memory";
+import { processLongTermMemory, searchLongTermMemoriesWithTimeout } from "@/app/lib/long-term-memory";
 import { getAssistantPreferences } from "@/app/lib/operations";
 
 function isInputType(value: unknown): value is TurnInputType {
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
     const memoryAllowed =
       (preferences?.memory_enabled ?? true) && await hasConsent(linkedUser.id, "memory");
     const memories = memoryAllowed
-      ? await searchLongTermMemories(linkedUser.id, characterId, text, 10)
+      ? await searchLongTermMemoriesWithTimeout(linkedUser.id, characterId, text, 10, optionalString(body.guildId))
       : [];
     const memory = await processLongTermMemory({
       userId: linkedUser.id,

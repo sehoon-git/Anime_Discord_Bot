@@ -10,7 +10,7 @@ import {
   refreshSummaryIfNeeded,
   saveTurn,
 } from "@/app/lib/memory";
-import { processLongTermMemory, searchLongTermMemories } from "@/app/lib/long-term-memory";
+import { processLongTermMemory, searchLongTermMemoriesWithTimeout } from "@/app/lib/long-term-memory";
 import {
   buildFallbackReply,
   buildModelMessages,
@@ -146,7 +146,7 @@ export async function POST(request: Request) {
       getRecentTurns(linkedUser.id, 48, turn.channelId),
       getConversationSummary(linkedUser.id),
       memoryAllowed
-        ? searchLongTermMemories(linkedUser.id, turn.characterId, turn.text, 10)
+        ? searchLongTermMemoriesWithTimeout(linkedUser.id, turn.characterId, turn.text, 10, turn.guildId)
         : Promise.resolve([]),
     ]);
 

@@ -1,7 +1,8 @@
 import { botPool, webPool } from "@/app/lib/db";
-import { getLongTermMemoryLimit } from "@/app/lib/billing";
+import { getLongTermMemoryLimit, getLongTermMemorySearchLimit } from "@/app/lib/billing";
 
 export type MemoryKind = "preference" | "profile" | "goal" | "fact";
+export type MemoryScope = "global" | "character" | "guild";
 
 export type LongTermMemory = {
   id: string;
@@ -13,6 +14,9 @@ export type LongTermMemory = {
   characterId: string;
   evidenceCount: number;
   kind: MemoryKind;
+  scope: MemoryScope;
+  importance: number;
+  lastUsedAt: string | null;
 };
 
 type MemoryRow = {
@@ -25,6 +29,9 @@ type MemoryRow = {
   character_id: string;
   evidence_count: number;
   kind: MemoryKind;
+  scope: MemoryScope;
+  importance: number;
+  last_used_at: Date | null;
 };
 
 type Candidate = {
@@ -50,11 +57,14 @@ export function ensureLongTermMemorySchema() {
           user_id BIGINT NOT NULL,
           character_id TEXT NOT NULL DEFAULT 'seline',
           memory_epoch INTEGER NOT NULL DEFAULT 1,
+          scope TEXT NOT NULL DEFAULT 'global' CHECK (scope IN ('global', 'character', 'guild')),
+          guild_id TEXT,
           kind TEXT NOT NULL CHECK (kind IN ('preference', 'profile', 'goal', 'fact')),
           canonical_key TEXT NOT NULL,
           content TEXT NOT NULL,
           evidence_count INTEGER NOT NULL DEFAULT 1 CHECK (evidence_count >= 1),
           confidence NUMERIC(4, 3) NOT NULL DEFAULT 0.500 CHECK (confidence BETWEEN 0 AND 1),
+          importance NUMERIC(4, 3) NOT NULL DEFAULT 0.500 CHECK (importance BETWEEN 0 AND 1),
           is_confirmed BOOLEAN NOT NULL DEFAULT FALSE,
           is_pinned BOOLEAN NOT NULL DEFAULT FALSE,
           source TEXT NOT NULL DEFAULT 'conversation',
@@ -63,6 +73,8 @@ export function ensureLongTermMemorySchema() {
           deleted_at TIMESTAMPTZ,
           created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
           updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+          ,last_used_at TIMESTAMPTZ
+          ,last_used_count INTEGER NOT NULL DEFAULT 0
         );
 
         CREATE TABLE IF NOT EXISTS memory_sources (
@@ -82,7 +94,18 @@ export function ensureLongTermMemorySchema() {
         CREATE INDEX IF NOT EXISTS idx_memory_items_scope
           ON memory_items(user_id, character_id, memory_epoch, updated_at DESC)
           WHERE status = 'active' AND deleted_at IS NULL;
+        CREATE INDEX IF NOT EXISTS idx_memory_items_retrieval
+          ON memory_items(user_id, scope, character_id, guild_id, updated_at DESC)
+          WHERE status = 'active' AND deleted_at IS NULL;
 
+      `);
+
+      await botPool.query(`
+        ALTER TABLE memory_items ADD COLUMN IF NOT EXISTS scope TEXT NOT NULL DEFAULT 'global';
+        ALTER TABLE memory_items ADD COLUMN IF NOT EXISTS guild_id TEXT;
+        ALTER TABLE memory_items ADD COLUMN IF NOT EXISTS importance NUMERIC(4, 3) NOT NULL DEFAULT 0.500;
+        ALTER TABLE memory_items ADD COLUMN IF NOT EXISTS last_used_at TIMESTAMPTZ;
+        ALTER TABLE memory_items ADD COLUMN IF NOT EXISTS last_used_count INTEGER NOT NULL DEFAULT 0;
       `);
 
       const legacyTable = await botPool.query<{ exists: boolean }>(
@@ -171,6 +194,13 @@ function makeCandidate(text: string): Candidate | null {
   }
 
   return null;
+}
+
+function candidateImportance(candidate: Candidate) {
+  if (candidate.explicit) return 0.9;
+  if (candidate.kind === "profile") return 0.85;
+  if (candidate.kind === "preference" || candidate.kind === "goal") return 0.75;
+  return 0.6;
 }
 
 async function memoryAccessEnabled(userId: string) {
@@ -267,10 +297,10 @@ export async function processLongTermMemory(input: {
     const result = await botPool.query<{ id: string }>(
       `UPDATE memory_items
        SET content = $4, evidence_count = $5, confidence = $6,
-           is_confirmed = $7, updated_at = NOW(), expires_at = NOW() + ($8 * INTERVAL '1 day')
+           is_confirmed = $7, importance = $8, updated_at = NOW(), expires_at = NOW() + ($9 * INTERVAL '1 day')
        WHERE id = $1 AND user_id = $2 AND character_id = $3
        RETURNING id::text`,
-      [previous.id, input.userId, input.characterId, candidate.content, evidenceCount, confirmed ? 0.9 : 0.6, confirmed, days],
+      [previous.id, input.userId, input.characterId, candidate.content, evidenceCount, confirmed ? 0.9 : 0.6, confirmed, candidateImportance(candidate), days],
     );
     memoryId = result.rows[0].id;
   } else {
@@ -283,10 +313,10 @@ export async function processLongTermMemory(input: {
     const result = await botPool.query<{ id: string }>(
       `INSERT INTO memory_items (
          user_id, character_id, memory_epoch, kind, canonical_key, content,
-         evidence_count, confidence, is_confirmed, expires_at
-       ) VALUES ($1, $2, 1, $3, $4, $5, 1, $6, $7, NOW() + ($8 * INTERVAL '1 day'))
+         evidence_count, confidence, importance, is_confirmed, expires_at
+       ) VALUES ($1, $2, 1, $3, $4, $5, 1, $6, $7, $8, NOW() + ($9 * INTERVAL '1 day'))
        RETURNING id::text`,
-      [input.userId, input.characterId, candidate.kind, candidate.canonicalKey, candidate.content, candidate.explicit ? 0.95 : 0.5, confirmed, days],
+      [input.userId, input.characterId, candidate.kind, candidate.canonicalKey, candidate.content, candidate.explicit ? 0.95 : 0.5, candidateImportance(candidate), confirmed, days],
     );
     memoryId = result.rows[0].id;
   }
@@ -303,7 +333,7 @@ export async function processLongTermMemory(input: {
 export async function listLongTermMemories(userId: string, characterId?: string) {
   await ensureLongTermMemorySchema();
   const result = await botPool.query<MemoryRow>(
-    `SELECT id::text, content, source, confidence, is_pinned, created_at, character_id, evidence_count, kind
+    `SELECT id::text, content, source, confidence, is_pinned, created_at, character_id, evidence_count, kind, scope, importance, last_used_at
      FROM memory_items
      WHERE user_id = $1 AND status = 'active' AND deleted_at IS NULL
        AND expires_at > NOW() AND is_confirmed = TRUE
@@ -315,17 +345,98 @@ export async function listLongTermMemories(userId: string, characterId?: string)
     id: row.id, content: row.content, source: row.source, confidence: Number(row.confidence),
     isPinned: row.is_pinned, createdAt: row.created_at.toISOString(), characterId: row.character_id,
     evidenceCount: row.evidence_count, kind: row.kind,
+    scope: row.scope, importance: Number(row.importance), lastUsedAt: row.last_used_at?.toISOString() ?? null,
   }));
 }
 
-export async function searchLongTermMemories(userId: string, characterId: string, query: string, limit = 10) {
-  const memories = await listLongTermMemories(userId, characterId);
-  const terms = keyText(query).split(" ").filter((term) => term.length > 1);
-  return memories
-    .map((memory) => ({ memory, score: memory.evidenceCount + terms.reduce((score, term) => score + (keyText(memory.content).includes(term) ? 2 : 0), 0) }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, Math.min(Math.max(limit, 1), 10))
-    .map(({ memory }) => memory);
+function relevanceScore(query: string, content: string) {
+  const terms = [...new Set(keyText(query).split(" ").filter((term) => term.length > 1))];
+  if (terms.length === 0) return 0;
+  const memoryText = keyText(content);
+  return terms.filter((term) => memoryText.includes(term)).length / terms.length;
+}
+
+function recencyScore(memory: LongTermMemory) {
+  const reference = memory.lastUsedAt ?? memory.createdAt;
+  const ageDays = Math.max(0, (Date.now() - new Date(reference).getTime()) / 86_400_000);
+  return Math.exp(-ageDays / 90);
+}
+
+export async function searchLongTermMemories(
+  userId: string,
+  characterId: string,
+  query: string,
+  limit = 10,
+  guildId?: string | null,
+) {
+  await ensureLongTermMemorySchema();
+  const result = await botPool.query<MemoryRow>(
+    `SELECT id::text, content, source, confidence, is_pinned, created_at, character_id,
+            evidence_count, kind, scope, importance, last_used_at
+     FROM memory_items
+     WHERE user_id = $1 AND status = 'active' AND deleted_at IS NULL
+       AND expires_at > NOW()
+       AND is_confirmed = TRUE
+       AND (scope = 'global'
+         OR (scope = 'character' AND character_id = $2)
+         OR (scope = 'guild' AND guild_id = $3))`,
+    [userId, characterId, guildId ?? null],
+  );
+  const memories = result.rows.map((row) => ({
+    id: row.id, content: row.content, source: row.source, confidence: Number(row.confidence),
+    isPinned: row.is_pinned, createdAt: row.created_at.toISOString(), characterId: row.character_id,
+    evidenceCount: row.evidence_count, kind: row.kind, scope: row.scope,
+    importance: Number(row.importance), lastUsedAt: row.last_used_at?.toISOString() ?? null,
+  }));
+  const planLimit = await getLongTermMemorySearchLimit(userId);
+  const selectedLimit = Math.min(Math.max(limit, 1), planLimit);
+  const pinned = memories
+    .filter((memory) => memory.isPinned)
+    .map((memory) => ({ memory, score: 1 + memory.importance * 0.2 + memory.confidence * 0.1 }))
+    .sort((left, right) => right.score - left.score)
+    .slice(0, Math.min(2, selectedLimit));
+  const selectedIds = new Set(pinned.map(({ memory }) => memory.id));
+  const ranked = memories
+    .filter((memory) => !selectedIds.has(memory.id))
+    .map((memory) => {
+      const relevance = relevanceScore(query, memory.content);
+      return { memory, relevance, score: relevance * 0.6 + memory.importance * 0.2 + recencyScore(memory) * 0.1 + memory.confidence * 0.1 };
+    })
+    .filter(({ relevance }) => relevance >= 0.15)
+    .sort((left, right) => right.score - left.score)
+    .slice(0, Math.max(0, selectedLimit - pinned.length));
+  const selected = [...pinned, ...ranked].map(({ memory }) => memory);
+  if (selected.length > 0) {
+    await botPool.query(
+      `UPDATE memory_items
+       SET last_used_at = NOW(), last_used_count = last_used_count + 1
+       WHERE user_id = $1 AND id = ANY($2::bigint[])`,
+      [userId, selected.map((memory) => memory.id)],
+    );
+  }
+  return selected;
+}
+
+export async function searchLongTermMemoriesWithTimeout(
+  userId: string,
+  characterId: string,
+  query: string,
+  limit = 10,
+  guildId?: string | null,
+  timeoutMs = 400,
+) {
+  return new Promise<LongTermMemory[]>((resolve) => {
+    const timer = setTimeout(() => resolve([]), timeoutMs);
+    void searchLongTermMemories(userId, characterId, query, limit, guildId)
+      .then((memories) => {
+        clearTimeout(timer);
+        resolve(memories);
+      })
+      .catch(() => {
+        clearTimeout(timer);
+        resolve([]);
+      });
+  });
 }
 
 export async function deleteLongTermMemory(userId: string, memoryId: string) {
@@ -335,6 +446,84 @@ export async function deleteLongTermMemory(userId: string, memoryId: string) {
      WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
     [memoryId, userId],
   );
+}
+
+function cleanManualMemoryContent(value: string) {
+  const content = compact(value);
+  if (content.length < 2 || content.length > 500 || hasSensitiveOrUnsafeContent(content)) return null;
+  return content;
+}
+
+function safeScope(value: string | undefined): MemoryScope {
+  return value === "character" || value === "guild" ? value : "global";
+}
+
+export async function createLongTermMemory(input: {
+  userId: string;
+  content: string;
+  characterId?: string;
+  guildId?: string | null;
+  scope?: MemoryScope;
+  kind?: MemoryKind;
+  importance?: number;
+}) {
+  const content = cleanManualMemoryContent(input.content);
+  if (!content) return null;
+  await ensureLongTermMemorySchema();
+  const memoryLimit = await getLongTermMemoryLimit(input.userId);
+  if (!(await makeRoomForNewMemory(input.userId, memoryLimit))) return null;
+  const scope = safeScope(input.scope);
+  const result = await botPool.query<MemoryRow>(
+    `INSERT INTO memory_items (
+      user_id, character_id, memory_epoch, scope, guild_id, kind, canonical_key,
+      content, evidence_count, confidence, importance, is_confirmed, source, expires_at
+    ) VALUES ($1, $2, 1, $3, $4, $5, $6, $7, 1, 1, $8, TRUE, 'manual', NULL)
+    RETURNING id::text, content, source, confidence, is_pinned, created_at, character_id,
+              evidence_count, kind, scope, importance, last_used_at`,
+    [
+      input.userId, input.characterId ?? "seline", scope,
+      scope === "guild" ? input.guildId ?? null : null,
+      input.kind ?? "fact", `manual:${keyText(content)}:${Date.now()}`, content,
+      Math.min(1, Math.max(0, input.importance ?? 0.75)),
+    ],
+  );
+  const row = result.rows[0];
+  return row ? {
+    id: row.id, content: row.content, source: row.source, confidence: Number(row.confidence),
+    isPinned: row.is_pinned, createdAt: row.created_at.toISOString(), characterId: row.character_id,
+    evidenceCount: row.evidence_count, kind: row.kind, scope: row.scope,
+    importance: Number(row.importance), lastUsedAt: row.last_used_at?.toISOString() ?? null,
+  } satisfies LongTermMemory : null;
+}
+
+export async function updateLongTermMemory(input: {
+  userId: string;
+  memoryId: string;
+  content?: string;
+  importance?: number;
+}) {
+  const content = input.content === undefined ? undefined : cleanManualMemoryContent(input.content);
+  if (input.content !== undefined && !content) return null;
+  if (input.importance !== undefined && (!Number.isFinite(input.importance) || input.importance < 0 || input.importance > 1)) return null;
+  await ensureLongTermMemorySchema();
+  const result = await botPool.query<MemoryRow>(
+    `UPDATE memory_items
+     SET content = COALESCE($3, content),
+         canonical_key = CASE WHEN $3::text IS NULL THEN canonical_key ELSE 'manual:' || id::text END,
+         importance = COALESCE($4, importance),
+         source = 'manual', updated_at = NOW()
+     WHERE id = $1 AND user_id = $2 AND status = 'active' AND deleted_at IS NULL
+     RETURNING id::text, content, source, confidence, is_pinned, created_at, character_id,
+               evidence_count, kind, scope, importance, last_used_at`,
+    [input.memoryId, input.userId, content ?? null, input.importance ?? null],
+  );
+  const row = result.rows[0];
+  return row ? {
+    id: row.id, content: row.content, source: row.source, confidence: Number(row.confidence),
+    isPinned: row.is_pinned, createdAt: row.created_at.toISOString(), characterId: row.character_id,
+    evidenceCount: row.evidence_count, kind: row.kind, scope: row.scope,
+    importance: Number(row.importance), lastUsedAt: row.last_used_at?.toISOString() ?? null,
+  } satisfies LongTermMemory : null;
 }
 
 export async function deleteAllLongTermMemories(userId: string) {

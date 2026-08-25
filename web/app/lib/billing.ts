@@ -227,6 +227,20 @@ export async function getLongTermMemoryLimit(userId: string) {
   return Math.max(0, Number(result.rows[0]?.long_term_memory_limit ?? 5));
 }
 
+export async function getLongTermMemorySearchLimit(userId: string) {
+  await ensureBillingPlanCatalog();
+  const result = await db.query<{ code: string }>(
+    `SELECT plans.code
+     FROM subscriptions
+     JOIN plans ON plans.id = subscriptions.plan_id
+     WHERE subscriptions.user_id = $1 AND subscriptions.status = 'active'
+     LIMIT 1`,
+    [userId],
+  );
+  const planCode = result.rows[0]?.code ?? "free";
+  return planCode === "love" ? 10 : planCode === "more-like" ? 8 : planCode === "like" ? 5 : 3;
+}
+
 export async function addTestCredits(userId: string, amount = 100) {
   if (!Number.isInteger(amount) || amount <= 0 || amount > 10000) {
     throw new Error("Invalid test credit amount");
