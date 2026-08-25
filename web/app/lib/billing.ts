@@ -4,6 +4,7 @@ import { upsertUser } from "@/app/lib/users";
 const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice", "security_ip"];
 
 export type UsageEventType = "text_message" | "voice_minute";
+export type BotQuotaEventType = UsageEventType | "image_generation";
 
 export type BillingStatus = {
   userId: string;
@@ -113,6 +114,11 @@ export async function ensureBillingPlanCatalog() {
       WHERE request_id IS NOT NULL;
     CREATE INDEX IF NOT EXISTS idx_image_generation_usage_month
       ON image_generation_usage(user_id, created_at DESC);
+
+    ALTER TABLE usage_events ADD COLUMN IF NOT EXISTS request_id TEXT;
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_usage_events_request
+      ON usage_events(user_id, event_type, request_id)
+      WHERE request_id IS NOT NULL;
   `);
 }
 
@@ -313,6 +319,93 @@ export async function recordImageGenerationUsage(userId: string, requestId: stri
   } finally {
     client.release();
   }
+}
+
+export async function reserveBotQuotaUsage(
+  userId: string,
+  eventType: BotQuotaEventType,
+  amount: number,
+  requestId: string,
+  metadata: Record<string, unknown> = {},
+) {
+  if (!Number.isInteger(amount) || amount < 1 || amount > 10_000 || !requestId || requestId.length > 160) {
+    throw new Error("Invalid quota usage request");
+  }
+  await ensureBillingPlanCatalog();
+  const client = await db.connect();
+  try {
+    await client.query("BEGIN");
+    const plan = await client.query<{
+      monthly_text_messages: number;
+      monthly_voice_minutes: number;
+      image_generation_enabled: boolean;
+      monthly_image_generations: number;
+    }>(
+      `SELECT plans.monthly_text_messages, plans.monthly_voice_minutes,
+              plans.image_generation_enabled, plans.monthly_image_generations
+       FROM subscriptions
+       JOIN plans ON plans.id = subscriptions.plan_id
+       WHERE subscriptions.user_id = $1 AND subscriptions.status = 'active'
+       FOR UPDATE OF subscriptions`,
+      [userId],
+    );
+    const planRow = plan.rows[0];
+    if (!planRow) {
+      await client.query("ROLLBACK");
+      return { reserved: false, reason: "NO_ACTIVE_SUBSCRIPTION" as const, used: 0, limit: 0, remaining: 0 };
+    }
+
+    const isImage = eventType === "image_generation";
+    const duplicate = isImage
+      ? await client.query<{ exists: boolean }>(`SELECT EXISTS(SELECT 1 FROM image_generation_usage WHERE user_id = $1 AND request_id = $2) AS exists`, [userId, requestId])
+      : await client.query<{ exists: boolean }>(`SELECT EXISTS(SELECT 1 FROM usage_events WHERE user_id = $1 AND event_type = $2 AND request_id = $3) AS exists`, [userId, eventType, requestId]);
+    if (duplicate.rows[0]?.exists) {
+      await client.query("COMMIT");
+      return { reserved: true, alreadyReserved: true, used: 0, limit: 0, remaining: 0 };
+    }
+
+    const limit = isImage
+      ? (planRow.image_generation_enabled ? Number(planRow.monthly_image_generations) : 0)
+      : eventType === "text_message"
+        ? Number(planRow.monthly_text_messages)
+        : Number(planRow.monthly_voice_minutes);
+    const usage = isImage
+      ? await client.query<{ used: number }>(`SELECT COUNT(*)::int AS used FROM image_generation_usage WHERE user_id = $1 AND created_at >= date_trunc('month', NOW())`, [userId])
+      : await client.query<{ used: number }>(`SELECT COALESCE(SUM(amount), 0)::int AS used FROM usage_events WHERE user_id = $1 AND event_type = $2 AND created_at >= date_trunc('month', NOW())`, [userId, eventType]);
+    const used = usage.rows[0]?.used ?? 0;
+    if (limit < 1 || used + amount > limit) {
+      await client.query("ROLLBACK");
+      return { reserved: false, reason: "QUOTA_EXCEEDED" as const, used, limit, remaining: Math.max(0, limit - used) };
+    }
+
+    if (isImage) {
+      await client.query(
+        `INSERT INTO image_generation_usage (user_id, request_id, metadata) VALUES ($1, $2, $3::jsonb)`,
+        [userId, requestId, JSON.stringify(metadata)],
+      );
+    } else {
+      await client.query(
+        `INSERT INTO usage_events (user_id, event_type, amount, metadata, request_id) VALUES ($1, $2, $3, $4::jsonb, $5)`,
+        [userId, eventType, amount, JSON.stringify(metadata), requestId],
+      );
+    }
+    await client.query("COMMIT");
+    return { reserved: true, alreadyReserved: false, used: used + amount, limit, remaining: limit - used - amount };
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function releaseBotQuotaUsage(userId: string, eventType: BotQuotaEventType, requestId: string) {
+  if (!requestId) return false;
+  await ensureBillingPlanCatalog();
+  const result = eventType === "image_generation"
+    ? await db.query(`DELETE FROM image_generation_usage WHERE user_id = $1 AND request_id = $2`, [userId, requestId])
+    : await db.query(`DELETE FROM usage_events WHERE user_id = $1 AND event_type = $2 AND request_id = $3`, [userId, eventType, requestId]);
+  return Boolean(result.rowCount);
 }
 
 export async function getLongTermMemorySearchLimit(userId: string) {

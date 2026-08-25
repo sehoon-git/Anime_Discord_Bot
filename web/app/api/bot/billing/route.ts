@@ -42,7 +42,14 @@ export async function GET(request: Request) {
     const user = await linkedUser(discordUserId);
     if (!user) return NextResponse.json({ ok: false, error: "USER_NOT_FOUND" }, { status: 404 });
     const billing = await getBillingStatusForUser(user.email, user.name);
-    return NextResponse.json({ ok: true, userId: user.id, plan: billing.plan, subscription: billing.subscription, imageGeneration: imageAccess(billing) });
+    return NextResponse.json({
+      ok: true,
+      userId: user.id,
+      plan: billing.plan,
+      subscription: billing.subscription,
+      usage: billing.usage,
+      imageGeneration: imageAccess(billing),
+    });
   } catch (error) {
     console.error("GET /api/bot/billing Error:", error);
     return NextResponse.json({ ok: false, error: "BILLING_READ_FAILED" }, { status: 500 });
