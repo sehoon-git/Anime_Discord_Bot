@@ -15,6 +15,8 @@ export type BillingStatus = {
     monthlyVoiceMinutes: number;
     memoryEnabled: boolean;
     longTermMemoryLimit: number;
+    imageGenerationEnabled: boolean;
+    monthlyImageGenerations: number;
   };
   subscription: {
     status: string;
@@ -25,6 +27,7 @@ export type BillingStatus = {
     textMessages: number;
     voiceMinutes: number;
     creditsUsed: number;
+    imageGenerations: number;
   };
   credits: {
     balance: number;
@@ -39,6 +42,8 @@ type BillingRow = {
   monthly_voice_minutes: number;
   memory_enabled: boolean;
   long_term_memory_limit: number;
+  image_generation_enabled: boolean;
+  monthly_image_generations: number;
   status: string;
   current_period_start: Date | string | null;
   current_period_end: Date | string | null;
@@ -69,15 +74,19 @@ export async function ensureBillingPlanCatalog() {
   await db.query(`
     ALTER TABLE plans
       ADD COLUMN IF NOT EXISTS long_term_memory_limit INTEGER NOT NULL DEFAULT 5
-      CHECK (long_term_memory_limit >= 0);
+      CHECK (long_term_memory_limit >= 0),
+      ADD COLUMN IF NOT EXISTS image_generation_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+      ADD COLUMN IF NOT EXISTS monthly_image_generations INTEGER NOT NULL DEFAULT 0
+      CHECK (monthly_image_generations >= 0);
     INSERT INTO plans (
       code, name, monthly_price_krw, monthly_text_messages,
-      monthly_voice_minutes, memory_enabled, long_term_memory_limit
+      monthly_voice_minutes, memory_enabled, long_term_memory_limit,
+      image_generation_enabled, monthly_image_generations
     ) VALUES
-      ('free', 'Free', 0, 100, 10, TRUE, 5),
-      ('like', 'Like♥', 5900, 500, 30, TRUE, 20),
-      ('more-like', 'More♥Like', 15900, 3000, 300, TRUE, 100),
-      ('love', 'Love♥', 35900, 10000, 1000, TRUE, 500)
+      ('free', 'Free', 0, 100, 10, TRUE, 5, FALSE, 0),
+      ('like', 'Like♥', 5900, 500, 30, TRUE, 20, FALSE, 0),
+      ('more-like', 'More♥Like', 15900, 3000, 300, TRUE, 100, FALSE, 0),
+      ('love', 'Love♥', 35900, 10000, 1000, TRUE, 500, TRUE, 50)
     ON CONFLICT (code) DO UPDATE SET
       name = EXCLUDED.name,
       monthly_price_krw = EXCLUDED.monthly_price_krw,
@@ -85,10 +94,25 @@ export async function ensureBillingPlanCatalog() {
       monthly_voice_minutes = EXCLUDED.monthly_voice_minutes,
       memory_enabled = EXCLUDED.memory_enabled,
       long_term_memory_limit = EXCLUDED.long_term_memory_limit,
+      image_generation_enabled = EXCLUDED.image_generation_enabled,
+      monthly_image_generations = EXCLUDED.monthly_image_generations,
       updated_at = NOW();
     UPDATE subscriptions
     SET plan_id = (SELECT id FROM plans WHERE code = 'more-like'), updated_at = NOW()
     WHERE plan_id = (SELECT id FROM plans WHERE code = 'pro');
+
+    CREATE TABLE IF NOT EXISTS image_generation_usage (
+      id BIGSERIAL PRIMARY KEY,
+      user_id BIGINT NOT NULL,
+      request_id TEXT,
+      metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_image_generation_usage_request
+      ON image_generation_usage(user_id, request_id)
+      WHERE request_id IS NOT NULL;
+    CREATE INDEX IF NOT EXISTS idx_image_generation_usage_month
+      ON image_generation_usage(user_id, created_at DESC);
   `);
 }
 
@@ -133,6 +157,8 @@ export async function getBillingStatusForUser(
       plans.monthly_voice_minutes,
       plans.memory_enabled,
       plans.long_term_memory_limit,
+      plans.image_generation_enabled,
+      plans.monthly_image_generations,
       subscriptions.status,
       subscriptions.current_period_start,
       subscriptions.current_period_end
@@ -173,11 +199,11 @@ export async function getBillingStatusForUser(
 
       return acc;
     },
-    { textMessages: 0, voiceMinutes: 0, creditsUsed: 0 },
+    { textMessages: 0, voiceMinutes: 0, creditsUsed: 0, imageGenerations: 0 },
   );
 
   await ensureCreditBalance(userId);
-  const [creditResult, modelUsageResult] = await Promise.all([
+  const [creditResult, modelUsageResult, imageUsageResult] = await Promise.all([
     db.query<CreditRow>(
       `SELECT balance FROM credit_balances WHERE user_id = $1 LIMIT 1`,
       [userId],
@@ -188,10 +214,17 @@ export async function getBillingStatusForUser(
        WHERE user_id = $1 AND created_at >= date_trunc('month', NOW())`,
       [userId],
     ),
+    db.query<{ used: number }>(
+      `SELECT COUNT(*)::int AS used
+       FROM image_generation_usage
+       WHERE user_id = $1 AND created_at >= date_trunc('month', NOW())`,
+      [userId],
+    ),
   ]);
 
   const credit = creditResult.rows[0] ?? { balance: 0 };
   usage.creditsUsed = modelUsageResult.rows[0]?.credits_used ?? 0;
+  usage.imageGenerations = imageUsageResult.rows[0]?.used ?? 0;
 
   return {
     userId,
@@ -203,6 +236,8 @@ export async function getBillingStatusForUser(
       monthlyVoiceMinutes: billing.monthly_voice_minutes,
       memoryEnabled: billing.memory_enabled,
       longTermMemoryLimit: billing.long_term_memory_limit,
+      imageGenerationEnabled: billing.image_generation_enabled,
+      monthlyImageGenerations: billing.monthly_image_generations,
     },
     subscription: {
       status: billing.status,
@@ -225,6 +260,59 @@ export async function getLongTermMemoryLimit(userId: string) {
     [userId],
   );
   return Math.max(0, Number(result.rows[0]?.long_term_memory_limit ?? 5));
+}
+
+export async function recordImageGenerationUsage(userId: string, requestId: string, metadata: Record<string, unknown> = {}) {
+  if (!requestId || requestId.length > 160) throw new Error("Invalid image request ID");
+  await ensureBillingPlanCatalog();
+  const client = await db.connect();
+  try {
+    await client.query("BEGIN");
+    const existing = await client.query<{ id: string }>(
+      `SELECT id::text FROM image_generation_usage WHERE user_id = $1 AND request_id = $2 LIMIT 1`,
+      [userId, requestId],
+    );
+    if (existing.rows[0]) {
+      await client.query("COMMIT");
+      return { recorded: true, alreadyRecorded: true, used: 0, limit: 0, remaining: 0 };
+    }
+
+    const plan = await client.query<{ enabled: boolean; limit: number }>(
+      `SELECT plans.image_generation_enabled AS enabled, plans.monthly_image_generations AS limit
+       FROM subscriptions
+       JOIN plans ON plans.id = subscriptions.plan_id
+       WHERE subscriptions.user_id = $1 AND subscriptions.status = 'active'
+       FOR UPDATE OF subscriptions`,
+      [userId],
+    );
+    const planRow = plan.rows[0];
+    if (!planRow?.enabled || Number(planRow.limit) < 1) {
+      await client.query("ROLLBACK");
+      return { recorded: false, alreadyRecorded: false, used: 0, limit: Number(planRow?.limit ?? 0), remaining: 0, reason: "PLAN_NOT_ELIGIBLE" as const };
+    }
+    const usage = await client.query<{ used: number }>(
+      `SELECT COUNT(*)::int AS used FROM image_generation_usage
+       WHERE user_id = $1 AND created_at >= date_trunc('month', NOW())`,
+      [userId],
+    );
+    const used = usage.rows[0]?.used ?? 0;
+    const limit = Number(planRow.limit);
+    if (used >= limit) {
+      await client.query("ROLLBACK");
+      return { recorded: false, alreadyRecorded: false, used, limit, remaining: 0, reason: "IMAGE_QUOTA_EXCEEDED" as const };
+    }
+    await client.query(
+      `INSERT INTO image_generation_usage (user_id, request_id, metadata) VALUES ($1, $2, $3::jsonb)`,
+      [userId, requestId, JSON.stringify(metadata)],
+    );
+    await client.query("COMMIT");
+    return { recorded: true, alreadyRecorded: false, used: used + 1, limit, remaining: limit - used - 1 };
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => undefined);
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function getLongTermMemorySearchLimit(userId: string) {
