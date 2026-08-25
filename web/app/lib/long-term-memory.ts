@@ -94,10 +94,6 @@ export function ensureLongTermMemorySchema() {
         CREATE INDEX IF NOT EXISTS idx_memory_items_scope
           ON memory_items(user_id, character_id, memory_epoch, updated_at DESC)
           WHERE status = 'active' AND deleted_at IS NULL;
-        CREATE INDEX IF NOT EXISTS idx_memory_items_retrieval
-          ON memory_items(user_id, scope, character_id, guild_id, updated_at DESC)
-          WHERE status = 'active' AND deleted_at IS NULL;
-
       `);
 
       await botPool.query(`
@@ -106,6 +102,9 @@ export function ensureLongTermMemorySchema() {
         ALTER TABLE memory_items ADD COLUMN IF NOT EXISTS importance NUMERIC(4, 3) NOT NULL DEFAULT 0.500;
         ALTER TABLE memory_items ADD COLUMN IF NOT EXISTS last_used_at TIMESTAMPTZ;
         ALTER TABLE memory_items ADD COLUMN IF NOT EXISTS last_used_count INTEGER NOT NULL DEFAULT 0;
+        CREATE INDEX IF NOT EXISTS idx_memory_items_retrieval
+          ON memory_items(user_id, scope, character_id, guild_id, updated_at DESC)
+          WHERE status = 'active' AND deleted_at IS NULL;
       `);
 
       const legacyTable = await botPool.query<{ exists: boolean }>(
