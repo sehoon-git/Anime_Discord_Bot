@@ -110,25 +110,43 @@ export function ensureLongTermMemorySchema() {
       const legacyTable = await botPool.query<{ exists: boolean }>(
         `SELECT to_regclass('public.user_memories') IS NOT NULL AS exists`,
       );
-      if (!legacyTable.rows[0]?.exists) return;
+      if (legacyTable.rows[0]?.exists) {
+        await botPool.query(`
+          INSERT INTO memory_items (
+            user_id, character_id, memory_epoch, kind, canonical_key, content,
+            evidence_count, confidence, is_confirmed, is_pinned, source,
+            expires_at, created_at, updated_at
+          )
+          SELECT
+            legacy.user_id, 'seline', 1, 'fact', 'legacy:' || legacy.id::text,
+            legacy.content, 2, legacy.confidence, TRUE, legacy.is_pinned,
+            'legacy-migration', legacy.expires_at, legacy.created_at, legacy.updated_at
+          FROM user_memories legacy
+          WHERE legacy.deleted_at IS NULL
+            AND NOT EXISTS (
+              SELECT 1 FROM memory_items item
+              WHERE item.user_id = legacy.user_id
+                AND item.canonical_key = 'legacy:' || legacy.id::text
+            );
+        `);
+      }
 
+      // Keep one copy when older versions or repeated requests created the
+      // same memory. Pinned and newer memories win automatically.
       await botPool.query(`
-        INSERT INTO memory_items (
-          user_id, character_id, memory_epoch, kind, canonical_key, content,
-          evidence_count, confidence, is_confirmed, is_pinned, source,
-          expires_at, created_at, updated_at
+        WITH duplicates AS (
+          SELECT id,
+                 ROW_NUMBER() OVER (
+                   PARTITION BY user_id, LOWER(TRIM(REGEXP_REPLACE(content, '\\s+', ' ', 'g')))
+                   ORDER BY is_pinned DESC, updated_at DESC, id DESC
+                 ) AS position
+          FROM memory_items
+          WHERE status = 'active' AND deleted_at IS NULL
         )
-        SELECT
-          legacy.user_id, 'seline', 1, 'fact', 'legacy:' || legacy.id::text,
-          legacy.content, 2, legacy.confidence, TRUE, legacy.is_pinned,
-          'legacy-migration', legacy.expires_at, legacy.created_at, legacy.updated_at
-        FROM user_memories legacy
-        WHERE legacy.deleted_at IS NULL
-          AND NOT EXISTS (
-            SELECT 1 FROM memory_items item
-            WHERE item.user_id = legacy.user_id
-              AND item.canonical_key = 'legacy:' || legacy.id::text
-          );
+        UPDATE memory_items item
+        SET status = 'deleted', deleted_at = NOW(), updated_at = NOW()
+        FROM duplicates
+        WHERE item.id = duplicates.id AND duplicates.position > 1
       `);
     })().catch((error) => {
       schemaPromise = null;
@@ -470,6 +488,23 @@ export async function createLongTermMemory(input: {
   const content = cleanManualMemoryContent(input.content);
   if (!content) return null;
   await ensureLongTermMemorySchema();
+  const existing = await botPool.query<MemoryRow>(
+    `SELECT id::text, content, source, confidence, is_pinned, created_at, character_id,
+            evidence_count, kind, scope, importance, last_used_at
+     FROM memory_items
+     WHERE user_id = $1 AND status = 'active' AND deleted_at IS NULL
+       AND LOWER(TRIM(REGEXP_REPLACE(content, '\\s+', ' ', 'g'))) = LOWER($2)
+     ORDER BY is_pinned DESC, updated_at DESC, id DESC
+     LIMIT 1`,
+    [input.userId, content],
+  );
+  const duplicate = existing.rows[0];
+  if (duplicate) return {
+    id: duplicate.id, content: duplicate.content, source: duplicate.source, confidence: Number(duplicate.confidence),
+    isPinned: duplicate.is_pinned, createdAt: duplicate.created_at.toISOString(), characterId: duplicate.character_id,
+    evidenceCount: duplicate.evidence_count, kind: duplicate.kind, scope: duplicate.scope,
+    importance: Number(duplicate.importance), lastUsedAt: duplicate.last_used_at?.toISOString() ?? null,
+  } satisfies LongTermMemory;
   const memoryLimit = await getLongTermMemoryLimit(input.userId);
   if (!(await makeRoomForNewMemory(input.userId, memoryLimit))) return null;
   const days = await retentionDays(input.userId);
@@ -484,7 +519,7 @@ export async function createLongTermMemory(input: {
     [
       input.userId, input.characterId ?? "seline", scope,
       scope === "guild" ? input.guildId ?? null : null,
-      input.kind ?? "fact", `manual:${keyText(content)}:${Date.now()}`, content,
+      input.kind ?? "fact", `manual:${keyText(content)}`, content,
       Math.min(1, Math.max(0, input.importance ?? 0.75)),
       days,
     ],
