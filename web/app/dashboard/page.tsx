@@ -18,7 +18,7 @@ type DiscordAccountRow = {
   discord_global_name: string | null;
 };
 
-const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice"];
+const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice", "security_ip"];
 
 function errorText(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);

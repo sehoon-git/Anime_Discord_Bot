@@ -16,7 +16,7 @@ import {
 
 const MAX_DISPLAY_NAME_LENGTH = 40;
 const MAX_NICKNAME_LENGTH = 30;
-const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice"];
+const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice", "security_ip"];
 
 function cleanText(value: unknown, maxLength: number) {
   if (typeof value !== "string") return "";
@@ -107,6 +107,7 @@ export async function POST(request: Request) {
   const privacy = body?.privacy === true;
   const overseas = body?.overseas === true;
   const memory = body?.memory === true;
+  const securityIp = body?.securityIp === true;
 
   if (displayName.length < 2 || nickname.length < 2) {
     return NextResponse.json(
@@ -129,7 +130,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!terms || !privacy || !overseas || !memory || !voice) {
+  if (!terms || !privacy || !overseas || !memory || !voice || !securityIp) {
     return NextResponse.json(
       { ok: false, error: "필수 약관에 모두 동의해주세요." },
       { status: 400 },

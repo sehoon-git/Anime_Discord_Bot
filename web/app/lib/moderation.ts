@@ -101,6 +101,19 @@ export async function recordUserIp(email: string, ipAddress: string) {
   );
 }
 
+export async function deleteExpiredUserIpRecords() {
+  await ensureModerationSchema();
+  const result = await db.query<{ deleted_count: number }>(
+    `WITH deleted AS (
+      DELETE FROM moderation_user_ips
+      WHERE last_seen_at < NOW() - INTERVAL '90 days'
+      RETURNING 1
+    )
+    SELECT COUNT(*)::int AS deleted_count FROM deleted`,
+  );
+  return result.rows[0]?.deleted_count ?? 0;
+}
+
 export async function getActiveIpBan(ipAddress: string) {
   return getActiveBan("ip", ipAddress);
 }

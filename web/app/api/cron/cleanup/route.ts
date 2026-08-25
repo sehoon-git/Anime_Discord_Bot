@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { botPool } from "@/app/lib/db";
+import { deleteExpiredUserIpRecords } from "@/app/lib/moderation";
 
 export const runtime = "nodejs";
 
@@ -12,10 +13,11 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await botPool.query<{ cleanup_expired_bot_data: number }>(
-      "SELECT cleanup_expired_bot_data()",
-    );
-    return NextResponse.json({ ok: true, deletedTurns: result.rows[0]?.cleanup_expired_bot_data ?? 0 });
+    const [result, deletedIpRecords] = await Promise.all([
+      botPool.query<{ cleanup_expired_bot_data: number }>("SELECT cleanup_expired_bot_data()"),
+      deleteExpiredUserIpRecords(),
+    ]);
+    return NextResponse.json({ ok: true, deletedTurns: result.rows[0]?.cleanup_expired_bot_data ?? 0, deletedIpRecords });
   } catch (error) {
     console.error("GET /api/cron/cleanup Error:", error);
     return NextResponse.json({ ok: false, error: "CLEANUP_FAILED" }, { status: 500 });

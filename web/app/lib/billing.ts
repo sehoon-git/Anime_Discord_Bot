@@ -1,7 +1,7 @@
 import { db } from "@/app/lib/db";
 import { upsertUser } from "@/app/lib/users";
 
-const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice"];
+const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice", "security_ip"];
 
 export type UsageEventType = "text_message" | "voice_minute";
 

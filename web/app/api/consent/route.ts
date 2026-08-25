@@ -4,7 +4,7 @@ import { db } from "@/app/lib/db";
 import { upsertVoiceConsent } from "@/app/lib/operations";
 import { upsertUser } from "@/app/lib/users";
 
-const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice"];
+const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice", "security_ip"];
 
 type DatabaseError = {
   code?: string;
@@ -92,8 +92,9 @@ export async function POST(request: Request) {
   const overseas = body.overseas === true;
   const voice = body.voice === true;
   const memory = body.memory === true;
+  const securityIp = body.security_ip === true;
 
-  if (!terms || !privacy || !overseas || !memory || !voice) {
+  if (!terms || !privacy || !overseas || !memory || !voice || !securityIp) {
     return Response.json(
       { error: "필수 동의 항목이 누락되었습니다." },
       { status: 400 },

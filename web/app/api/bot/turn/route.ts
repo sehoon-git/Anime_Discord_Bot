@@ -24,7 +24,7 @@ import { isDiscordUserBanned, isEmailBanned } from "@/app/lib/moderation";
 
 export const runtime = "nodejs";
 
-const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice"] as const;
+const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice", "security_ip"] as const;
 
 function getBotSecretFromRequest(request: Request) {
   const authorization = request.headers.get("authorization");
