@@ -1,7 +1,7 @@
 import type { NextAuthOptions } from "next-auth";
 import { headers } from "next/headers";
 import GoogleProvider from "next-auth/providers/google";
-import { getActiveEmailBan, getActiveIpBan, getClientIp, isEmailBanned, recordUserIp } from "@/app/lib/moderation";
+import { getActiveEmailBan, getActiveIpBan, getClientIp, recordUserIp } from "@/app/lib/moderation";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -17,7 +17,11 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user }) {
       if (!user.email) return false;
       const ipAddress = getClientIp(await headers());
-      return !(await isEmailBanned(user.email)) && !(ipAddress && await getActiveIpBan(ipAddress));
+      const ban = (await getActiveEmailBan(user.email)) ?? (ipAddress ? await getActiveIpBan(ipAddress) : null);
+      if (!ban) return true;
+      const params = new URLSearchParams({ reason: ban.reason });
+      if (ban.expiresAt) params.set("expiresAt", ban.expiresAt);
+      return `/account-restricted?${params.toString()}`;
     },
     async jwt({ token }) {
       if (typeof token.email !== "string") return token;
