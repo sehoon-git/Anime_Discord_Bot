@@ -30,10 +30,15 @@ export async function GET(request: NextRequest) {
     db.query(`SELECT id::text, subject_type, subject_value, reason, expires_at, created_by_email, created_at, revoked_at
       FROM moderation_bans ORDER BY created_at DESC LIMIT 100`),
     query.length >= 2
-      ? db.query(`SELECT u.id::text, u.email, u.name, p.nickname, d.provider_user_id AS discord_user_id
+      ? db.query(`SELECT u.id::text, u.email, u.name, p.nickname, d.provider_user_id AS discord_user_id,
+            recent_ip.ip_address::text AS recent_ip, recent_ip.last_seen_at AS recent_ip_seen_at
           FROM users u
           LEFT JOIN user_profiles p ON p.user_id = u.id
           LEFT JOIN user_accounts d ON d.user_id = u.id AND d.provider = 'discord'
+          LEFT JOIN LATERAL (
+            SELECT ip_address, last_seen_at FROM moderation_user_ips
+            WHERE user_id = u.id ORDER BY last_seen_at DESC LIMIT 1
+          ) recent_ip ON TRUE
           WHERE u.email ILIKE $1 OR u.name ILIKE $1 OR p.nickname ILIKE $1 OR d.provider_user_id ILIKE $1
           ORDER BY u.updated_at DESC LIMIT 30`, [`%${query}%`])
       : Promise.resolve({ rows: [] }),

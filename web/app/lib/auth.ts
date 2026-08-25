@@ -1,6 +1,7 @@
 import type { NextAuthOptions } from "next-auth";
+import { headers } from "next/headers";
 import GoogleProvider from "next-auth/providers/google";
-import { getActiveEmailBan, isEmailBanned } from "@/app/lib/moderation";
+import { getActiveEmailBan, getActiveIpBan, getClientIp, isEmailBanned, recordUserIp } from "@/app/lib/moderation";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -15,17 +16,26 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user }) {
       if (!user.email) return false;
-      return !(await isEmailBanned(user.email));
+      const ipAddress = getClientIp(await headers());
+      return !(await isEmailBanned(user.email)) && !(ipAddress && await getActiveIpBan(ipAddress));
     },
     async jwt({ token }) {
       if (typeof token.email !== "string") return token;
-      const ban = await getActiveEmailBan(token.email);
+      const ipAddress = getClientIp(await headers());
+      const ban = (await getActiveEmailBan(token.email)) ?? (ipAddress ? await getActiveIpBan(ipAddress) : null);
       if (ban) {
         token.banReason = ban.reason;
         token.banExpiresAt = ban.expiresAt;
       } else {
         token.banReason = undefined;
         token.banExpiresAt = undefined;
+        if (ipAddress) {
+          try {
+            await recordUserIp(token.email, ipAddress);
+          } catch (error) {
+            console.error("[auth][record-user-ip]", error);
+          }
+        }
       }
       return token;
     },

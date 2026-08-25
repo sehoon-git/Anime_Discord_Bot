@@ -9,6 +9,14 @@ export type ActiveBan = {
   expiresAt: string | null;
 };
 
+export function getClientIp(requestHeaders: Headers) {
+  const forwarded = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim();
+  const vercelForwarded = requestHeaders.get("x-vercel-forwarded-for")?.trim();
+  const realIp = requestHeaders.get("x-real-ip")?.trim();
+  const candidate = vercelForwarded || forwarded || realIp;
+  return candidate && /^[0-9a-f:.]+$/i.test(candidate) ? candidate : null;
+}
+
 let moderationSchemaReady: Promise<void> | null = null;
 
 export function normalizeBanSubject(type: BanSubjectType, value: string) {
@@ -45,6 +53,15 @@ export async function ensureModerationSchema() {
       details JSONB NOT NULL DEFAULT '{}'::jsonb,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+    CREATE TABLE IF NOT EXISTS moderation_user_ips (
+      user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      ip_address INET NOT NULL,
+      first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (user_id, ip_address)
+    );
+    CREATE INDEX IF NOT EXISTS moderation_user_ips_recent_idx
+      ON moderation_user_ips (user_id, last_seen_at DESC);
   `).then(() => undefined);
   return moderationSchemaReady;
 }
@@ -72,6 +89,20 @@ export async function isEmailBanned(email: string) {
 
 export async function getActiveEmailBan(email: string) {
   return getActiveBan("email", email);
+}
+
+export async function recordUserIp(email: string, ipAddress: string) {
+  await ensureModerationSchema();
+  await db.query(
+    `INSERT INTO moderation_user_ips (user_id, ip_address, last_seen_at)
+     SELECT id, $2::inet, NOW() FROM users WHERE LOWER(email) = LOWER($1)
+     ON CONFLICT (user_id, ip_address) DO UPDATE SET last_seen_at = NOW()`,
+    [email, ipAddress],
+  );
+}
+
+export async function getActiveIpBan(ipAddress: string) {
+  return getActiveBan("ip", ipAddress);
 }
 
 export async function isDiscordUserBanned(discordUserId: string) {
