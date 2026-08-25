@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 type Locale = "en-US" | "ko-KR" | "ja-JP";
 
-export default function HeaderMenu({ locale }: { locale: Locale }) {
+export default function HeaderMenu({ locale, showAdmin = false }: { locale: Locale; showAdmin?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { data: session, status } = useSession();
@@ -45,6 +45,7 @@ export default function HeaderMenu({ locale }: { locale: Locale }) {
           <Link href="/memory" onClick={() => setIsOpen(false)} className="theme-menu-item block px-4 py-3 text-sm font-semibold text-[#76566b] hover:bg-[#fff0f7]">{ko ? "기억 관리" : ja ? "記憶管理" : "Memory"}</Link>
           <Link href="/settings/privacy" onClick={() => setIsOpen(false)} className="theme-menu-item block px-4 py-3 text-sm font-semibold text-[#76566b] hover:bg-[#fff0f7]">{ko ? "설정" : ja ? "設定" : "Settings"}</Link>
           <Link href="/notice" onClick={() => setIsOpen(false)} className="theme-menu-item block px-4 py-3 text-sm font-semibold text-[#76566b] hover:bg-[#fff0f7]">{ko ? "공지사항" : ja ? "お知らせ" : "Notices"}</Link>
+          {showAdmin ? <Link href="/admin" onClick={() => setIsOpen(false)} className="theme-menu-item block px-4 py-3 text-sm font-bold text-[#a4577e] hover:bg-[#fff0f7]">{ko ? "관리자 페이지" : ja ? "管理者ページ" : "Admin"}</Link> : null}
           <div className="my-2 border-t border-[#efd4e2]" />
           <button type="button" disabled={status === "loading"} onClick={authenticate} className="theme-menu-item flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-semibold text-[#76566b] hover:bg-[#fff0f7] disabled:cursor-wait">
             {session?.user ? null : <span aria-hidden="true" className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-extrabold text-[#4285f4] shadow-sm">G</span>}{status === "loading" ? (ko ? "확인 중..." : ja ? "確認中..." : "Checking...") : session?.user ? (ko ? "로그아웃" : ja ? "ログアウト" : "Log out") : (ko ? "Google로 로그인" : ja ? "Googleでログイン" : "Continue with Google")}

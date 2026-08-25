@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { getServerSession } from "next-auth";
 import HeaderMenu from "./_components/HeaderMenu";
 import QuickControls from "./_components/QuickControls";
 import "./globals.css";
 import Providers from "./providers";
 import { getMessages, toAppLocale } from "./i18n/messages";
+import { authOptions } from "@/app/lib/auth";
+import { isAdminEmail } from "@/app/lib/admin";
 
 export const metadata: Metadata = {
   title: "Voice With AI",
@@ -23,6 +26,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const isJapanese = locale === "ja-JP";
   const t = getMessages(locale);
   const footerLinks = t.footer.links;
+  const session = await getServerSession(authOptions);
+  const showAdmin = isAdminEmail(session?.user?.email);
 
   return (
     <html lang={isKorean ? "ko" : isJapanese ? "ja" : "en"}>
@@ -58,7 +63,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                     {t.nav.notices}
                   </span>
                 </Link>
-                <HeaderMenu locale={locale} />
+                <HeaderMenu locale={locale} showAdmin={showAdmin} />
               </div>
             </div>
           </header>
