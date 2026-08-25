@@ -3,6 +3,11 @@ import "server-only";
 import { db } from "@/app/lib/db";
 
 export type BanSubjectType = "email" | "discord_user_id" | "ip";
+export type ActiveBan = {
+  id: string;
+  reason: string;
+  expiresAt: string | null;
+};
 
 let moderationSchemaReady: Promise<void> | null = null;
 
@@ -45,19 +50,28 @@ export async function ensureModerationSchema() {
 }
 
 export async function isBanActive(type: BanSubjectType, value: string) {
+  return (await getActiveBan(type, value)) !== null;
+}
+
+export async function getActiveBan(type: BanSubjectType, value: string): Promise<ActiveBan | null> {
   await ensureModerationSchema();
-  const result = await db.query(
-    `SELECT 1 FROM moderation_bans
+  const result = await db.query<{ id: string; reason: string; expires_at: string | null }>(
+    `SELECT id, reason, expires_at FROM moderation_bans
       WHERE subject_type = $1 AND subject_value = $2 AND revoked_at IS NULL
         AND (expires_at IS NULL OR expires_at > NOW())
       LIMIT 1`,
     [type, normalizeBanSubject(type, value)],
   );
-  return (result.rowCount ?? 0) > 0;
+  const ban = result.rows[0];
+  return ban ? { id: ban.id, reason: ban.reason, expiresAt: ban.expires_at } : null;
 }
 
 export async function isEmailBanned(email: string) {
   return isBanActive("email", email);
+}
+
+export async function getActiveEmailBan(email: string) {
+  return getActiveBan("email", email);
 }
 
 export async function isDiscordUserBanned(discordUserId: string) {

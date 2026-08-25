@@ -2,6 +2,7 @@
 
 import { SessionProvider } from "next-auth/react";
 import { createContext, useContext, useEffect, useState } from "react";
+import BannedSessionGate from "./_components/BannedSessionGate";
 
 type Theme = "light" | "dark";
 
@@ -37,7 +38,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
-      <SessionProvider>{children}</SessionProvider>
+      <SessionProvider refetchInterval={30} refetchOnWindowFocus>
+        <BannedSessionGate />
+        {children}
+      </SessionProvider>
     </ThemeContext.Provider>
   );
 }

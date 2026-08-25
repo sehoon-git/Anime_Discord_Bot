@@ -1,6 +1,6 @@
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { isEmailBanned } from "@/app/lib/moderation";
+import { getActiveEmailBan, isEmailBanned } from "@/app/lib/moderation";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -19,12 +19,24 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token }) {
       if (typeof token.email !== "string") return token;
-      if (await isEmailBanned(token.email)) {
-        token.email = undefined;
-        token.name = undefined;
-        token.picture = undefined;
+      const ban = await getActiveEmailBan(token.email);
+      if (ban) {
+        token.banReason = ban.reason;
+        token.banExpiresAt = ban.expiresAt;
+      } else {
+        token.banReason = undefined;
+        token.banExpiresAt = undefined;
       }
       return token;
+    },
+    async session({ session, token }) {
+      const banReason = typeof token.banReason === "string" ? token.banReason : undefined;
+      if (banReason) {
+        session.user = undefined;
+        (session as typeof session & { banReason?: string; banExpiresAt?: string | null }).banReason = banReason;
+        (session as typeof session & { banReason?: string; banExpiresAt?: string | null }).banExpiresAt = typeof token.banExpiresAt === "string" ? token.banExpiresAt : null;
+      }
+      return session;
     },
   },
   secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
