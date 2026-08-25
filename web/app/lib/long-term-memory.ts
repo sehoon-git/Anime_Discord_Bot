@@ -231,7 +231,8 @@ async function makeRoomForNewMemory(userId: string, limit: number) {
   const countResult = await botPool.query<{ count: number }>(
     `SELECT COUNT(*)::int AS count
      FROM memory_items
-     WHERE user_id = $1 AND status = 'active' AND deleted_at IS NULL AND expires_at > NOW()`,
+     WHERE user_id = $1 AND status = 'active' AND deleted_at IS NULL
+       AND (expires_at IS NULL OR expires_at > NOW())`,
     [userId],
   );
   const toRemove = (countResult.rows[0]?.count ?? 0) - limit + 1;
@@ -242,7 +243,7 @@ async function makeRoomForNewMemory(userId: string, limit: number) {
        SELECT id
        FROM memory_items
        WHERE user_id = $1 AND status = 'active' AND deleted_at IS NULL
-         AND expires_at > NOW() AND is_pinned = FALSE
+         AND (expires_at IS NULL OR expires_at > NOW()) AND is_pinned = FALSE
        ORDER BY updated_at ASC
        LIMIT $2
      )
@@ -335,7 +336,7 @@ export async function listLongTermMemories(userId: string, characterId?: string)
     `SELECT id::text, content, source, confidence, is_pinned, created_at, character_id, evidence_count, kind, scope, importance, last_used_at
      FROM memory_items
      WHERE user_id = $1 AND status = 'active' AND deleted_at IS NULL
-       AND expires_at > NOW() AND is_confirmed = TRUE
+       AND (expires_at IS NULL OR expires_at > NOW()) AND is_confirmed = TRUE
        AND ($2::text IS NULL OR character_id = $2)
      ORDER BY is_pinned DESC, updated_at DESC`,
     [userId, characterId ?? null],
@@ -374,7 +375,7 @@ export async function searchLongTermMemories(
             evidence_count, kind, scope, importance, last_used_at
      FROM memory_items
      WHERE user_id = $1 AND status = 'active' AND deleted_at IS NULL
-       AND expires_at > NOW()
+       AND (expires_at IS NULL OR expires_at > NOW())
        AND is_confirmed = TRUE
        AND (scope = 'global'
          OR (scope = 'character' AND character_id = $2)
@@ -471,12 +472,13 @@ export async function createLongTermMemory(input: {
   await ensureLongTermMemorySchema();
   const memoryLimit = await getLongTermMemoryLimit(input.userId);
   if (!(await makeRoomForNewMemory(input.userId, memoryLimit))) return null;
+  const days = await retentionDays(input.userId);
   const scope = safeScope(input.scope);
   const result = await botPool.query<MemoryRow>(
     `INSERT INTO memory_items (
       user_id, character_id, memory_epoch, scope, guild_id, kind, canonical_key,
       content, evidence_count, confidence, importance, is_confirmed, source, expires_at
-    ) VALUES ($1, $2, 1, $3, $4, $5, $6, $7, 1, 1, $8, TRUE, 'manual', NULL)
+    ) VALUES ($1, $2, 1, $3, $4, $5, $6, $7, 1, 1, $8, TRUE, 'manual', NOW() + ($9 * INTERVAL '1 day'))
     RETURNING id::text, content, source, confidence, is_pinned, created_at, character_id,
               evidence_count, kind, scope, importance, last_used_at`,
     [
@@ -484,6 +486,7 @@ export async function createLongTermMemory(input: {
       scope === "guild" ? input.guildId ?? null : null,
       input.kind ?? "fact", `manual:${keyText(content)}:${Date.now()}`, content,
       Math.min(1, Math.max(0, input.importance ?? 0.75)),
+      days,
     ],
   );
   const row = result.rows[0];

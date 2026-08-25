@@ -20,14 +20,22 @@ export default function MemoryManualAddForm({ locale }: Props) {
     if (content.trim().length < 2 || saving) return;
     setSaving(true);
     setError("");
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 12_000);
     try {
-      const response = await fetch("/v1/memories", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content }) });
+      const response = await fetch("/v1/memories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+        signal: controller.signal,
+      });
       if (!response.ok) throw new Error();
       setContent("");
       router.refresh();
     } catch {
-      setError(ko ? "기억을 추가하지 못했습니다. 한도를 확인해주세요." : ja ? "記憶を追加できませんでした。上限を確認してください。" : "We could not add the memory. Check your memory limit.");
+      setError(ko ? "기억 저장이 지연되었거나 실패했습니다. 잠시 후 다시 시도해주세요." : ja ? "記憶の保存が遅れているか、失敗しました。しばらくしてから再試行してください。" : "Saving the memory was delayed or failed. Please try again shortly.");
     } finally {
+      window.clearTimeout(timeout);
       setSaving(false);
     }
   }
