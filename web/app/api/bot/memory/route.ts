@@ -1,7 +1,12 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { webPool } from "@/app/lib/db";
 import { getMissingRequiredConsents } from "@/app/lib/consent";
-import { listLongTermMemories, setLongTermMemoryPinned } from "@/app/lib/long-term-memory";
+import {
+  listLongTermMemories,
+  processLongTermMemory,
+  searchLongTermMemoriesWithTimeout,
+  setLongTermMemoryPinned,
+} from "@/app/lib/long-term-memory";
 
 async function resolveUserId(discordUserId: string) {
   const result = await webPool.query<{ user_id: string }>(
@@ -61,12 +66,20 @@ export async function GET(request: Request) {
       );
     }
 
-    const characterId = searchParams.get("characterId") || undefined;
-    const memories = await listLongTermMemories(userId, characterId);
+    const characterId = searchParams.get("characterId")?.trim() || "seline";
+    const guildId = searchParams.get("guildId")?.trim() || undefined;
+    const query = searchParams.get("query")?.trim() || "";
+    if (query.length > 2_000) {
+      return NextResponse.json({ ok: false, error: "QUERY_TOO_LONG" }, { status: 400 });
+    }
+    const memories = query
+      ? await searchLongTermMemoriesWithTimeout(userId, characterId, query, 10, guildId)
+      : await listLongTermMemories(userId, characterId);
 
     return NextResponse.json({
       ok: true,
       memoryAllowed: true,
+      mode: query ? "context" : "list",
       memories: memories.slice(0, 10),
     });
   } catch (error) {
@@ -79,14 +92,42 @@ export async function POST(request: Request) {
   if (!isAuthorizedBot(request)) {
     return unauthorized();
   }
-  return NextResponse.json(
-    {
-      ok: false,
-      error: "MEMORY_WRITE_OWNED_BY_CONVERSATION_API",
-      message: "Send TurnEnvelope to POST /api/bot/turn. The API decides whether a memory is stored.",
-    },
-    { status: 405 },
-  );
+
+  const body = await request.json().catch(() => null);
+  const discordUserId = typeof body?.discordUserId === "string" ? body.discordUserId.trim() : "";
+  const text = typeof body?.text === "string" ? body.text.trim() : "";
+  const characterId = typeof body?.characterId === "string" ? body.characterId.trim().slice(0, 80) : "seline";
+  const inputType = body?.inputType === "voice" ? "voice" : body?.inputType === "text" ? "text" : null;
+  const sourceEventId = typeof body?.sourceEventId === "string" ? body.sourceEventId.trim().slice(0, 160) : null;
+  const occurredAt = typeof body?.occurredAt === "string" && !Number.isNaN(Date.parse(body.occurredAt))
+    ? new Date(body.occurredAt).toISOString()
+    : new Date().toISOString();
+  if (!discordUserId || !text || !inputType) {
+    return NextResponse.json({ ok: false, error: "INVALID_BODY" }, { status: 400 });
+  }
+
+  try {
+    const userId = await resolveUserId(discordUserId);
+    if (!userId) return NextResponse.json({ ok: false, error: "USER_NOT_FOUND" }, { status: 404 });
+    const missingConsents = await getMissingRequiredConsents(userId);
+    if (missingConsents.length > 0) {
+      return NextResponse.json({ ok: false, error: "REQUIRED_CONSENT_MISSING", missingConsents }, { status: 403 });
+    }
+
+    // Memory extraction is deliberately asynchronous: it must never delay a
+    // Discord reply. sourceEventId makes repeated delivery idempotent.
+    after(async () => {
+      try {
+        await processLongTermMemory({ userId, characterId, text, inputType, sourceEventId, occurredAt });
+      } catch (error) {
+        console.error("POST /api/bot/memory extraction Error:", error);
+      }
+    });
+    return NextResponse.json({ ok: true, accepted: true, userId }, { status: 202 });
+  } catch (error) {
+    console.error("POST /api/bot/memory Error:", error);
+    return NextResponse.json({ ok: false, error: "MEMORY_SAVE_REQUEST_FAILED" }, { status: 500 });
+  }
 }
 
 export async function PATCH(request: Request) {
