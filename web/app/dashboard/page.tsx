@@ -216,8 +216,8 @@ export default async function DashboardPage() {
   }
 
   return (
-    <main className="site-wash min-h-screen px-6 py-7 text-[#493647] sm:py-8">
-      <section className="mx-auto max-w-4xl">
+    <main className="site-wash min-h-screen px-5 py-6 text-[#493647] sm:px-8 sm:py-7">
+      <section className="mx-auto max-w-[1500px]">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm font-semibold text-[#d45d91]">Voice With AI</p>
@@ -236,65 +236,29 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="mt-5 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">
-          <h2 className="text-lg font-semibold">{t.dashboard.discordTitle}</h2>
+        <div className="mt-5 grid gap-4 xl:grid-cols-12">
+          <section className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)] xl:col-span-7">
+            <h2 className="text-lg font-semibold">{t.dashboard.discordTitle}</h2>
+            {discordName ? <p className="mt-2 text-sm text-[#92768a]">{t.dashboard.linked(discordName)}</p> : <p className="mt-2 text-sm text-[#92768a]">{t.dashboard.unlinked}</p>}
+            {discordLookupError ? <p className="mt-3 rounded-lg border border-red-900/50 bg-red-950/40 p-3 text-sm text-red-200">{discordLookupError}</p> : null}
+            <div className="mt-4 flex flex-wrap gap-3"><a href="/api/discord/connect" target="_blank" rel="noopener noreferrer" className="discord-connect-button inline-flex items-center rounded-full px-6 py-3 text-sm font-extrabold shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]">{discordName ? t.dashboard.reconnect : t.dashboard.connect}</a>{discordName ? <a href="/api/discord/bot-invite" className="discord-invite-button inline-flex items-center rounded-full px-6 py-3 text-sm font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]">{t.dashboard.invite}</a> : null}</div>
+          </section>
 
-          {discordName ? (
-            <p className="mt-2 text-sm text-[#92768a]">
-              {t.dashboard.linked(discordName)}
-            </p>
-          ) : (
-            <p className="mt-2 text-sm text-[#92768a]">
-              {t.dashboard.unlinked}
-            </p>
-          )}
+          <section className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)] xl:col-span-5">
+            <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="text-lg font-semibold">{t.dashboard.overviewTitle}</h2><p className="mt-1 text-sm text-[#92768a]">{t.dashboard.overviewDescription}</p></div><Link href="/billing" className="rounded-full border border-[#e3bfd3] px-4 py-2 text-sm font-semibold text-[#76566b] transition hover:-translate-y-0.5 hover:bg-white hover:text-[#d45d91]">{t.dashboard.viewPlans} →</Link></div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2"><Link href="/billing" className="rounded-2xl border border-[#efd8e5] bg-white/60 p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg"><p className="text-xs font-semibold text-[#a4577e]">{t.dashboard.currentPlan}</p><p className="mt-2 text-xl font-extrabold">{overview.planName}</p><p className="mt-1 text-sm text-[#92768a]">{t.dashboard.managePlan} →</p></Link><Link href="/memory" className="rounded-2xl border border-[#efd8e5] bg-white/60 p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg"><p className="text-xs font-semibold text-[#a4577e]">{t.dashboard.savedMemories}</p><p className="mt-2 text-xl font-extrabold">{t.dashboard.count(overview.memoryCount)}</p><p className="mt-1 text-sm text-[#92768a]">{t.dashboard.manageMemories} →</p></Link></div>
+          </section>
 
-          {discordLookupError ? (
-            <p className="mt-3 rounded-lg border border-red-900/50 bg-red-950/40 p-3 text-sm text-red-200">
-              {discordLookupError}
-            </p>
-          ) : null}
+          <section className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)] xl:col-span-7">
+            <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-lg font-semibold">{usageCopy.title}</h2><p className="mt-1 text-sm text-[#92768a]">{usageCopy.description}</p></div><Link href="/credits" className="rounded-full bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-4 py-2 text-sm font-bold text-white shadow-lg transition hover:-translate-y-0.5">{usageCopy.creditsAction} →</Link></div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2"><UsageMeter label={usageCopy.text} remaining={remainingPercent(overview.textUsage, overview.textLimit)} remainingLabel={usageCopy.remaining} /><UsageMeter label={usageCopy.voice} remaining={remainingPercent(overview.voiceUsage, overview.voiceLimit)} remainingLabel={usageCopy.remaining} /></div>
+            <p className="mt-3 text-right text-xs font-semibold text-[#a4577e]">{usageCopy.note}</p>
+          </section>
 
-          <a
-            href="/api/discord/connect"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="discord-connect-button mt-4 inline-flex items-center rounded-full px-6 py-3 text-sm font-extrabold shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
-          >
-            {discordName ? t.dashboard.reconnect : t.dashboard.connect}
-          </a>
-
-          {discordName ? (
-            <a
-              href="/api/discord/bot-invite"
-              className="discord-invite-button ml-3 mt-4 inline-flex items-center rounded-full px-6 py-3 text-sm font-bold transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
-            >
-              {t.dashboard.invite}
-            </a>
-          ) : null}
-        </div>
-
-        <section className="mt-4 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div><h2 className="text-lg font-semibold">{t.dashboard.overviewTitle}</h2><p className="mt-1 text-sm text-[#92768a]">{t.dashboard.overviewDescription}</p></div>
-            <Link href="/billing" className="rounded-full border border-[#e3bfd3] px-4 py-2 text-sm font-semibold text-[#76566b] transition hover:-translate-y-0.5 hover:bg-white hover:text-[#d45d91]">{t.dashboard.viewPlans} →</Link>
-          </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <Link href="/billing" className="rounded-2xl border border-[#efd8e5] bg-white/60 p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg"><p className="text-xs font-semibold text-[#a4577e]">{t.dashboard.currentPlan}</p><p className="mt-2 text-xl font-extrabold">{overview.planName}</p><p className="mt-1 text-sm text-[#92768a]">{t.dashboard.managePlan} →</p></Link>
-            <Link href="/memory" className="rounded-2xl border border-[#efd8e5] bg-white/60 p-4 transition hover:-translate-y-0.5 hover:bg-white hover:shadow-lg"><p className="text-xs font-semibold text-[#a4577e]">{t.dashboard.savedMemories}</p><p className="mt-2 text-xl font-extrabold">{t.dashboard.count(overview.memoryCount)}</p><p className="mt-1 text-sm text-[#92768a]">{t.dashboard.manageMemories} →</p></Link>
-          </div>
-        </section>
-
-        <section className="mt-4 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">
-          <div className="flex flex-wrap items-end justify-between gap-3"><div><h2 className="text-lg font-semibold">{usageCopy.title}</h2><p className="mt-1 text-sm text-[#92768a]">{usageCopy.description}</p></div><Link href="/credits" className="rounded-full bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-4 py-2 text-sm font-bold text-white shadow-lg transition hover:-translate-y-0.5">{usageCopy.creditsAction} →</Link></div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2"><UsageMeter label={usageCopy.text} remaining={remainingPercent(overview.textUsage, overview.textLimit)} remainingLabel={usageCopy.remaining} /><UsageMeter label={usageCopy.voice} remaining={remainingPercent(overview.voiceUsage, overview.voiceLimit)} remainingLabel={usageCopy.remaining} /></div>
-          <p className="mt-3 text-right text-xs font-semibold text-[#a4577e]">{usageCopy.note}</p>
-        </section>
-
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-3 xl:col-span-5">
           <a
             href="/profile"
-            className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
+            className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-4 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
           >
             <h2 className="text-lg font-semibold">{t.dashboard.profile}</h2>
             <p className="mt-3 text-sm text-zinc-400">
@@ -304,7 +268,7 @@ export default async function DashboardPage() {
 
           <a
             href="/settings/privacy"
-            className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
+            className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-4 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
           >
             <h2 className="text-lg font-semibold">{t.dashboard.voiceSettings}</h2>
             <p className="mt-3 text-sm text-zinc-400">
@@ -314,13 +278,14 @@ export default async function DashboardPage() {
 
           <a
             href="/support"
-            className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
+            className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-4 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
           >
             <h2 className="text-lg font-semibold">{t.dashboard.support}</h2>
             <p className="mt-3 text-sm text-zinc-400">
               {t.dashboard.supportDescription}
             </p>
           </a>
+        </div>
         </div>
       </section>
     </main>
