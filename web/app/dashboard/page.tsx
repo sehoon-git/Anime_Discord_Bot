@@ -20,6 +20,18 @@ type DiscordAccountRow = {
 
 const REQUIRED_CONSENTS = ["terms", "privacy", "overseas", "memory", "voice", "security_ip"];
 
+function remainingPercent(used: number, limit: number) {
+  if (limit <= 0) return 0;
+  return Math.round(Math.min(100, Math.max(0, ((limit - used) / limit) * 100)));
+}
+
+function UsageMeter({ label, remaining, remainingLabel }: { label: string; remaining: number; remainingLabel: (value: number) => string }) {
+  return <div className="rounded-2xl border border-[#efd8e5] bg-white/60 p-4">
+    <div className="flex items-center justify-between gap-3"><p className="text-sm font-bold text-[#684b60]">{label}</p><p className="text-sm font-extrabold text-[#d45d91]">{remainingLabel(remaining)}</p></div>
+    <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#f2e4ec]"><div className="h-full rounded-full bg-gradient-to-r from-[#ef8fba] to-[#a895f4] transition-all" style={{ width: `${remaining}%` }} /></div>
+  </div>;
+}
+
 function errorText(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   const code =
@@ -174,13 +186,18 @@ export default async function DashboardPage() {
     discordAccount?.discord_username ??
     null;
   const t = getMessages(profile.locale);
+  const usageCopy = profile.locale === "ja-JP"
+    ? { title: "今月のプラン利用状況", description: "残りの利用量を確認できます。利用量は毎月リセットされます。", note: "残りの利用量を表示", text: "テキスト会話", voice: "音声会話", remaining: (value: number) => `残り ${value}%` }
+    : profile.locale === "en-US"
+      ? { title: "This month’s plan usage", description: "See how much plan use you have left. Allowances reset each month.", note: "Remaining allowance", text: "Text conversations", voice: "Voice conversations", remaining: (value: number) => `${value}% left` }
+      : { title: "이번 달 플랜 사용량", description: "남은 이용량을 확인하세요. 사용량은 매월 새로 시작됩니다.", note: "%는 남은 사용량 기준입니다", text: "텍스트 대화", voice: "음성 대화", remaining: (value: number) => `${value}% 남음` };
 
   let overview = {
     planName: "Free",
     textUsage: 0,
-    textLimit: 0,
+    textLimit: 100,
     voiceUsage: 0,
-    voiceLimit: 0,
+    voiceLimit: 10,
     memoryCount: 0,
   };
 
@@ -270,6 +287,11 @@ export default async function DashboardPage() {
         </section>
 
         <div className="mt-4"><CreditPanel locale={profile.locale} /></div>
+
+        <section className="mt-4 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">
+          <div className="flex flex-wrap items-end justify-between gap-2"><div><h2 className="text-lg font-semibold">{usageCopy.title}</h2><p className="mt-1 text-sm text-[#92768a]">{usageCopy.description}</p></div><p className="text-xs font-semibold text-[#a4577e]">{usageCopy.note}</p></div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2"><UsageMeter label={usageCopy.text} remaining={remainingPercent(overview.textUsage, overview.textLimit)} remainingLabel={usageCopy.remaining} /><UsageMeter label={usageCopy.voice} remaining={remainingPercent(overview.voiceUsage, overview.voiceLimit)} remainingLabel={usageCopy.remaining} /></div>
+        </section>
 
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           <a

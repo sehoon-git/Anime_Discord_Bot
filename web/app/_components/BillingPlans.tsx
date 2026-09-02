@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { getMessages, type AppLocale } from "@/app/i18n/messages";
 
@@ -12,7 +12,6 @@ type Plan = {
   monthly: number;
   yearly: number;
 };
-type CreditState = { balance: number; usage: number } | null;
 
 const plans: Plan[] = [
   { code: "free", name: "Free", monthly: 0, yearly: 0 },
@@ -26,50 +25,16 @@ function price(value: number, locale: Locale) {
 }
 
 export function CreditPanel({ locale }: { locale: AppLocale }) {
-  const [credits, setCredits] = useState<CreditState>(null);
-  const [pending, setPending] = useState(false);
   const copy = getMessages(locale).credits;
 
-  const refresh = useCallback(async () => {
-    const response = await fetch("/api/billing/credits", { cache: "no-store" });
-    if (!response.ok) return;
-    const body = await response.json();
-    setCredits({ balance: body.credits.balance, usage: body.usage.creditsUsed });
-  }, []);
-
-  useEffect(() => {
-    const initial = window.setTimeout(() => void refresh(), 0);
-    const timer = window.setInterval(() => void refresh(), 15000);
-    return () => {
-      window.clearTimeout(initial);
-      window.clearInterval(timer);
-    };
-  }, [refresh]);
-
-  async function addTestCredits() {
-    setPending(true);
-    try {
-      const response = await fetch("/api/billing/credits", { method: "POST" });
-      if (response.ok) await refresh();
-    } finally {
-      setPending(false);
-    }
-  }
-
   return <section className="billing-status mb-6">
-    <div className="flex flex-wrap items-end justify-between gap-4">
+    <div>
       <div>
         <p className="status-label">{copy.label}</p>
-        <p className="status-value">{credits ? credits.balance.toLocaleString() : "-"} <span className="text-base font-semibold">{copy.remaining}</span></p>
+        <p className="mt-2 text-xl font-extrabold text-[#684b60]">{copy.comingSoon}</p>
       </div>
-      <p className="text-sm text-[#76566b]">{copy.used(credits?.usage.toLocaleString() ?? "-")}</p>
     </div>
-    <div className="mt-4 flex flex-wrap items-center gap-3">
-      <button type="button" onClick={addTestCredits} disabled={pending} className="rounded-2xl bg-gradient-to-r from-[#ef8fba] to-[#a895f4] px-5 py-3 text-sm font-bold text-white transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60">
-        {pending ? copy.adding : copy.add}
-      </button>
-      <span className="text-xs text-[#92768a]">{copy.note}</span>
-    </div>
+    <p className="mt-3 max-w-3xl text-sm leading-6 text-[#92768a]">{copy.note}</p>
   </section>;
 }
 
