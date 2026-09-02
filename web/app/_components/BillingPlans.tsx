@@ -98,5 +98,6 @@ export default function BillingPlans({ currentPlanCode, locale = "ko-KR", showCr
         </article>;
       })}
     </div>
+    <p className="mx-auto mt-6 max-w-3xl text-center text-xs leading-5 text-[#92768a]">{copy.voiceUsageNote}</p>
   </>;
 }
