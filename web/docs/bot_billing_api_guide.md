@@ -32,9 +32,9 @@ Authorization: Bearer {BOT_SECRET_KEY}
 | 플랜 코드 | 월 텍스트 | 월 음성 | 장기기억 | 월 이미지 생성 |
 | --- | ---: | ---: | ---: | ---: |
 | `free` | 100회 | 10분 | 5개 | 불가 |
-| `like` | 500회 | 30분 | 20개 | 불가 |
-| `more-like` | 3,000회 | 300분 | 100개 | 불가 |
-| `love` | 10,000회 | 1,000분 | 500개 | 50장 |
+| `like` | 500회 | 60분 | 20개 | 불가 |
+| `more-like` | 3,000회 | 180분 | 100개 | 불가 |
+| `love` | 10,000회 | 500분 | 500개 | 50장 |
 
 실제 기능 허용 여부는 항상 API 응답을 기준으로 처리하세요. 운영 중 한도가 변경될 수 있습니다.
 
@@ -63,7 +63,7 @@ GET https://anime-discord-bot-rw3b.vercel.app/api/bot/billing?discordUserId=1234
     "code": "love",
     "name": "Love♥",
     "monthlyTextMessages": 10000,
-    "monthlyVoiceMinutes": 1000,
+    "monthlyVoiceMinutes": 500,
     "memoryEnabled": true,
     "longTermMemoryLimit": 500,
     "imageGenerationEnabled": true,
@@ -278,4 +278,3 @@ Content-Type: application/json
 - 봇 서버의 환경 변수로만 관리하세요.
 - 사용자 입력을 신뢰하지 말고 `discordUserId`, `amount`, `requestId`를 서버에서 검증하세요.
 - 이미지 생성 등 비용이 드는 작업은 반드시 사용량 예약 성공 뒤에 실행하세요.
-

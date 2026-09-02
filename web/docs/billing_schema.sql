@@ -22,9 +22,9 @@ INSERT INTO plans (
 )
 VALUES
   ('free', 'Free', 0, 100, 10, TRUE, 5),
-  ('like', 'Like♥', 5900, 500, 30, TRUE, 20),
-  ('more-like', 'More♥Like', 15900, 3000, 300, TRUE, 100),
-  ('love', 'Love♥', 35900, 10000, 1000, TRUE, 500)
+  ('like', 'Like♥', 5900, 500, 60, TRUE, 20),
+  ('more-like', 'More♥Like', 15900, 3000, 180, TRUE, 100),
+  ('love', 'Love♥', 35900, 10000, 500, TRUE, 500)
 ON CONFLICT (code)
 DO UPDATE SET
   name = EXCLUDED.name,
