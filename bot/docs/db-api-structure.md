@@ -233,7 +233,7 @@ Content-Type: application/json
 }
 ```
 
-음성 입력 전에 `/api/bot/settings` 또는 `/api/bot/consent` 결과를 확인하고, 음성 동의가 `true`가 아니면 STT와 TTS를 실행하지 않습니다.
+음성 입력 전에는 `GET /api/bot/account?discordUserId=<DISCORD_USER_ID>`를 호출해 `account.voiceConsent === true`인지 확인합니다. `401`, `404`, `500`, 네트워크 오류와 미연동 상태는 모두 동의 없음으로 처리하며 STT와 TTS를 실행하지 않습니다.
 
 ### 5.8 처리 이벤트와 모델 사용량
 

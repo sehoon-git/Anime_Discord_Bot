@@ -28,10 +28,10 @@
 | `PUT /v1/discord/memory-consents` | `{ guildId?, userId, enabled }` | `204 No Content` |
 | `GET /v1/discord/memories?userId=&guildId=` | 사용자 범위 | `MemorySummary[]` |
 | `DELETE /v1/discord/memories` | `{ guildId?, userId }` | `204 No Content` |
-| `PUT /v1/discord/voice-consents` | `{ guildId, channelId, userId, enabled }` | `204 No Content` |
-| `POST /v1/discord/voice-consents/check` | `{ guildId, channelId, userId }` | `{ allowed: boolean }` |
+| `GET /api/bot/account?discordUserId=` | `Authorization: Bearer BOT_SECRET_KEY` | `{ ok, account: { linked, voiceConsent } }` |
+| `POST /api/bot/voice-consent` | `Authorization: Bearer BOT_SECRET_KEY`, `{ discordUserId, enabled }` | `{ ok, allowed }` |
 
-음성 워커는 `allowed: true`가 아니면 해당 사용자의 Opus 스트림을 구독하지 않는다. API 오류도 동의하지 않은 것으로 처리한다.
+음성 워커는 `account.linked === true` 및 `account.voiceConsent === true`가 모두 충족될 때만 해당 사용자의 Opus 스트림을 구독한다. API 오류도 동의하지 않은 것으로 처리한다. 상세 계약은 `web/docs/bot_voice_consent_api_guide.md`를 따른다.
 
 ## 음성 서비스 계약
 

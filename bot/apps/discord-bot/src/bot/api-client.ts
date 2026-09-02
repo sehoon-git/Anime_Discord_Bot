@@ -13,6 +13,8 @@ import type { ConversationApi } from '@anime/voice-worker';
 type BackendApiClientOptions = {
   baseUrl: string;
   devEchoMode: boolean;
+  /** Vercel의 BOT_SECRET_KEY. 브라우저나 Git에는 절대 넣지 않습니다. */
+  botSecretKey?: string;
   fetchImpl?: typeof fetch;
 };
 
@@ -53,19 +55,39 @@ export class BackendApiClient implements ConversationApi {
   }
 
   async updateVoiceConsent(input: VoiceConsentUpdate): Promise<void> {
-    await this.request<void>('/v1/discord/voice-consents', 'PUT', input);
+    await this.request<{ ok: boolean }>('/api/bot/voice-consent', 'POST', {
+      // 웹 API는 Discord 사용자 ID를 기준으로 웹 계정을 찾아 동의를 저장합니다.
+      discordUserId: input.userId,
+      enabled: input.enabled
+    });
   }
 
   async canProcessVoice(input: VoiceConsentCheck): Promise<boolean> {
     if (this.options.devEchoMode) return true;
-    const response = await this.request<{ allowed: boolean }>('/v1/discord/voice-consents/check', 'POST', input);
-    return response.allowed;
+    if (!this.options.botSecretKey) {
+      throw new Error('BOT_SECRET_KEY가 없어 음성 처리 동의를 확인할 수 없습니다.');
+    }
+
+    const params = new URLSearchParams({ discordUserId: input.userId });
+    const response = await this.request<{
+      ok: boolean;
+      account?: { linked?: boolean; voiceConsent?: boolean } | null;
+    }>(`/api/bot/account?${params.toString()}`, 'GET');
+
+    // 네트워크·인증·연동 오류는 상위 호출부에서 false로 처리됩니다.
+    return response.ok === true
+      && response.account?.linked === true
+      && response.account.voiceConsent === true;
   }
 
   private async request<T>(path: string, method: string, body?: unknown): Promise<T> {
+    const headers: Record<string, string> = {};
+    if (body !== undefined) headers['content-type'] = 'application/json';
+    if (this.options.botSecretKey) headers.authorization = `Bearer ${this.options.botSecretKey}`;
+
     const response = await this.fetchImpl(`${this.baseUrl}${path}`, {
       method,
-      headers: body === undefined ? undefined : { 'content-type': 'application/json' },
+      headers: Object.keys(headers).length > 0 ? headers : undefined,
       body: body === undefined ? undefined : JSON.stringify(body)
     });
 

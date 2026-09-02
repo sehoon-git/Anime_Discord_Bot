@@ -10,6 +10,8 @@ const configSchema = z
     DISCORD_CLIENT_ID: z.string().min(1, 'DISCORD_CLIENT_ID가 필요합니다.'),
     DISCORD_GUILD_ID: z.string().trim().transform((value) => value || undefined).optional(),
     BOT_API_BASE_URL: z.string().url().default('http://localhost:3001'),
+    // Vercel의 BOT_SECRET_KEY와 같아야 합니다. 봇 전용 API 인증에만 사용합니다.
+    BOT_SECRET_KEY: z.string().trim().transform((value) => value || undefined).optional(),
     VOICE_SERVICE_BASE_URL: z.string().url().default('http://localhost:8000'),
     BOT_DEV_ECHO_MODE: z.enum(['true', 'false']).default('false').transform((value) => value === 'true'),
     BOT_AUTO_REPLY_CHANNEL_ID: z.string().trim().transform((value) => value || undefined).optional(),

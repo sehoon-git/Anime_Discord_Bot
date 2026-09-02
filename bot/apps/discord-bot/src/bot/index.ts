@@ -37,7 +37,8 @@ const TEST_SELINE_PERSONA = [
 const config = loadConfig();
 const backendApi = new BackendApiClient({
   baseUrl: config.BOT_API_BASE_URL,
-  devEchoMode: config.BOT_DEV_ECHO_MODE
+  devEchoMode: config.BOT_DEV_ECHO_MODE,
+  botSecretKey: config.BOT_SECRET_KEY
 });
 const textApi: TextConversationClient = config.BOT_TEST_DIRECT_GEMINI
   ? new GeminiTextClient({
