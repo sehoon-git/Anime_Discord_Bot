@@ -286,12 +286,10 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        <div className="mt-4"><CreditPanel locale={profile.locale} /></div>
-
-        <section className="mt-4 rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.12)]">
+        <div className="mt-4"><CreditPanel locale={profile.locale}>
           <div className="flex flex-wrap items-end justify-between gap-2"><div><h2 className="text-lg font-semibold">{usageCopy.title}</h2><p className="mt-1 text-sm text-[#92768a]">{usageCopy.description}</p></div><p className="text-xs font-semibold text-[#a4577e]">{usageCopy.note}</p></div>
           <div className="mt-4 grid gap-3 sm:grid-cols-2"><UsageMeter label={usageCopy.text} remaining={remainingPercent(overview.textUsage, overview.textLimit)} remainingLabel={usageCopy.remaining} /><UsageMeter label={usageCopy.voice} remaining={remainingPercent(overview.voiceUsage, overview.voiceLimit)} remainingLabel={usageCopy.remaining} /></div>
-        </section>
+        </CreditPanel></div>
 
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           <a

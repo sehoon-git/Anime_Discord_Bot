@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { signIn } from "next-auth/react";
 import { getMessages, type AppLocale } from "@/app/i18n/messages";
 
@@ -24,10 +25,10 @@ function price(value: number, locale: Locale) {
   return locale === "ja-JP" ? `¥${value.toLocaleString("ja-JP")}` : locale === "en-US" ? `₩${value.toLocaleString("en-US")}` : `${value.toLocaleString("ko-KR")}원`;
 }
 
-export function CreditPanel({ locale }: { locale: AppLocale }) {
+export function CreditPanel({ locale, children }: { locale: AppLocale; children?: ReactNode }) {
   const copy = getMessages(locale).credits;
 
-  return <section className="billing-status mb-6">
+  return <section className="billing-status mb-0">
     <div>
       <div>
         <p className="status-label">{copy.label}</p>
@@ -35,6 +36,7 @@ export function CreditPanel({ locale }: { locale: AppLocale }) {
       </div>
     </div>
     <p className="mt-3 max-w-3xl text-sm leading-6 text-[#92768a]">{copy.note}</p>
+    {children ? <div className="mt-5 border-t border-[#efd8e5] pt-5">{children}</div> : null}
   </section>;
 }
 
