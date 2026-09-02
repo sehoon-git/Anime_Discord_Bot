@@ -294,7 +294,7 @@ export default async function DashboardPage() {
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           <a
             href="/profile"
-            className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
+            className="cursor-pointer rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] transition-all duration-200 hover:-translate-y-1 hover:border-[#e99abb] hover:bg-white hover:shadow-[0_20px_38px_rgba(205,151,180,0.22)] active:translate-y-0"
           >
             <h2 className="text-lg font-semibold">{t.dashboard.profile}</h2>
             <p className="mt-3 text-sm text-zinc-400">
@@ -304,7 +304,7 @@ export default async function DashboardPage() {
 
           <a
             href="/settings/privacy"
-            className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
+            className="cursor-pointer rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] transition-all duration-200 hover:-translate-y-1 hover:border-[#e99abb] hover:bg-white hover:shadow-[0_20px_38px_rgba(205,151,180,0.22)] active:translate-y-0"
           >
             <h2 className="text-lg font-semibold">{t.dashboard.voiceSettings}</h2>
             <p className="mt-3 text-sm text-zinc-400">
@@ -314,7 +314,7 @@ export default async function DashboardPage() {
 
           <a
             href="/support"
-            className="rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] hover:bg-white"
+            className="cursor-pointer rounded-3xl border border-[#f0d7e5] bg-white/80 p-5 shadow-[0_16px_45px_rgba(198,135,169,0.1)] transition-all duration-200 hover:-translate-y-1 hover:border-[#e99abb] hover:bg-white hover:shadow-[0_20px_38px_rgba(205,151,180,0.22)] active:translate-y-0"
           >
             <h2 className="text-lg font-semibold">{t.dashboard.support}</h2>
             <p className="mt-3 text-sm text-zinc-400">
